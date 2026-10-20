@@ -48,7 +48,7 @@ create extension if not exists pg_net with schema extensions;
 create or replace function public.notify_bot() returns trigger
 language plpgsql security definer set search_path = public, extensions as $$
 begin
-  if new.verdict in ('comment', 'revision', 'approved', 'rejected') then
+  if new.verdict in ('submitted', 'comment', 'revision', 'approved', 'rejected') then
     perform net.http_post(
       url := 'https://ioksfvdjcknokcgxnpop.supabase.co/functions/v1/notify',
       body := jsonb_build_object('review_id', new.id),

@@ -11,6 +11,7 @@ const SITE = Deno.env.get('SITE_URL') ?? 'https://nacsu0102.github.io/mettenheim
 const GUILD = Deno.env.get('DISCORD_GUILD_ID') ?? '1467559507721982075';
 const CATEGORY = Deno.env.get('DISCORD_CATEGORY_ID') ?? '1562186518821478480'; // «-- [Личный кабинет 1] --»
 const API = 'https://discord.com/api/v10';
+const SUBMIT_CHANNEL = Deno.env.get('DISCORD_SUBMIT_CHANNEL_ID') ?? '1470122628705681449'; // «🚩┋подача-квенты»
 
 const N = {"peoples":{"humans":"Люди","elves":"Полуэльфы","dwarves":"Дворфы","goblins":"Гоблины","infernals":"Инферналы"},"origins":{"humans/west":"Западник","humans/east":"Восточник","humans/south":"Южанин","humans/mett":"Меттенхеймец","elves/high":"Высший","elves/wood":"Лесной","elves/dark":"Тёмный","dwarves/dwarf":"Дворф","goblins/urban":"Городской","goblins/tribal":"Племенной","infernals/fire":"Огненный","infernals/ice":"Ледяной"},"classes":{"fighter":"Боец","rogue":"Плут","mage":"Маг","shooter":"Стрелок","engineer":"Инженер"},"backgrounds":{"military":"Военный","artisan":"Ремесленник","factory":"Заводчанин","wanderer":"Странник","scholar":"Учёный","outskirts":"Житель окраин","mountain":"Дитя Гор","lost":"Потерянный","survivor":"Выживший","aristocrat":"Аристократ","renegade":"Отступник","spy":"Шпион"},"curses":{"doppler":"Доплер","beast":"Бист","vrakhir":"Вракхир","possessed":"Одержимый"},"kings":{"asmodeus":"Асмодей · Похоть","baal":"Ваал · Обман","mammon":"Маммона · Жадность","paimon":"Паймон · Гордыня","belial":"Белиал · Зависть","beleth":"Белет · Страх","vine":"Вине · Гнев","zagan":"Заган · Чревоугодие","balam":"Балам · Лень","purson":"Пурсон · Отчаяние"}} as Record<string, Record<string, string>>;
 
@@ -172,6 +173,45 @@ Deno.serve(async (req) => {
 
   const { data: ch } = await SB.from('characters').select('*').eq('id', rv.character_id).maybeSingle();
   if (!ch) return json({ skip: 'нет персонажа' });
+  // квента подана → объявление в канал «подача-квенты»
+  if (rv.verdict === 'submitted') {
+    await SB.from('reviews').update({ notified_at: new Date().toISOString() }).eq('id', rv.id);
+    const { data: op } = await SB.from('profiles').select('discord_id,discord,display_name,avatar_url').eq('id', ch.owner).maybeSingle();
+    const { count } = await SB.from('reviews').select('id', { count: 'exact', head: true }).eq('character_id', ch.id).eq('verdict', 'submitted');
+    const d = ch.data || {};
+    const again = (count || 0) > 1;
+    const who = op ? (op.discord_id ? `<@${op.discord_id}>` : '') + (op.discord ? ` · \`${op.discord}\`` : '') : '—';
+    const uniq = d.p === 'infernals' ? (N.kings[d.ik] ? 'Инфернал · Дом ' + N.kings[d.ik] : 'Инфернал') : d.u === 'construct' ? 'Конструкт' : d.u === 'curse' ? 'Проклятие · ' + (N.curses[d.cu] || '') : null;
+    const fields = [
+      ['👤 Игрок', who || (op?.display_name ?? '—')],
+      ['🎭 Персонаж', ch.name || 'Без имени'],
+      ['🧬 Народ', [N.peoples[d.p], N.origins[`${d.p}/${d.o}`]].filter(Boolean).join(' · ')],
+      ['⚔️ Класс', N.classes[d.c]],
+      ['🏛️ Сторона', d.house === 'dorn' ? '🔴 Дом Дорн' : d.house === 'talbot' ? '🟡 Дом Талбот' : null],
+      ['✨ Уникальность', uniq],
+      ['📏 Квента', `${(ch.quenta || '').length} знаков`]
+    ].filter(([, v]) => v).map(([name, value]) => ({ name, value: String(value).slice(0, 1000), inline: true }));
+    let role: string | null = null;
+    try { const roles: any[] = await discord('GET', `/guilds/${GUILD}/roles`); role = (roles.find((r) => /квентолог/i.test(r.name)) || {}).id || null; } catch (_) { /* без пинга */ }
+    try {
+      await say(SUBMIT_CHANNEL, {
+        content: role ? `<@&${role}>` : '',
+        embeds: [{
+          author: { name: op?.discord || op?.display_name || 'Игрок', ...(op?.avatar_url ? { icon_url: op.avatar_url } : {}) },
+          title: again ? '📨 Квента подана повторно — после доработки' : '📨 Квента подана на проверку',
+          color: 0xd0a03c, fields,
+          ...(emblem(d) ? { thumbnail: { url: emblem(d)! } } : {}),
+          footer: { text: '⏳ Ждёт решения мастера' }, timestamp: new Date().toISOString()
+        }],
+        components: [{ type: 1, components: [{ type: 2, style: 5, label: 'Проверить в кабинете мастера', emoji: { name: '🔍' }, url: SITE + '#admin' }] }],
+        allowed_mentions: { parse: [], roles: role ? [role] : [] }
+      });
+      return json({ ok: true });
+    } catch (e) {
+      await SB.from('reviews').update({ notify_error: String((e as Error).message || e).slice(0, 300) }).eq('id', rv.id);
+      return json({ error: String(e) }, 502);
+    }
+  }
   if (rv.author && rv.author === ch.owner) return json({ skip: 'это сообщение самого игрока' });
 
   let body = rv.body || '';
