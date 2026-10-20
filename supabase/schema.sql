@@ -51,6 +51,11 @@ create table if not exists public.reviews (
 );
 create index if not exists reviews_char_idx on public.reviews (character_id, created_at);
 
+-- Номер персонажа выдаётся при принятии квенты, канал-кабинет создаёт бот
+alter table public.characters add column if not exists number int unique;
+alter table public.characters add column if not exists discord_channel_id text;
+create sequence if not exists public.character_number_seq;
+
 -- ---------- Кто мастер ----------
 create or replace function public.is_staff() returns boolean
 language sql stable security definer set search_path = public as $$
@@ -105,11 +110,13 @@ begin
     new.owner := coalesce(new.owner, auth.uid());
     if new.status = 'submitted' then new.submitted_at := now(); end if;
     new.reviewer := null; new.reviewed_at := null;
+    if not staff then new.number := null; new.discord_channel_id := null; end if;
     return new;
   end if;
 
   if not staff then
     new.owner := old.owner; new.reviewer := old.reviewer; new.reviewed_at := old.reviewed_at;
+    new.number := old.number; new.discord_channel_id := old.discord_channel_id;
     if old.status not in ('draft', 'revision', 'submitted') then
       raise exception 'Принятую или отклонённую квенту правит только мастер';
     end if;
@@ -121,6 +128,7 @@ begin
     if new.status in ('approved', 'rejected', 'revision') and new.status is distinct from old.status then
       new.reviewer := auth.uid(); new.reviewed_at := now();
     end if;
+    if new.status = 'approved' and new.number is null then new.number := nextval('public.character_number_seq'); end if;
   end if;
 
   if new.status = 'submitted' and old.status is distinct from 'submitted' then new.submitted_at := now(); end if;
