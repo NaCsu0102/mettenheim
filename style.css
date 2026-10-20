@@ -1749,3 +1749,6 @@ input[type="email"] { width: 100%; background: #0f0b08; border: 1px solid var(--
 .ak-status li a:hover { border-color: var(--house); }
 .ak-status small { color: var(--smoke); font-size: 13px; }
 @media (max-width: 560px) { .ak-status li a { grid-template-columns: 1fr auto; } .ak-status small { grid-column: 1 / -1; } }
+.cab-check { display: flex; gap: 10px; align-items: flex-start; margin: 4px 0 18px; cursor: pointer; }
+.cab-check input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--house); flex: none; }
+.cab-check small { display: block; color: var(--ash); font-size: 12px; margin-top: 3px; }

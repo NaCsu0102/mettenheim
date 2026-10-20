@@ -176,6 +176,7 @@ async function playerView(el, sess, prof) {
       <div class="cab-row">${field('pfName', 'Как к тебе обращаться', `<input id="pfName" maxlength="60" value="${esc(prof.display_name)}">`)}${field('pfDiscord', 'Ник в Discord', `<input id="pfDiscord" maxlength="60" value="${esc(prof.discord)}">`, 'По нему мастера напишут, если появятся вопросы')}</div>
       <div class="cab-row">${field('pfGame', 'Ник в Conan Exiles / Steam', `<input id="pfGame" maxlength="60" value="${esc(prof.game_nick)}">`)}${field('pfTz', 'Часовой пояс', `<input id="pfTz" maxlength="40" value="${esc(prof.timezone)}" placeholder="МСК, МСК+4…">`)}</div>
       ${field('pfAbout', 'О себе как об игроке', `<textarea id="pfAbout" rows="4" maxlength="1500">${esc(prof.about)}</textarea>`, 'Опыт в RP, когда обычно играешь, что любишь в сюжетах')}
+      <label class="cab-check"><input type="checkbox" id="pfNotify"${prof.notify === false ? '' : ' checked'}> <span>Присылать решения и комментарии мастеров в личку Discord<small>Бот «Хроники Меттенхейма» пишет, когда квенту приняли, вернули на доработку или отклонили. Для этого нужно быть на нашем сервере Discord.</small></span></label>
       <button class="btn" type="submit">Сохранить профиль</button></form>`;
   }
   async function editor(id, seed) {
@@ -280,7 +281,7 @@ async function playerView(el, sess, prof) {
     if (tab === 'profile') {
       q('#cProf', el).onsubmit = async ev => {
         ev.preventDefault();
-        try { prof = await api().saveProfile(uid, { display_name: q('#pfName', el).value.trim(), discord: q('#pfDiscord', el).value.trim(), game_nick: q('#pfGame', el).value.trim(), timezone: q('#pfTz', el).value.trim(), about: q('#pfAbout', el).value.trim() }); render(); toast(el, 'Профиль сохранён'); } catch (e) { toast(el, errText(e), true); }
+        try { prof = await api().saveProfile(uid, { display_name: q('#pfName', el).value.trim(), discord: q('#pfDiscord', el).value.trim(), game_nick: q('#pfGame', el).value.trim(), timezone: q('#pfTz', el).value.trim(), about: q('#pfAbout', el).value.trim(), notify: q('#pfNotify', el).checked }); render(); toast(el, 'Профиль сохранён'); } catch (e) { toast(el, errText(e), true); }
       };
     } else {
       q('#cNew', el).onclick = () => editor(null).catch(e => toast(el, errText(e), true));
