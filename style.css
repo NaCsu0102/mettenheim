@@ -1736,3 +1736,7 @@ input[type="email"] { width: 100%; background: #0f0b08; border: 1px solid var(--
 .inf-dl { margin: 0; display: grid; } .inf-dl > div { padding: 10px 0; border-top: 1px solid color-mix(in srgb, var(--rivet) 70%, transparent); }
 .inf-dl > div:first-child { border-top: 0; } .inf-dl dt { font-weight: 700; color: var(--house-hi); font-size: 14px; } .inf-dl dd { margin: 3px 0 0; font-size: 14px; color: var(--parch); }
 .grid2 > .panel.prose { align-content: start; justify-content: start; }
+.cab-btn { border-radius: 20px !important; width: auto !important; padding: 0 12px; gap: 6px; text-decoration: none; display: inline-flex; align-items: center; color: var(--parch); }
+.cab-btn svg { width: 18px; height: 18px; } .cab-btn span { font-size: 13px; letter-spacing: .04em; }
+.cab-btn[aria-current] { border-color: var(--house); color: var(--house-hi); }
+@media (max-width: 560px) { .cab-btn span { display: none; } .cab-btn { padding: 0; width: 40px !important; justify-content: center; } }
