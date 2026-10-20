@@ -20,10 +20,10 @@ const figure = (d: any) => { const o = ART.o[`${d.p}/${d.o}`]; return o && d.c ?
 const emblem = (d: any) => { const o = ART.o[`${d.p}/${d.o}`]; return o ? SITE + o[1] : (ART.c[d.c] ? SITE + ART.c[d.c] : null); };
 
 const VERDICT: Record<string, [string, number, string]> = {
-  approved: ['Квента принята', 0x7fa36a, 'Добро пожаловать в Меттенхейм! Персонаж принят.'],
-  revision: ['Квента возвращена на доработку', 0xd0a03c, 'Мастер просит кое-что поправить. Исправь и отправь снова.'],
-  rejected: ['Квента отклонена', 0xc2523f, 'Мастер отклонил квенту.'],
-  comment: ['Новое сообщение от мастера', 0xb8925a, '']
+  approved: ['✅ Квента принята', 0x7fa36a, 'Добро пожаловать в Меттенхейм! Персонаж принят.'],
+  revision: ['🛠️ Квента возвращена на доработку', 0xd0a03c, 'Мастер просит кое-что поправить. Исправь и отправь снова.'],
+  rejected: ['❌ Квента отклонена', 0xc2523f, 'Мастер отклонил квенту.'],
+  comment: ['💬 Новое сообщение от мастера', 0xb8925a, '']
 };
 // права Discord
 const VIEW = 1024n, SEND = 2048n, EMBED = 16384n, ATTACH = 32768n, HISTORY = 65536n, MANAGE_CH = 16n, MANAGE_MSG = 8192n;
@@ -50,28 +50,28 @@ function card(ch: any, pr: any, masterName: string | null) {
   const uniq = d.p === 'infernals' ? (N.kings[d.ik] ? 'Инфернал · Дом ' + N.kings[d.ik] : 'Инфернал')
     : d.u === 'construct' ? 'Конструкт' : d.u === 'curse' ? 'Проклятие · ' + (N.curses[d.cu] || '') : null;
   const fields = [
-    ['Игрок', pr.discord_id ? `<@${pr.discord_id}>` : (pr.display_name || '—')],
-    ['Народ', [N.peoples[d.p], N.origins[`${d.p}/${d.o}`]].filter(Boolean).join(' · ')],
-    ['Класс', N.classes[d.c]],
-    ['Сторона', d.house === 'dorn' ? 'Дом Дорн' : d.house === 'talbot' ? 'Дом Талбот' : null],
-    ['Предыстория', N.backgrounds[d.bg]],
-    ['Возраст', val(d.age)],
-    ['Пол', d.g === 'male' ? 'Мужской' : d.g === 'female' ? 'Женский' : null],
-    ['Уникальность', uniq],
-    ['Профессия', val(d.prof)],
-    ['Образование', val(d.edu)],
-    ['Вера', val(d.faith)]
+    ['👤 Игрок', pr.discord_id ? `<@${pr.discord_id}>` : (pr.display_name || '—')],
+    ['🧬 Народ', [N.peoples[d.p], N.origins[`${d.p}/${d.o}`]].filter(Boolean).join(' · ')],
+    ['⚔️ Класс', N.classes[d.c]],
+    ['🏛️ Сторона', d.house === 'dorn' ? '🔴 Дом Дорн' : d.house === 'talbot' ? '🟡 Дом Талбот' : null],
+    ['📜 Предыстория', N.backgrounds[d.bg]],
+    ['⏳ Возраст', val(d.age)],
+    ['🪪 Пол', d.g === 'male' ? 'Мужской' : d.g === 'female' ? 'Женский' : null],
+    ['✨ Уникальность', uniq],
+    ['🔧 Профессия', val(d.prof)],
+    ['🎓 Образование', val(d.edu)],
+    ['🕯️ Вера', val(d.faith)]
   ].filter(([, v]) => v).map(([name, value]) => ({ name, value: String(value).slice(0, 1000), inline: true }));
   const q = (ch.quenta || '').trim();
-  if (q) fields.push({ name: 'Из квенты', value: (q.length > 900 ? q.slice(0, 900).replace(/\s+\S*$/, '') + '…' : q), inline: false });
-  if (d.traits) fields.push({ name: 'Особенности', value: String(d.traits).slice(0, 1000), inline: false });
-  if (d.goal) fields.push({ name: 'Цель', value: String(d.goal).slice(0, 1000), inline: false });
+  if (q) fields.push({ name: '📖 Из квенты', value: (q.length > 900 ? q.slice(0, 900).replace(/\s+\S*$/, '') + '…' : q), inline: false });
+  if (d.traits) fields.push({ name: '🎭 Особенности', value: String(d.traits).slice(0, 1000), inline: false });
+  if (d.goal) fields.push({ name: '🎯 Цель', value: String(d.goal).slice(0, 1000), inline: false });
   return {
-    author: { name: 'Хроники Меттенхейма · Личное дело' },
+    author: { name: '⚙️ Хроники Меттенхейма · Личное дело' },
     title: `${num(ch.number)} · ${ch.name || 'Без имени'}`,
     color: d.house === 'dorn' ? 0xc2523f : 0xd6a23f,
     fields,
-    footer: { text: masterName ? `Принят мастером ${masterName}` : 'Персонаж принят' },
+    footer: { text: masterName ? `✒️ Принят мастером ${masterName}` : '✒️ Персонаж принят' },
     timestamp: new Date().toISOString(),
     ...(emblem(d) ? { thumbnail: { url: emblem(d)! } } : {}),
     ...(figure(d) ? { image: { url: figure(d)! } } : {})
@@ -81,28 +81,28 @@ function welcome(pr: any, ch: any) {
   return {
     content: pr.discord_id ? `<@${pr.discord_id}>` : '',
     embeds: [{
-      title: 'Добро пожаловать в Хроники Меттенхейма!',
+      title: '🗝️ Добро пожаловать в Хроники Меттенхейма!',
       color: 0xb8925a,
       image: { url: SITE + ((ch.data || {}).house === 'dorn' ? 'assets/house-dorn-banner.webp' : 'assets/house-talbot-banner.webp') },
       thumbnail: { url: SITE + 'assets/logo.webp' },
       description: [
         `Это твой личный кабинет на сервере. Здесь живёт личное дело персонажа ${num(ch.number)}, сюда приходят решения и комментарии мастеров. Канал видишь только ты и мастера — пиши сюда любые вопросы.`,
         '',
-        '**Как зайти в игру**',
-        `**1.** Прочитай [правила сервера](${SITE}#rules) и [правила Discord](${SITE}#discord).`,
-        `**2.** Подпишись на [коллекцию модов](${SITE}#modlist) в Steam Workshop и дождись полной загрузки.`,
-        '**3.** Найди сервер Хроник в Conan Exiles. IP и пароль спроси у мастера прямо в этом канале.',
-        `**4.** Создай в игре персонажа с именем **${ch.name || 'как в квенте'}** — внешность по анкете.`,
-        `**5.** Не получается зайти — загляни в [частые вопросы](${SITE}#faq).`,
+        '🧭 **Как зайти в игру**',
+        `📜 **1.** Прочитай [правила сервера](${SITE}#rules) и [правила Discord](${SITE}#discord).`,
+        `🧩 **2.** Подпишись на [коллекцию модов](${SITE}#modlist) в Steam Workshop и дождись полной загрузки.`,
+        '🔌 **3.** Найди сервер Хроник в Conan Exiles. IP и пароль спроси у мастера прямо в этом канале.',
+        `🎭 **4.** Создай в игре персонажа с именем **${ch.name || 'как в квенте'}** — внешность по анкете.`,
+        `❓ **5.** Не получается зайти — загляни в [частые вопросы](${SITE}#faq).`,
         '',
-        `Справочник мира, классы, древо талантов и мастерская — на [сайте проекта](${SITE}). Удачной игры!`
+        `📚 Справочник мира, классы, древо талантов и мастерская — на [сайте проекта](${SITE}). Удачной игры!`
       ].join('\n')
     }],
     components: [{ type: 1, components: [
-      { type: 2, style: 5, label: 'Правила', url: SITE + '#rules' },
-      { type: 2, style: 5, label: 'Модлист', url: SITE + '#modlist' },
-      { type: 2, style: 5, label: 'Вопросы', url: SITE + '#faq' },
-      { type: 2, style: 5, label: 'Личный кабинет', url: SITE + '#cabinet' }
+      { type: 2, style: 5, label: 'Правила', emoji: { name: '📜' }, url: SITE + '#rules' },
+      { type: 2, style: 5, label: 'Модлист', emoji: { name: '🧩' }, url: SITE + '#modlist' },
+      { type: 2, style: 5, label: 'Вопросы', emoji: { name: '❓' }, url: SITE + '#faq' },
+      { type: 2, style: 5, label: 'Личный кабинет', emoji: { name: '🗝️' }, url: SITE + '#cabinet' }
     ] }]
   };
 }
@@ -151,7 +151,7 @@ async function postCard(channel: string, ch: any, pr: any, masterName: string | 
     form.append('files[0]', new Blob([bytes], { type: m[1] }), 'portrait.jpg');
     embed.image = { url: 'attachment://portrait.jpg' };
   }
-  form.append('payload_json', JSON.stringify({ content: pr.discord_id ? `<@${pr.discord_id}>, твой персонаж принят!` : '', embeds: [embed] }));
+  form.append('payload_json', JSON.stringify({ content: pr.discord_id ? `🎉 <@${pr.discord_id}>, твой персонаж принят!` : '', embeds: [embed] }));
   const msg = await discord('POST', `/channels/${channel}/messages`, undefined, form);
   try { await discord('PUT', `/channels/${channel}/pins/${msg.id}`); } catch (_) { /* закрепить не обязательно */ }
 }
@@ -215,18 +215,18 @@ Deno.serve(async (req) => {
   const description = [lead, body ? '> ' + body.slice(0, 3500).replace(/\n/g, '\n> ') : ''].filter(Boolean).join('\n\n');
   const embed = {
     title, color, description,
-    author: { name: 'Хроники Меттенхейма' },
+    author: { name: '⚙️ Хроники Меттенхейма' },
     fields: [
-      { name: 'Персонаж', value: (ch.number ? num(ch.number) + ' · ' : '') + (ch.name || 'Без имени'), inline: true },
-      ...(master?.display_name ? [{ name: 'Мастер', value: master.display_name, inline: true }] : []),
-      ...(channel && rv.verdict === 'approved' ? [{ name: 'Твой кабинет на сервере', value: `<#${channel}>`, inline: false }] : [])
+      { name: '🎭 Персонаж', value: (ch.number ? num(ch.number) + ' · ' : '') + (ch.name || 'Без имени'), inline: true },
+      ...(master?.display_name ? [{ name: '✒️ Мастер', value: master.display_name, inline: true }] : []),
+      ...(channel && rv.verdict === 'approved' ? [{ name: '🗝️ Твой кабинет на сервере', value: `<#${channel}>`, inline: false }] : [])
     ],
-    footer: { text: 'Ответить мастеру можно в личном кабинете' },
+    footer: { text: '💬 Ответить мастеру можно в личном кабинете' },
     timestamp: new Date().toISOString()
   };
   const buttons = [{ type: 1, components: [
-    { type: 2, style: 5, label: 'Открыть кабинет', url: SITE + '#cabinet' },
-    ...(channel ? [{ type: 2, style: 5, label: 'Канал персонажа', url: `https://discord.com/channels/${GUILD}/${channel}` }] : [])
+    { type: 2, style: 5, label: 'Открыть кабинет', emoji: { name: '🗝️' }, url: SITE + '#cabinet' },
+    ...(channel ? [{ type: 2, style: 5, label: 'Канал персонажа', emoji: { name: '💬' }, url: `https://discord.com/channels/${GUILD}/${channel}` }] : [])
   ] }];
 
   // в канал персонажа — все решения и комментарии, кроме самого принятия (там уже карточка)
