@@ -194,16 +194,15 @@ Deno.serve(async (req) => {
     let role: string | null = null;
     try { const roles: any[] = await discord('GET', `/guilds/${GUILD}/roles`); role = (roles.find((r) => /квентолог/i.test(r.name)) || {}).id || null; } catch (_) { /* без пинга */ }
     try {
+      const nick = op?.discord || op?.display_name || 'Игрок';
       await say(SUBMIT_CHANNEL, {
         content: role ? `<@&${role}>` : '',
         embeds: [{
-          author: { name: op?.discord || op?.display_name || 'Игрок', ...(op?.avatar_url ? { icon_url: op.avatar_url } : {}) },
-          title: again ? '📨 Квента подана повторно — после доработки' : '📨 Квента подана на проверку',
-          color: 0xd0a03c, fields,
-          ...(emblem(d) ? { thumbnail: { url: emblem(d)! } } : {}),
-          footer: { text: '⏳ Ждёт решения мастера' }, timestamp: new Date().toISOString()
+          author: { name: nick, ...(op?.avatar_url ? { icon_url: op.avatar_url } : {}) },
+          description: `📨 **${nick}** — квента ждёт проверки${again ? ' (после доработки)' : ''}`,
+          color: 0xd0a03c
         }],
-        components: [{ type: 1, components: [{ type: 2, style: 5, label: 'Проверить в кабинете мастера', emoji: { name: '🔍' }, url: SITE + '#admin' }] }],
+        components: [{ type: 1, components: [{ type: 2, style: 5, label: 'Проверить', emoji: { name: '🔍' }, url: SITE + '#admin' }] }],
         allowed_mentions: { parse: [], roles: role ? [role] : [] }
       });
       return json({ ok: true });
