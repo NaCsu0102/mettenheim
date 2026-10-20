@@ -1,3 +1,4 @@
+[hidden] { display: none !important; }
 /* Layout: литейный цех — тёмный чугун, латунные кромки, цвет Дома течёт по всем деталям */
 @property --house { syntax: '<color>'; inherits: true; initial-value: #d6a23f; }
 @property --house-hi { syntax: '<color>'; inherits: true; initial-value: #f2cc72; }
