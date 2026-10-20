@@ -14,6 +14,11 @@ const API = 'https://discord.com/api/v10';
 
 const N = {"peoples":{"humans":"Люди","elves":"Полуэльфы","dwarves":"Дворфы","goblins":"Гоблины","infernals":"Инферналы"},"origins":{"humans/west":"Западник","humans/east":"Восточник","humans/south":"Южанин","humans/mett":"Меттенхеймец","elves/high":"Высший","elves/wood":"Лесной","elves/dark":"Тёмный","dwarves/dwarf":"Дворф","goblins/urban":"Городской","goblins/tribal":"Племенной","infernals/fire":"Огненный","infernals/ice":"Ледяной"},"classes":{"fighter":"Боец","rogue":"Плут","mage":"Маг","shooter":"Стрелок","engineer":"Инженер"},"backgrounds":{"military":"Военный","artisan":"Ремесленник","factory":"Заводчанин","wanderer":"Странник","scholar":"Учёный","outskirts":"Житель окраин","mountain":"Дитя Гор","lost":"Потерянный","survivor":"Выживший","aristocrat":"Аристократ","renegade":"Отступник","spy":"Шпион"},"curses":{"doppler":"Доплер","beast":"Бист","vrakhir":"Вракхир","possessed":"Одержимый"},"kings":{"asmodeus":"Асмодей · Похоть","baal":"Ваал · Обман","mammon":"Маммона · Жадность","paimon":"Паймон · Гордыня","belial":"Белиал · Зависть","beleth":"Белет · Страх","vine":"Вине · Гнев","zagan":"Заган · Чревоугодие","balam":"Балам · Лень","purson":"Пурсон · Отчаяние"}} as Record<string, Record<string, string>>;
 
+// арты с сайта: фигура персонажа по происхождению, полу и классу, эмблема народа
+const ART = {"o":{"humans/west":["human-west","assets/emblems/human-west.webp"],"humans/east":["human-east","assets/emblems/human-east.webp"],"humans/south":["human-south","assets/emblems/human-south.webp"],"humans/mett":["mettenheimer","assets/emblems/mettenheimer.webp"],"elves/high":["high-elf","assets/emblems/halfelf-high.webp"],"elves/wood":["wood-elf","assets/emblems/halfelf-wood.webp"],"elves/dark":["drow","assets/emblems/halfelf-drow.webp"],"dwarves/dwarf":["dwarf","assets/emblems/dwarf.webp"],"goblins/urban":["goblin","assets/emblems/goblin.webp"],"goblins/tribal":["goblin-tribal","assets/emblems/goblin.webp"],"infernals/fire":["infernal-fire","assets/emblems/infernal.webp"],"infernals/ice":["infernal-ice","assets/emblems/infernal.webp"]},"c":{"fighter":"assets/emblems/fighter.webp","rogue":"assets/emblems/rogue.webp","mage":"assets/emblems/mage.webp","shooter":"assets/emblems/shooter.webp","engineer":"assets/emblems/engineer.webp"}} as any;
+const figure = (d: any) => { const o = ART.o[`${d.p}/${d.o}`]; return o && d.c ? `${SITE}assets/characters/${o[0]}/${d.g === 'male' ? 'male' : 'female'}-${d.c}.webp` : null; };
+const emblem = (d: any) => { const o = ART.o[`${d.p}/${d.o}`]; return o ? SITE + o[1] : (ART.c[d.c] ? SITE + ART.c[d.c] : null); };
+
 const VERDICT: Record<string, [string, number, string]> = {
   approved: ['Квента принята', 0x7fa36a, 'Добро пожаловать в Меттенхейм! Персонаж принят.'],
   revision: ['Квента возвращена на доработку', 0xd0a03c, 'Мастер просит кое-что поправить. Исправь и отправь снова.'],
@@ -67,7 +72,9 @@ function card(ch: any, pr: any, masterName: string | null) {
     color: d.house === 'dorn' ? 0xc2523f : 0xd6a23f,
     fields,
     footer: { text: masterName ? `Принят мастером ${masterName}` : 'Персонаж принят' },
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    ...(emblem(d) ? { thumbnail: { url: emblem(d)! } } : {}),
+    ...(figure(d) ? { image: { url: figure(d)! } } : {})
   };
 }
 function welcome(pr: any, ch: any) {
@@ -76,6 +83,8 @@ function welcome(pr: any, ch: any) {
     embeds: [{
       title: 'Добро пожаловать в Хроники Меттенхейма!',
       color: 0xb8925a,
+      image: { url: SITE + ((ch.data || {}).house === 'dorn' ? 'assets/house-dorn-banner.webp' : 'assets/house-talbot-banner.webp') },
+      thumbnail: { url: SITE + 'assets/logo.webp' },
       description: [
         `Это твой личный кабинет на сервере. Здесь живёт личное дело персонажа ${num(ch.number)}, сюда приходят решения и комментарии мастеров. Канал видишь только ты и мастера — пиши сюда любые вопросы.`,
         '',
