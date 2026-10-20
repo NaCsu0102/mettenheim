@@ -379,6 +379,9 @@ async function adminView(el, sess, prof) {
 /* =================== ТОЧКА ВХОДА =================== */
 async function mount(el, mode) {
   if (!el) return;
+  if (!window.MH_CABINET_API && CFG.siteUrl && location.origin !== new URL(CFG.siteUrl).origin) {
+    el.innerHTML = `<article class="panel cab-empty"><div class="eyebrow">Это предпросмотр сайта</div><h3>Кабинет работает на основном сайте</h3><p class="muted">Вход через Discord, квенты и проверка мастерами доступны по адресу сайта.</p><a class="btn" href="${esc(CFG.siteUrl)}#${mode === 'admin' ? 'admin' : 'cabinet'}" target="_blank" rel="noopener">Открыть кабинет на сайте</a></article>` + demoNote(mode); return;
+  }
   if (!api().configured()) { el.innerHTML = setupNotice() + demoNote(mode); return; }
   el.innerHTML = '<p class="muted cab-loading">Открываю кабинет…</p>';
   let sess;
