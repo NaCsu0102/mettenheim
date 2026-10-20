@@ -134,7 +134,7 @@ create trigger guard_character before insert or update on public.characters
 create or replace function public.log_status() returns trigger
 language plpgsql security definer set search_path = public as $$
 begin
-  if new.status is distinct from old.status then
+  if new.status is distinct from old.status and new.status in ('submitted', 'draft', 'revision', 'approved', 'rejected') then
     insert into public.reviews (character_id, author, verdict, body)
     values (new.id, auth.uid(),
       case new.status when 'submitted' then 'submitted' when 'draft' then 'withdrawn' else new.status end, '');

@@ -55,7 +55,8 @@ begin
       headers := jsonb_build_object(
         'Content-Type', 'application/json',
         'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlva3NmdmRqY2tub2tjZ3hucG9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1MTI5ODEsImV4cCI6MjEwODA4ODk4MX0.Na9-UIlP4iXEjsA7yTQ_hl4wb2ewqnJHkcM8H9mImQE'
-      )
+      ),
+      timeout_milliseconds := 30000
     );
   end if;
   return new;
