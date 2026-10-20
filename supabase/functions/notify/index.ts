@@ -282,6 +282,12 @@ Deno.serve(async (req) => {
       }
     } catch (e) { errors.push('канал: ' + String((e as Error).message || e)); }
     if (pr.discord_id) { try { await giveRoles(pr.discord_id); } catch (e) { errors.push('роли: ' + String((e as Error).message || e)); } }
+    // ник на сервере: «номер | имя персонажа», как у остальных жителей
+    if (pr.discord_id) {
+      const nick = `${ch.number} | ${(ch.name || '').trim()}`.slice(0, 32);
+      try { await discord('PATCH', `/guilds/${GUILD}/members/${pr.discord_id}`, { nick }); }
+      catch (e) { errors.push('ник: ' + String((e as Error).message || e)); }
+    }
   }
 
   const [title, color, lead] = VERDICT[rv.verdict] ?? VERDICT.comment;
