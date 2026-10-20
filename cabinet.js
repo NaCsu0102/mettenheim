@@ -162,7 +162,7 @@ async function playerView(el, sess, prof) {
   async function reload() { chars = await api().myChars(uid); }
   function frame(inner) {
     el.innerHTML = topBar(prof, false) + `<div class="cab-tabs" role="tablist"><button type="button" role="tab" data-tab="chars" aria-selected="${tab === 'chars'}">Мои персонажи <i>${chars.length}</i></button><button type="button" role="tab" data-tab="profile" aria-selected="${tab === 'profile'}">Профиль</button></div><div id="cBody">${inner}</div><p class="cab-toast" role="status" aria-live="polite"></p>`;
-    q('#cOut', el).onclick = async () => { await api().signOut(); location.hash = '#cabinet'; mount(el, 'player'); };
+    q('#cOut', el).onclick = async () => { await api().signOut(); paintHeader(null); location.hash = '#cabinet'; mount(el, 'player'); };
     qa('[data-tab]', el).forEach(b => b.onclick = () => { tab = b.dataset.tab; open = null; play('click'); render(); });
   }
   function listHTML() {
@@ -292,6 +292,7 @@ async function playerView(el, sess, prof) {
   await reload();
   const want = (() => { try { const v = sessionStorage.getItem('mh:open-char'); sessionStorage.removeItem('mh:open-char'); return v; } catch (_) { return null; } })();
   if (want === 'anketa') { render(); editor(null, anketaDraft()).catch(e => toast(el, errText(e), true)); return; }
+  if (want && chars.some(c => c.id === want)) { render(); editor(want).catch(e => toast(el, errText(e), true)); return; }
   render();
 }
 
@@ -427,7 +428,42 @@ function fillSlots(root) {
   slotData().then(d => { if (d) paint(d); });
 }
 
-window.Cabinet = { mount, api: SupabaseApi, fillSlots };
+/* ---------- шапка: аватарка из Discord ---------- */
+const liveSite = () => api().configured() && (!CFG.siteUrl || window.MH_CABINET_API || location.origin === new URL(CFG.siteUrl).origin);
+let headSess = null;
+function paintHeader(sess) {
+  headSess = sess;
+  const b = document.getElementById('cabBtn'); if (!b) return;
+  const md = (sess && sess.user && sess.user.user_metadata) || {};
+  const name = md.custom_claims && md.custom_claims.global_name || md.full_name || md.name || (sess && sess.user.email || '').split('@')[0];
+  if (sess) {
+    b.classList.add('in');
+    b.title = 'Личный кабинет · ' + (name || '');
+    b.innerHTML = (md.avatar_url ? `<img class="cab-btn-ava" src="${esc(md.avatar_url)}" alt="">` : `<i class="cab-btn-ava">${esc((name || '?').slice(0, 1).toUpperCase())}</i>`) + `<span>${esc(name || 'Кабинет')}</span>`;
+  } else {
+    b.classList.remove('in'); b.title = 'Личный кабинет';
+    b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg><span>Войти</span>';
+  }
+}
+function initHeader() {
+  if (!liveSite()) return;
+  api().session().then(paintHeader).catch(() => {});
+  api().onAuth(s => { paintHeader(s); }).catch(() => {});
+}
+
+/* ---------- статусы квент на странице анкеты ---------- */
+async function anketaStatus(el) {
+  if (!el) return;
+  if (!liveSite()) { el.innerHTML = ''; return; }
+  let sess = null; try { sess = await api().session(); } catch (_) {}
+  if (!sess) { el.innerHTML = `<div class="panel ak-status"><div class="eyebrow">Отправка на проверку</div><p>Чтобы отправить анкету мастерам и видеть её статус, <a href="#cabinet">войди в кабинет через Discord</a>.</p></div>`; return; }
+  let list = []; try { list = await api().myChars(sess.user.id); } catch (_) {}
+  el.innerHTML = `<div class="panel ak-status"><div class="eyebrow">Мои квенты</div>${list.length ? `<ul>${list.map(c => `<li><a href="#cabinet" data-oc="${esc(c.id)}"><b>${esc(c.name || 'Без имени')}</b>${pill(c.status)}<small>${esc((STATUS[c.status] || STATUS.draft)[2])}</small></a></li>`).join('')}</ul>` : '<p class="muted">Пока ни одной. Нажми «Отправить в кабинет» — анкета станет черновиком, оттуда её можно отправить на проверку.</p>'}</div>`;
+  qa('[data-oc]', el).forEach(a => a.onclick = () => { try { sessionStorage.setItem('mh:open-char', a.dataset.oc); } catch (_) {} });
+}
+
+window.Cabinet = { mount, api: SupabaseApi, fillSlots, anketaStatus, initHeader };
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initHeader); else setTimeout(initHeader, 0);
 // после входа через Discord / почту вернуть игрока туда, откуда он пришёл
 if (CFG.url && CFG.anonKey && /[?&](code|error_description)=/.test(location.search)) {
   let to = 'cabinet'; try { to = sessionStorage.getItem(AFTER_KEY) || 'cabinet'; sessionStorage.removeItem(AFTER_KEY); } catch (_) {}

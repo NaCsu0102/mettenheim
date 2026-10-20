@@ -110,7 +110,7 @@ const BOOK = [
 const CHAPTERS = BOOK.flatMap(([part, ch]) => ch.map(([id, t]) => ({ id, t, part })));
 const partOf = id => { const c = CHAPTERS.find(x => x.id === id); return c ? c.part : null; };
 const nav = $('#nav');
-nav.innerHTML = BOOK.map(([part, ch]) => `<a class="nav-btn" href="#${ch[0][0]}" data-part="${part}">${({ 'Классы и системы': 'Классы', 'Древо талантов': 'Древо' })[part] || part}</a>`).join('') + `<a class="nav-btn" href="#anketa" data-part="anketa">Анкета</a><a class="nav-btn nav-cab" href="#cabinet" data-part="cabinet">Кабинет</a>`;
+nav.innerHTML = BOOK.map(([part, ch]) => `<a class="nav-btn" href="#${ch[0][0]}" data-part="${part}">${({ 'Классы и системы': 'Классы', 'Древо талантов': 'Древо' })[part] || part}</a>`).join('') + `<a class="nav-btn" href="#anketa" data-part="anketa">Анкета</a>`;
 function bookTOC(cur) {
   return BOOK.map(([part, ch]) => `<div class="rail-part${partOf(cur) === part ? ' on' : ''}"><h5>${part}</h5>${ch.map(([id, t]) => `<a href="#${id}"${id === cur ? ' aria-current="page"' : ''}>${t}</a>`).join('')}</div>`).join('')
     + `<div class="rail-part"><h5>Игроку</h5><a href="#anketa">Анкета персонажа</a><a href="#cabinet">Личный кабинет</a><a href="#home">Главная</a></div>`;
@@ -295,6 +295,7 @@ function pageHome() {
     <div class="seal"><span>CM</span><p>Тема анкеты связана с выбранным Домом.<br><small>Сменить сторону можно в любой момент.</small></p></div>
     <div class="form-actions"><button type="submit" class="btn">Сохранить анкету →</button><button type="button" class="btn ghost" id="bCopy">Скопировать для Discord</button><button type="button" class="btn ghost" id="bCab">Отправить в кабинет</button><span class="toast" id="bToast" role="status"></span></div>
     <textarea id="bExport" hidden readonly style="margin-top:12px;min-height:200px"></textarea>
+    <div id="bStatus" style="margin-top:18px"></div>
   </form>
 </div></section>
 
@@ -870,6 +871,8 @@ function route() {
   if (chapter === 'people-infernals') { const m = $('.doc-main', view) || $('section.content .wrap', view); if (m) m.insertAdjacentHTML('afterbegin', `<div class="slot-box" data-slot="infernal"></div><p class="note" style="margin:0 0 22px">Короли, грехи и голод инферналов — в главе <a href="#inferno">Инферно и Короли</a>.</p>`); }
   if (chapter === 'curses') { const m = $('.doc-main', view); if (m) m.insertAdjacentHTML('afterbegin', '<div class="slot-box" data-slot="curse"></div>'); }
   window.Cabinet && window.Cabinet.fillSlots(view);
+  if ((key === 'home' || key === 'anketa') && window.Cabinet) window.Cabinet.anketaStatus($('#bStatus'));
+  const cb = $('#cabBtn'); if (cb) { if (key === 'cabinet' || key === 'admin') cb.setAttribute('aria-current', 'page'); else cb.removeAttribute('aria-current'); }
   document.body.classList.toggle('tree-mode', key === 'tree');
   if (key === 'tree') window.Tree.mount($('#treeMount'), arg || 'fighter');
   if (key === 'anketa') setTimeout(() => $('#builder').scrollIntoView({ behavior: 'smooth' }), 60);
