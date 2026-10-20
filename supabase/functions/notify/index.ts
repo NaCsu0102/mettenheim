@@ -157,8 +157,41 @@ async function postCard(channel: string, ch: any, pr: any, masterName: string | 
   try { await discord('PUT', `/channels/${channel}/pins/${msg.id}`); } catch (_) { /* закрепить не обязательно */ }
 }
 
+/* ---------- роли после принятия ---------- */
+// снять «Гость» и «Странник», выдать роли жителя; остальные роли игрока не трогаем
+const norm = (n: string) => n.replace(/[\s\u3164\u115f\u1160\u200b]+/g, '').toLowerCase();
+// точное имя роли, допускается значок в начале: «「✏️」Игрок» → «игрок»
+const core = (n: string) => n.replace(/^[「\[(][^」\])]*[」\])]/, '').replace(/^[^а-яёa-z【]+/i, '');
+const ROLES_OFF = ['гость', 'странник'];
+const ROLES_ON = ['【status】', 'игрок', 'житель', '【special】', 'меттенхейм', '【achieve】'];
+async function giveRoles(userId: string) {
+  const roles: any[] = await discord('GET', `/guilds/${GUILD}/roles`);
+  const member = await discord('GET', `/guilds/${GUILD}/members/${userId}`);
+  const has = new Set<string>(member.roles || []);
+  const errs: string[] = [];
+  for (const r of roles) {
+    const n = norm(r.name);
+    try {
+      if (ROLES_OFF.includes(core(n)) && has.has(r.id)) await discord('DELETE', `/guilds/${GUILD}/members/${userId}/roles/${r.id}`);
+      else if (ROLES_ON.includes(core(n)) && !has.has(r.id)) await discord('PUT', `/guilds/${GUILD}/members/${userId}/roles/${r.id}`);
+    } catch (e) { errs.push(`роль «${r.name}»: ${String((e as Error).message || e).slice(0, 80)}`); }
+  }
+  if (errs.length) throw new Error(errs.join('; '));
+}
+
 /* ---------- обработка ---------- */
 Deno.serve(async (req) => {
+  const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, content-type, apikey', 'Content-Type': 'application/json' };
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
+  // проверка ролей без изменений: какие роли бот снимет и выдаст
+  if (new URL(req.url).searchParams.get('roles') === 'check') {
+    const roles: any[] = await discord('GET', `/guilds/${GUILD}/roles`);
+    const me = await discord('GET', '/users/@me');
+    const meM = await discord('GET', `/guilds/${GUILD}/members/${me.id}`);
+    const top = Math.max(...roles.filter((r) => (meM.roles || []).includes(r.id)).map((r) => r.position));
+    const pick = (list: string[]) => roles.filter((r) => list.includes(core(norm(r.name)))).map((r) => ({ name: r.name, below_bot: r.position < top }));
+    return new Response(JSON.stringify({ off: pick(ROLES_OFF), on: pick(ROLES_ON) }), { headers: CORS });
+  }
   if (req.method !== 'POST') return json({ error: 'POST only' }, 405);
   if (!TOKEN) return json({ error: 'DISCORD_BOT_TOKEN не задан' }, 500);
   let id: number;
@@ -248,6 +281,7 @@ Deno.serve(async (req) => {
         await postCard(channel, ch, pr, master?.display_name || null);
       }
     } catch (e) { errors.push('канал: ' + String((e as Error).message || e)); }
+    if (pr.discord_id) { try { await giveRoles(pr.discord_id); } catch (e) { errors.push('роли: ' + String((e as Error).message || e)); } }
   }
 
   const [title, color, lead] = VERDICT[rv.verdict] ?? VERDICT.comment;
