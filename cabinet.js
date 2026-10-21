@@ -463,7 +463,78 @@ async function anketaStatus(el) {
   qa('[data-oc]', el).forEach(a => a.onclick = () => { try { sessionStorage.setItem('mh:open-char', a.dataset.oc); } catch (_) {} });
 }
 
-window.Cabinet = { mount, api: SupabaseApi, fillSlots, anketaStatus, initHeader };
+/* ---------- сообщество: Discord и жители города ---------- */
+const GUILD_ID = '1467559507721982075';
+const INVITE = 'https://discord.gg/K8Bg5SaEeb';
+async function residentsData() {
+  if (!api().configured() || window.MH_CABINET_API) return null;
+  try { const c = await sb(); const r = await c.rpc('residents'); return r.error ? null : r.data; } catch (_) { return null; }
+}
+async function discordData() {
+  const out = { stats: null, widget: null };
+  if (CFG.url && CFG.anonKey) {
+    try { const r = await fetch(CFG.url + '/functions/v1/notify?stats=discord', { headers: { Authorization: 'Bearer ' + CFG.anonKey, apikey: CFG.anonKey } }); if (r.ok) out.stats = await r.json(); } catch (_) {}
+  }
+  try { const r = await fetch(`https://discord.com/api/guilds/${GUILD_ID}/widget.json`); if (r.ok) out.widget = await r.json(); } catch (_) {}
+  return out;
+}
+const origin = (p, o) => (originsOf(p).find(x => x.id === o) || {});
+const figureOf = r => { const o = origin(r.p, r.o); return o.folder && r.c ? `assets/characters/${o.folder}/${r.g === 'male' ? 'male' : 'female'}-${r.c}.webp` : ''; };
+const numOf = n => '№' + String(n || 0).padStart(3, '0');
+function residentRow(r) {
+  const o = origin(r.p, r.o);
+  return `<li class="rs-row h-${r.house === 'dorn' ? 'dorn' : 'talbot'}">${o.emblem ? `<img src="${esc(o.emblem)}" alt="">` : '<i></i>'}<div><b>${numOf(r.number)} · ${esc(r.name || 'Без имени')}</b><small>${esc([nameOf(peoples(), r.p), o.name, nameOf(classes(), r.c)].filter(Boolean).join(' · '))}</small></div></li>`;
+}
+async function community(el) {
+  if (!el) return;
+  el.innerHTML = `<div class="comm-grid">
+    <article class="panel dc-card"><div class="dc-head"><img class="dc-icon" src="assets/logo.webp" alt=""><div><div class="eyebrow">Discord</div><h3 class="dc-name">Хроники Меттенхейма</h3><p class="dc-counts">Загружаю…</p></div></div>
+      <div class="dc-online"></div><a class="btn dc-join" href="${INVITE}" target="_blank" rel="noopener">Войти на сервер</a></article>
+    <article class="panel rs-card"><div class="eyebrow">Жители Меттенхейма</div><h3>Принятые персонажи</h3><ul class="rs-list"><li class="muted">Загружаю…</li></ul><a class="btn small ghost" href="#residents">Все жители →</a></article>
+  </div>`;
+  const [dd, rs] = await Promise.all([discordData(), residentsData()]);
+  const st = dd.stats, w = dd.widget;
+  if (st && st.icon) q('.dc-icon', el).src = st.icon;
+  if (st && st.name) q('.dc-name', el).textContent = st.name;
+  const online = (st && st.online) ?? (w && w.presence_count);
+  q('.dc-counts', el).innerHTML = st || w ? `${st && st.members ? `<span>👥 ${st.members} участников</span>` : ''}${online != null ? `<span><i class="dot"></i>${online} в сети</span>` : ''}` : 'Сервер ролевого проекта';
+  if (w && w.members && w.members.length) {
+    const ms = w.members.slice(0, 24);
+    q('.dc-online', el).innerHTML = `<div class="dc-avas">${ms.map(m => `<span class="dc-ava st-${esc(m.status)}" title="${esc(m.username)}"><img src="${esc(m.avatar_url)}" alt="" loading="lazy"></span>`).join('')}${w.members.length > ms.length ? `<span class="dc-more">+${w.members.length - ms.length}</span>` : ''}</div>`;
+    if (w.instant_invite) q('.dc-join', el).href = w.instant_invite;
+  }
+  const list = q('.rs-list', el);
+  if (!rs) list.innerHTML = '<li class="muted">Список появится на основном сайте.</li>';
+  else if (!rs.length) list.innerHTML = '<li class="muted">Пока никто не принят. <a href="#anketa">Подай квенту первым</a>.</li>';
+  else list.innerHTML = rs.slice(-8).reverse().map(residentRow).join('');
+}
+async function residentsPage(el) {
+  if (!el) return;
+  el.innerHTML = '<p class="muted">Загружаю жителей…</p>';
+  const rs = await residentsData();
+  if (!rs) { el.innerHTML = '<article class="panel cab-empty"><h3>Список жителей — на основном сайте</h3><p class="muted">Он берётся из базы кабинета.</p>' + (CFG.siteUrl ? `<a class="btn" href="${esc(CFG.siteUrl)}#residents" target="_blank" rel="noopener">Открыть</a>` : '') + '</article>'; return; }
+  let f = { q: '', house: '', p: '', c: '' };
+  const draw = () => {
+    const qq = f.q.toLowerCase();
+    const list = rs.filter(r => (!f.house || (r.house || 'talbot') === f.house) && (!f.p || r.p === f.p) && (!f.c || r.c === f.c) && (!qq || (r.name || '').toLowerCase().includes(qq) || String(r.number).includes(qq)));
+    q('.rs-grid', el).innerHTML = list.length ? list.map(r => { const o = origin(r.p, r.o), fig = figureOf(r);
+      return `<article class="panel rs-tile h-${r.house === 'dorn' ? 'dorn' : 'talbot'}">${fig ? `<img class="rs-fig" src="${fig}" alt="" loading="lazy">` : ''}<div class="rs-info"><span class="rs-num">${numOf(r.number)}</span><h3>${esc(r.name || 'Без имени')}</h3><p>${esc([nameOf(peoples(), r.p), o.name].filter(Boolean).join(' · '))}</p><p>${esc(nameOf(classes(), r.c))} · ${r.house === 'dorn' ? 'Дом Дорн' : 'Дом Талбот'}</p></div></article>`; }).join('') : '<p class="muted">Никого не нашлось.</p>';
+    q('.rs-count', el).textContent = `Жителей: ${list.length}${list.length !== rs.length ? ' из ' + rs.length : ''}`;
+  };
+  el.innerHTML = `<div class="rs-filters panel"><input type="search" id="rsQ" placeholder="Имя или номер" aria-label="Поиск по жителям">
+    <select id="rsH" aria-label="Дом"><option value="">Оба Дома</option><option value="talbot">Дом Талбот</option><option value="dorn">Дом Дорн</option></select>
+    <select id="rsP" aria-label="Народ"><option value="">Все народы</option>${peoples().map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('')}</select>
+    <select id="rsC" aria-label="Класс"><option value="">Все классы</option>${classes().map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select>
+    <span class="rs-count muted"></span></div><div class="rs-grid"></div>`;
+  if (!rs.length) { q('.rs-grid', el).innerHTML = '<article class="panel cab-empty"><h3>Город ещё пуст</h3><p class="muted">Первые жители появятся здесь, как только мастера примут их квенты.</p><a class="btn" href="#anketa">Создать персонажа</a></article>'; q('.rs-count', el).textContent = ''; return; }
+  q('#rsQ', el).oninput = e => { f.q = e.target.value; draw(); };
+  q('#rsH', el).onchange = e => { f.house = e.target.value; draw(); };
+  q('#rsP', el).onchange = e => { f.p = e.target.value; draw(); };
+  q('#rsC', el).onchange = e => { f.c = e.target.value; draw(); };
+  draw();
+}
+
+window.Cabinet = { mount, api: SupabaseApi, fillSlots, anketaStatus, initHeader, community, residentsPage };
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initHeader); else setTimeout(initHeader, 0);
 // после входа через Discord / почту вернуть игрока туда, откуда он пришёл
 if (CFG.url && CFG.anonKey && /[?&](code|error_description)=/.test(location.search)) {

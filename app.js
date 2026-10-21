@@ -10,7 +10,9 @@ const store = {
 window.MH = { $, $$, esc, store };
 
 /* ================= ЗВУК ================= */
-const A = (src, vol, loop = false) => { const a = new Audio(src); a.volume = vol; a.loop = loop; a.preload = loop ? 'auto' : 'auto'; return a; };
+// звук не качается, пока его не включили: музыка весит 7 МБ
+const A = (src, vol, loop = false) => { const a = new Audio(); a.preload = 'none'; a.dataset.src = src; a.volume = vol; a.loop = loop; return a; };
+const arm = a => { if (!a.src && a.dataset.src) { a.src = a.dataset.src; a.load(); } return a; };
 const snd = {
   music: A('assets/audio/music-box.mp3', .16, true),
   gears: A('assets/audio/gears.mp3', 0, true),
@@ -30,7 +32,7 @@ function setSound(on, save = true) {
   soundOn = !!on; if (save) store.set('sound', soundOn);
   soundBtn.innerHTML = soundOn ? ICON_ON : ICON_OFF;
   soundBtn.setAttribute('aria-pressed', String(soundOn));
-  if (soundOn) { const t = store.get('musicT', 0); if (t && !snd.music.currentTime) { try { snd.music.currentTime = t; } catch {} } snd.music.play().catch(() => {}); }
+  if (soundOn) { Object.values(snd).forEach(arm); const t = store.get('musicT', 0); if (t && !snd.music.currentTime) { try { snd.music.currentTime = t; } catch {} } snd.music.play().catch(() => {}); }
   else { snd.music.pause(); snd.gears.pause(); }
 }
 MH.play = play;
@@ -41,7 +43,7 @@ if (soundOn === null) {
   $('#wOn').onclick = () => { w.hidden = true; setSound(true); play('click'); };
   $('#wOff').onclick = () => { w.hidden = true; setSound(false); };
 } else {
-  setSound(false, false); soundOn = store.get('sound');
+  setSound(false, false); soundOn = store.get('sound'); if (soundOn) Object.values(snd).forEach(arm);
   soundBtn.innerHTML = soundOn ? ICON_ON : ICON_OFF; soundBtn.setAttribute('aria-pressed', String(soundOn));
   // браузер запустит музыку только после первого касания
   const kick = () => { if (soundOn) snd.music.play().catch(() => {}); };
@@ -99,7 +101,7 @@ setVars();
 /* ================= НАВИГАЦИЯ ================= */
 /* Книга: части и главы. Порядок здесь задаёт оглавление и кнопки «Назад / Дальше». */
 const BOOK = [
-  ['Начало', [['start', 'Как начать играть'], ['faq', 'Частые вопросы'], ['modlist', 'Модлист']]],
+  ['Начало', [['start', 'Как начать играть'], ['faq', 'Частые вопросы'], ['modlist', 'Модлист'], ['residents', 'Жители города']]],
   ['Правила', [['rules', 'Правила сервера'], ['discord', 'Правила Discord']]],
   ['Мир', [['city', 'Меттенхейм'], ['history', 'История города'], ['houses', 'Дома Талбот и Дорн'], ['lumerite', 'Люмерит'], ['faith', 'Вера'], ['magic', 'Магия'], ['world', 'История мира'], ['deck', 'Проклятая колода']]],
   ['Народы', [['races', 'Народы и отношения'], ...M.peoples.map(p => ['people-' + p.id, p.name]), ['inferno', 'Инферно и Короли']]],
@@ -216,6 +218,7 @@ function pageHome() {
     <a href="https://boosty.to/riverside" target="_blank" rel="noopener"><img src="assets/community/boosty-3d.webp" alt=""><span><strong>BOOSTY</strong><small>Поддержать проект</small></span></a>
     <a href="https://wargm.ru/server/61449/connect" target="_blank" rel="noopener"><img src="assets/community/connect-3d.webp" alt=""><span><strong>ПОДКЛЮЧИТЬСЯ</strong><small>145.239.130.3:7790</small></span></a>
   </div>
+  <div id="commMount" style="margin-top:18px"></div>
 </div></section>
 
 <img class="divider" src="assets/divider.webp" alt="">
@@ -249,7 +252,7 @@ function pageHome() {
         <div class="ftitle"><span>01</span><div><small>ИГРОК</small><strong>Кто стоит за персонажем</strong></div></div>
         <div class="fgrid">
           <div class="field"><label for="fPlayer">Ваше имя</label><input type="text" id="fPlayer" name="player"></div>
-          <div class="field"><label for="fPlayerAge">Ваш возраст</label><input type="number" id="fPlayerAge" name="playerAge" min="18"></div>
+          <div class="field"><label for="fPlayerAge">Ваш возраст</label><input type="number" id="fPlayerAge" name="playerAge" min="21"></div>
           <div class="field"><label for="fDiscord">ID Discord</label><input type="text" id="fDiscord" name="discord"></div>
           <div class="field"><label for="fHouse">Сторона</label><select id="fHouse" name="house"><option value="talbot">Талбот · Жёлтые</option><option value="dorn">Дорн · Красные</option></select></div>
         </div>
@@ -282,7 +285,7 @@ function pageHome() {
           <div class="field full"><label for="fTraits">Особенности</label><textarea id="fTraits" name="traits" style="min-height:90px"></textarea></div>
           <div class="field full"><label for="fFears">Слабости и страхи</label><textarea id="fFears" name="fears" style="min-height:90px"></textarea></div>
           <div class="field full"><label for="fGoal">Цель и мотивации</label><textarea id="fGoal" name="goal" style="min-height:90px"></textarea></div>
-          <div class="field full"><label for="fBio">Биография персонажа</label><textarea id="fBio" name="bio" style="min-height:220px" placeholder="1000–4000 слов"></textarea></div>
+          <div class="field full"><label for="fBio">Биография персонажа</label><textarea id="fBio" name="bio" style="min-height:220px" placeholder="Квента — от 1500 знаков: откуда персонаж, что с ним случилось и зачем он в Меттенхейме"></textarea></div>
         </div>
       </div>
 
@@ -626,7 +629,7 @@ function pageStart() {
     ['Познакомься с миром', 'Меттенхейм живёт между двумя заводами и двумя взглядами на будущее. Прочитай о городе, Люмерите и домах Талбот и Дорн.', 'city', 'Открыть город'],
     ['Выбери народ и класс', 'Люди, полуэльфы, дворфы или гоблины. Пять классов, включая нового Инженера. Посмотри древо развития своего класса.', 'races', 'Изучить народы'],
     ['Прочитай правила', 'Ознакомься с правилами сообщества и ролевой игры, прежде чем вступать в сцену.', 'rules', 'Правила сервера'],
-    ['Собери анкету', 'Выбери сторону, происхождение и предысторию, напиши квенту. Скопируй готовую анкету и отправь её в Discord на проверку.', 'anketa', 'Открыть анкету'],
+    ['Собери анкету', 'Выбери сторону, происхождение и предысторию, напиши квенту. Войди в личный кабинет через Discord и отправь квенту мастерам — ответ придёт в кабинет и в личку.', 'anketa', 'Открыть анкету'],
     ['Подключись', 'Подпишись на коллекцию модов, дождись загрузки и заходи на сервер. Если что-то не работает, загляни в FAQ.', 'modlist', 'Модлист']
   ];
   return head({ eyebrow: 'Первые шаги', title: 'Как начать играть', lead: 'От знакомства с городом до первой ролевой сцены — шаг за шагом.', bg: 'assets/codex/archive.webp', crumbs: 'Начать' }) + subnav(START_NAV, 'start') + `
@@ -712,7 +715,7 @@ const TURN_ICON = ['act-main', 'act-bonus', 'act-move'];
 
 /* ================= КЛАССЫ / СИСТЕМЫ ================= */
 function pageClasses(id) {
-  return head({ eyebrow: 'Пять путей', title: 'Классы', lead: 'У каждого класса свои способности и стартовая точка на общем древе развития. Маг развивается по четырём школам. Числа и формулировки появятся после утверждения системы.', bg: 'assets/codex/arcane-v2.webp', crumbs: 'Классы' }) + subnav(CLS_NAV, 'classes') + `
+  return head({ eyebrow: 'Пять путей', title: 'Классы', lead: 'У каждого класса свои способности и стартовая точка на общем древе развития. Маг развивается по четырём школам.', bg: 'assets/codex/arcane-v2.webp', crumbs: 'Классы' }) + subnav(CLS_NAV, 'classes') + `
 <section class="content"><div class="wrap"><div class="class-tabs" role="tablist">${M.classes.map(c => `<button class="class-tab" role="tab" data-cls="${c.id}" aria-selected="${c.id === (id || 'fighter')}"><img src="${c.emblem}" alt="">${c.name}${c.isNew ? ' <span class="tag house">новый</span>' : ''}</button>`).join('')}</div><div id="clsView"></div></div></section>`;
 }
 function mountClasses(id) {
@@ -807,9 +810,11 @@ function pageArmor() { return head({ eyebrow: 'Мастерская · заго�
 
 /* ================= РОУТЕР ================= */
 function pageInferno() { return head({ eyebrow: 'Народы · инферналы', title: 'Инферно и Короли', lead: 'Мир под миром. Десять великих Домов, десять грехов — и голод, который инфернал приносит с собой в Меттенхейм.', bg: 'assets/codex/peoples.webp', crumbs: 'Народы' }) + subnav(PEOPLE_NAV, 'inferno') + `<section class="content"><div class="wrap">${window.Inferno.pageHTML()}</div></section>`; }
+function pageResidents() { return head({ eyebrow: 'Город · перепись', title: 'Жители Меттенхейма', lead: 'Все персонажи, чьи квенты приняли мастера. Ищи соседей, союзников и врагов для своей истории.', bg: 'assets/codex/city-v2.webp', crumbs: 'Начало' }) + `<section class="content"><div class="wrap" id="rsMount"></div></section>`; }
 function pageCabinet(mode) { const adm = mode === 'admin'; return head({ eyebrow: adm ? 'Для мастеров' : 'Для игроков', title: adm ? 'Кабинет мастера' : 'Личный кабинет', lead: adm ? 'Очередь отправленных квент. Прочитай, оставь комментарий и вынеси решение — игрок увидит его у себя в кабинете.' : 'Твои персонажи и квенты в одном месте. Пиши черновик, отправляй на проверку и получай ответ мастеров прямо здесь.', bg: 'assets/codex/history.webp', crumbs: adm ? 'Кабинет мастера' : 'Кабинет' }) + `<section class="content"><div class="wrap" id="cabMount"></div></section>`; }
 const ROUTES = {
   home: [pageHome, mountHome], anketa: [pageHome, mountHome],
+  residents: [pageResidents, () => window.Cabinet.residentsPage($('#rsMount'))],
   inferno: [pageInferno, () => window.Inferno.mountDiary($('#hungerMount'))],
   cabinet: [() => pageCabinet('player'), () => window.Cabinet.mount($('#cabMount'), 'player')], admin: [() => pageCabinet('admin'), () => window.Cabinet.mount($('#cabMount'), 'admin')],
   city: [pageCity], history: [pageHistory], houses: [pageHouses, () => { $$('[data-pick]').forEach(b => b.addEventListener('click', () => { if (b.dataset.pick !== house) applyHouse(b.dataset.pick, true); })); setVars(); MH.onHouse(hcards); }],
@@ -858,9 +863,22 @@ function bookify(view, chapter) {
   const curA = $('.rail [aria-current]', doc); if (curA) setTimeout(() => curA.scrollIntoView({ block: 'nearest' }), 0);
 }
 let lastRoute = null;
+/* тяжёлые арты (предметы ~5 МБ, иконки ~2 МБ) грузятся только для страниц, где они нужны */
+const LIGHT = new Set(['home', 'anketa', 'cabinet', 'admin', 'residents', 'city', 'history', 'houses', 'lumerite', 'faith', 'world', 'rules', 'discord', 'start', 'faq', 'modlist', 'inferno', 'races']);
+const ART_V = ((document.querySelector('script[src*="app.js"]') || {}).src || '').split('?')[1] || '';
+let artP = null;
+const loadArt = () => artP || (artP = Promise.all(['items-art.js', 'icons-art.js'].map(f => new Promise((res, rej) => {
+  const sc = document.createElement('script'); sc.src = f + (ART_V ? '?' + ART_V : ''); sc.onload = res; sc.onerror = () => { artP = null; rej(); }; document.head.appendChild(sc);
+}))));
+MH.loadArt = loadArt;
 function route() {
   const raw = (location.hash || '#home').slice(1) || 'home';
   const { key, arg, chapter } = resolve(raw);
+  if (!LIGHT.has(key) && !window.ICON_ART_DATA) {
+    $('#view').innerHTML = '<div class="art-loading"><img src="assets/gear.webp" alt=""><p>Механизм прогревается…</p></div>';
+    loadArt().then(route, () => { $('#view').innerHTML = '<div class="art-loading"><p>Не удалось загрузить страницу. Проверь интернет и обнови.</p></div>'; });
+    return;
+  }
   if (key === 'people') ROUTES.people = [() => pagePeople(arg), () => mountPeople(arg)];
   const r = ROUTES[key] || ROUTES.home;
   houseHooks = []; currentRoute = chapter;
@@ -872,6 +890,7 @@ function route() {
   if (chapter === 'curses') { const m = $('.doc-main', view); if (m) m.insertAdjacentHTML('afterbegin', '<div class="slot-box" data-slot="curse"></div>'); }
   window.Cabinet && window.Cabinet.fillSlots(view);
   if ((key === 'home' || key === 'anketa') && window.Cabinet) window.Cabinet.anketaStatus($('#bStatus'));
+  if ((key === 'home' || key === 'anketa') && window.Cabinet) window.Cabinet.community($('#commMount'));
   const cb = $('#cabBtn'); if (cb) { if (key === 'cabinet' || key === 'admin') cb.setAttribute('aria-current', 'page'); else cb.removeAttribute('aria-current'); }
   document.body.classList.toggle('tree-mode', key === 'tree');
   if (key === 'tree') window.Tree.mount($('#treeMount'), arg || 'fighter');

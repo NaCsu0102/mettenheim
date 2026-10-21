@@ -1131,7 +1131,8 @@ function REG() {
   Object.assign(r, BP_REG());
   return (_reg = r);
 }
-const ITEM_ART = new Set(Object.keys(window.ITEM_ART_DATA || {}));
+// арты подгружаются по требованию (items-art.js) — проверяем каждый раз, а не один раз при старте
+const ITEM_ART = { has: id => !!(window.ITEM_ART_DATA || {})[id] };
 const artSrc = id => (window.ITEM_ART_DATA || {})[id] || '';
 const artOr = (id, fb, sm) => ITEM_ART.has(id) ? `<img class="item-art${sm ? ' sm' : ''}" src="${artSrc(id)}" alt="" loading="lazy">` : fb;
 function mat(id) {

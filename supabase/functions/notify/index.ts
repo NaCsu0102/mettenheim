@@ -3,9 +3,37 @@
 // 2) Когда квенту принимают — создаёт канал персонажа в категории «Личный кабинет»,
 //    выкладывает карточку персонажа и приветствие с навигацией.
 // Вызывается триггером notify_bot из базы. Секрет: DISCORD_BOT_TOKEN.
-import { createClient } from 'npm:@supabase/supabase-js@2.45.4';
-
-const SB = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+// Лёгкий клиент базы вместо supabase-js: функция стартует за доли секунды.
+const DB_URL = Deno.env.get('SUPABASE_URL')!, DB_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+class Q {
+  t: string; f: string[] = []; m = 'GET'; body: unknown = null; sel = '*'; one = false; cnt = false; head = false; lim = 0;
+  constructor(t: string) { this.t = t; }
+  select(c = '*', o: { count?: string; head?: boolean } = {}) { this.sel = c; if (o.count) { this.cnt = true; this.head = !!o.head; } return this; }
+  update(b: unknown) { this.m = 'PATCH'; this.body = b; return this; }
+  private op(k: string, o: string, v: unknown) { this.f.push(`${k}=${o}.${encodeURIComponent(String(v))}`); return this; }
+  eq(k: string, v: unknown) { return this.op(k, 'eq', v); }
+  gte(k: string, v: unknown) { return this.op(k, 'gte', v); }
+  lte(k: string, v: unknown) { return this.op(k, 'lte', v); }
+  is(k: string, v: null) { this.f.push(`${k}=is.null`); return this; }
+  in(k: string, a: unknown[]) { this.f.push(`${k}=in.(${a.map((x) => encodeURIComponent(`"${x}"`)).join(',')})`); return this; }
+  limit(n: number) { this.lim = n; return this; }
+  maybeSingle() { this.one = true; return this; }
+  async run() {
+    const qs = [...this.f];
+    if (this.m === 'GET') { qs.unshift('select=' + encodeURIComponent(this.sel)); if (this.lim) qs.push('limit=' + this.lim); }
+    const h: Record<string, string> = { apikey: DB_KEY, Authorization: 'Bearer ' + DB_KEY, 'Content-Type': 'application/json' };
+    if (this.cnt) h.Prefer = 'count=exact';
+    if (this.m === 'PATCH') h.Prefer = 'return=minimal';
+    const r = await fetch(`${DB_URL}/rest/v1/${this.t}?${qs.join('&')}`, { method: this.cnt && this.head ? 'HEAD' : this.m, headers: h, body: this.body ? JSON.stringify(this.body) : undefined });
+    if (!r.ok) return { data: null, error: await r.text(), count: null };
+    const count = this.cnt ? Number((r.headers.get('content-range') || '').split('/')[1]) || 0 : null;
+    if (this.m !== 'GET' || this.head) return { data: null, error: null, count };
+    const rows = await r.json();
+    return { data: this.one ? (rows[0] ?? null) : rows, error: null, count };
+  }
+  then(res: (v: any) => unknown, rej?: (e: unknown) => unknown) { return this.run().then(res, rej); }
+}
+const SB = { from: (t: string) => new Q(t) };
 const TOKEN = Deno.env.get('DISCORD_BOT_TOKEN') ?? '';
 const SITE = Deno.env.get('SITE_URL') ?? 'https://nacsu0102.github.io/mettenheim/';
 const GUILD = Deno.env.get('DISCORD_GUILD_ID') ?? '1467559507721982075';
@@ -92,7 +120,7 @@ function welcome(pr: any, ch: any) {
         '🧭 **Как зайти в игру**',
         `📜 **1.** Прочитай [правила сервера](${SITE}#rules) и [правила Discord](${SITE}#discord).`,
         `🧩 **2.** Подпишись на [коллекцию модов](${SITE}#modlist) в Steam Workshop и дождись полной загрузки.`,
-        '🔌 **3.** Найди сервер Хроник в Conan Exiles. IP и пароль спроси у мастера прямо в этом канале.',
+        '🔌 **3.** Зайди на сервер: [подключиться в один клик](https://wargm.ru/server/61449/connect) или вручную по адресу `145.239.130.3:7790`. Пароль, если он нужен, спроси у мастера здесь.',
         `🎭 **4.** Создай в игре персонажа с именем **${ch.name || 'как в квенте'}** — внешность по анкете.`,
         `❓ **5.** Не получается зайти — загляни в [частые вопросы](${SITE}#faq).`,
         '',
@@ -179,6 +207,8 @@ async function giveRoles(userId: string) {
   if (errs.length) throw new Error(errs.join('; '));
 }
 
+let statsCache: { at: number; body: unknown } | null = null;
+
 /* ---------- обработка ---------- */
 Deno.serve(async (req) => {
   const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, content-type, apikey', 'Content-Type': 'application/json' };
@@ -192,6 +222,14 @@ Deno.serve(async (req) => {
     const pick = (list: string[]) => roles.filter((r) => list.includes(core(norm(r.name)))).map((r) => ({ name: r.name, below_bot: r.position < top }));
     return new Response(JSON.stringify({ off: pick(ROLES_OFF), on: pick(ROLES_ON) }), { headers: CORS });
   }
+  // числа сервера Discord для сайта: участники и в сети
+  if (new URL(req.url).searchParams.get('stats') === 'discord') {
+    if (!statsCache || Date.now() - statsCache.at > 60000) {
+      const g = await discord('GET', `/guilds/${GUILD}?with_counts=true`);
+      statsCache = { at: Date.now(), body: { name: g.name, icon: g.icon ? `https://cdn.discordapp.com/icons/${GUILD}/${g.icon}.png?size=128` : null, members: g.approximate_member_count, online: g.approximate_presence_count } };
+    }
+    return new Response(JSON.stringify(statsCache.body), { headers: { ...CORS, 'Cache-Control': 'public, max-age=60' } });
+  }
   if (req.method !== 'POST') return json({ error: 'POST only' }, 405);
   if (!TOKEN) return json({ error: 'DISCORD_BOT_TOKEN не задан' }, 500);
   let id: number;
@@ -199,7 +237,7 @@ Deno.serve(async (req) => {
   if (!id) return json({ error: 'no review_id' }, 400);
 
   // Мастер часто ставит статус и сразу пишет комментарий — ждём, чтобы отправить одним сообщением.
-  await sleep(4000);
+  await sleep(2000);
   const { data: rv } = await SB.from('reviews').select('*').eq('id', id).maybeSingle();
   if (!rv || rv.notified_at) return json({ skip: 'нет записи или уже отправлено' });
   if (Date.now() - new Date(rv.created_at).getTime() > 10 * 60 * 1000) return json({ skip: 'старая запись' });
