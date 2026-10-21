@@ -249,7 +249,7 @@ function pageHome() {
       <div class="app-fields">
         <div class="ftitle"><span>◈</span><div><small>ФОТОГРАФИЯ</small><strong>Портрет персонажа</strong></div></div>
         <div class="portrait"><div class="pframe" id="pFrame"><img id="pImg" alt="Загруженный портрет" hidden><div class="pempty" id="pEmpty"><span>CM</span><b>ИЗОБРАЖЕНИЕ<br>ОТСУТСТВУЕТ</b></div></div>
-          <div class="pbtns"><input id="pFile" type="file" accept="image/png,image/jpeg,image/webp" hidden><button type="button" class="btn small" id="pPick">Загрузить портрет</button><button type="button" class="btn small ghost" id="pDel" hidden>Удалить</button></div></div>
+          <div class="pbtns"><input id="pFile" type="file" accept="image/png,image/jpeg,image/webp" hidden><button type="button" class="btn small" id="pPick">Загрузить портрет</button><button type="button" class="btn small ghost" id="pDel" hidden>Удалить</button><p class="phint">Вертикальный кадр 3:4, лицо ближе к верху. PNG, JPG или WEBP.</p></div></div>
         <label class="check"><input type="checkbox" id="fConsent" name="consent"> Согласие на обработку личных данных</label>
         <label class="check"><input type="checkbox" id="fRules" name="rules"> Я прочитал(а) лор и правила</label>
 

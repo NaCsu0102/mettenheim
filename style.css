@@ -1829,3 +1829,10 @@ input[type="email"] { width: 100%; background: #0f0b08; border: 1px solid var(--
 .cab-col { min-width: 0; grid-template-columns: minmax(0, 1fr); }
 .cab-quenta, .cab-hist p, .cab-note p, .kv .wrow b { overflow-wrap: anywhere; word-break: break-word; }
 .cab-review > .cab-col > .panel { min-width: 0; overflow: hidden; }
+/* Портрет в анкете: крупная вертикальная рамка */
+.portrait { grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 20px; align-items: start; }
+.pframe { aspect-ratio: 3/4; max-height: none; width: 100%; }
+.pframe img { object-position: center 20%; }
+.pbtns { align-content: start; justify-items: start; }
+.phint { margin: 4px 0 0; font-size: 13px; line-height: 1.5; color: var(--ash); max-width: 220px; }
+@media (max-width: 560px) { .portrait { grid-template-columns: 1fr; } .pframe { max-width: 320px; } .pbtns { grid-auto-flow: column; justify-content: start; } .phint { grid-column: 1 / -1; } }
