@@ -212,13 +212,17 @@ function pageHome() {
 </div></section>
 
 <section class="section tight" style="padding-top:0"><div class="wrap">
-  <div class="community">
-    <a href="https://discord.gg/K8Bg5SaEeb" target="_blank" rel="noopener"><img src="assets/community/discord-3d.webp" alt=""><span><strong>DISCORD</strong><small>Наше сообщество</small></span></a>
-    <a href="https://wargm.ru/server/61449" target="_blank" rel="noopener"><img src="assets/community/wargm-3d.webp" alt=""><span><strong>WARGM</strong><small>Поддержать голосом</small></span></a>
-    <a href="https://boosty.to/riverside" target="_blank" rel="noopener"><img src="assets/community/boosty-3d.webp" alt=""><span><strong>BOOSTY</strong><small>Поддержать проект</small></span></a>
-    <a href="https://wargm.ru/server/61449/connect" target="_blank" rel="noopener"><img src="assets/community/connect-3d.webp" alt=""><span><strong>ПОДКЛЮЧИТЬСЯ</strong><small>145.239.130.3:7790</small></span></a>
+  <div class="comm-layout">
+    <div id="commMount"></div>
+    <div class="comm-right">
+      <div class="community">
+        <a href="https://wargm.ru/server/61449" target="_blank" rel="noopener"><img src="assets/community/wargm-3d.webp" alt=""><span><strong>WARGM</strong><small>Поддержать голосом</small></span></a>
+        <a href="https://boosty.to/riverside" target="_blank" rel="noopener"><img src="assets/community/boosty-3d.webp" alt=""><span><strong>BOOSTY</strong><small>Поддержать проект</small></span></a>
+        <a href="https://wargm.ru/server/61449/connect" target="_blank" rel="noopener"><img src="assets/community/connect-3d.webp" alt=""><span><strong>ПОДКЛЮЧИТЬСЯ</strong><small>145.239.130.3:7790</small></span></a>
+      </div>
+      <div id="rsMini"></div>
+    </div>
   </div>
-  <div id="commMount" style="margin-top:18px"></div>
 </div></section>
 
 <img class="divider" src="assets/divider.webp" alt="">

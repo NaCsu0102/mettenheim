@@ -487,11 +487,17 @@ function residentRow(r) {
 }
 async function community(el) {
   if (!el) return;
-  el.innerHTML = `<div class="comm-grid">
-    <article class="panel dc-card"><div class="dc-head"><img class="dc-icon" src="assets/logo.webp" alt=""><div><div class="eyebrow">Discord</div><h3 class="dc-name">Хроники Меттенхейма</h3><p class="dc-counts">Загружаю…</p></div></div>
-      <div class="dc-online"></div><a class="btn dc-join" href="${INVITE}" target="_blank" rel="noopener">Войти на сервер</a></article>
-    <article class="panel rs-card"><div class="eyebrow">Жители Меттенхейма</div><h3>Принятые персонажи</h3><ul class="rs-list"><li class="muted">Загружаю…</li></ul><a class="btn small ghost" href="#residents">Все жители →</a></article>
-  </div>`;
+  const rsEl = document.getElementById('rsMini');
+  el.innerHTML = `<article class="panel dc-card"><div class="dc-head"><img class="dc-icon" src="assets/community/discord-3d.webp" alt=""><div><div class="eyebrow">Discord · наше сообщество</div><h3 class="dc-name">Хроники Меттенхейма</h3><p class="dc-counts">Загружаю…</p></div></div>
+      <div class="dc-online"></div>
+      <ul class="dc-inside">
+        <li><b>📜 Правила и анонсы</b><span>Новости сессии, ивенты и изменения правил</span></li>
+        <li><b>🚩 Подача квент</b><span>Квенты с сайта, решения мастеров приходят в личку</span></li>
+        <li><b>🗝️ Личные кабинеты</b><span>Свой канал у каждого принятого персонажа</span></li>
+        <li><b>🎙️ Голос и сцены</b><span>Ролевые каналы, гостевой войс, поиск игроков</span></li>
+      </ul>
+      <a class="btn dc-join" href="${INVITE}" target="_blank" rel="noopener">Войти на сервер</a></article>`;
+  if (rsEl) rsEl.innerHTML = `<article class="panel rs-card"><div class="eyebrow">Жители Меттенхейма</div><h3>Принятые персонажи</h3><ul class="rs-list"><li class="muted">Загружаю…</li></ul><a class="btn small ghost" href="#residents">Все жители →</a></article>`;
   const [dd, rs] = await Promise.all([discordData(), residentsData()]);
   const st = dd.stats, w = dd.widget;
   if (st && st.icon) q('.dc-icon', el).src = st.icon;
@@ -499,14 +505,15 @@ async function community(el) {
   const online = (st && st.online) ?? (w && w.presence_count);
   q('.dc-counts', el).innerHTML = st || w ? `${st && st.members ? `<span>👥 ${st.members} участников</span>` : ''}${online != null ? `<span><i class="dot"></i>${online} в сети</span>` : ''}` : 'Сервер ролевого проекта';
   if (w && w.members && w.members.length) {
-    const ms = w.members.slice(0, 24);
-    q('.dc-online', el).innerHTML = `<div class="dc-avas">${ms.map(m => `<span class="dc-ava st-${esc(m.status)}" title="${esc(m.username)}"><img src="${esc(m.avatar_url)}" alt="" loading="lazy"></span>`).join('')}${w.members.length > ms.length ? `<span class="dc-more">+${w.members.length - ms.length}</span>` : ''}</div>`;
+    const ms = w.members.slice(0, 30);
+    q('.dc-online', el).innerHTML = `<div class="dc-sub">Сейчас в сети</div><div class="dc-avas">${ms.map(m => `<span class="dc-ava st-${esc(m.status)}" title="${esc(m.username)}"><img src="${esc(m.avatar_url)}" alt="" loading="lazy"></span>`).join('')}${w.members.length > ms.length ? `<span class="dc-more">+${w.members.length - ms.length}</span>` : ''}</div>`;
     if (w.instant_invite) q('.dc-join', el).href = w.instant_invite;
   }
-  const list = q('.rs-list', el);
+  const list = rsEl && q('.rs-list', rsEl);
+  if (!list) return;
   if (!rs) list.innerHTML = '<li class="muted">Список появится на основном сайте.</li>';
   else if (!rs.length) list.innerHTML = '<li class="muted">Пока никто не принят. <a href="#anketa">Подай квенту первым</a>.</li>';
-  else list.innerHTML = rs.slice(-8).reverse().map(residentRow).join('');
+  else list.innerHTML = rs.slice(-5).reverse().map(residentRow).join('');
 }
 async function residentsPage(el) {
   if (!el) return;
