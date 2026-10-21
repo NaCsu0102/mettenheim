@@ -113,7 +113,15 @@ p { margin: 0; }
 
 /* ---------- шестерни по краям ---------- */
 .machinery { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
-.machinery img { position: absolute; opacity: .22; transform: rotate(var(--rot, 0deg)); will-change: transform; filter: drop-shadow(0 0 20px rgba(0,0,0,.6)); }
+.machinery .mg { position: absolute; aspect-ratio: 1; opacity: .26; }
+.machinery img { position: absolute; transform: rotate(var(--rot, 0deg)); will-change: transform; }
+.machinery .big { inset: 0; width: 100%; height: 100%; z-index: 2; filter: drop-shadow(0 0 20px rgba(0,0,0,.6)); }
+/* малые шестерни за окнами большой — механизм внутри */
+.machinery .sm { z-index: 1; filter: brightness(.62) saturate(.85) drop-shadow(0 0 6px rgba(0,0,0,.8)); }
+.machinery .sm.a { width: 30%; left: 20%; top: 20%; }
+.machinery .sm.b { width: 22%; left: 47%; top: 16%; }
+.machinery .sm.c { width: 32%; left: 49%; top: 49%; }
+.machinery .sm.d { width: 18%; left: 25%; top: 55%; }
 .machinery .l1 { width: 300px; left: -170px; top: 18%; }
 .machinery .l2 { width: 180px; left: -60px; top: calc(18% + 250px); }
 .machinery .r1 { width: 340px; right: -200px; top: 42%; }

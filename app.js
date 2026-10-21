@@ -198,7 +198,7 @@ function pageHome() {
 <section class="hero" aria-label="Выбор стороны">
   <button class="side talbot" data-pick="talbot" aria-pressed="false"><div class="art"></div>
     <div class="caption"><small>${H.talbot.side.toUpperCase()}</small><h2>${H.talbot.name}</h2><p>${H.talbot.motto} ${H.talbot.lead}</p><span class="pick">ВСТАТЬ НА СТОРОНУ</span></div></button>
-  <div class="hero-core"><div class="ring"><img class="gear" src="assets/scroll-gear.webp" alt=""><img class="logo" src="assets/logo.webp" alt="Хроники Меттенхейма"></div>
+  <div class="hero-core"><div class="ring"><img class="gear" src="assets/gear.webp" alt=""><img class="logo" src="assets/logo.webp" alt="Хроники Меттенхейма"></div>
     <div class="motto">ГОРОД ПАРА, СТАЛИ И АМБИЦИЙ</div><div class="status" id="heroStatus"></div></div>
   <button class="side dorn" data-pick="dorn" aria-pressed="false"><div class="art"></div>
     <div class="caption"><small>${H.dorn.side.toUpperCase()}</small><h2>${H.dorn.name}</h2><p>${H.dorn.motto} ${H.dorn.lead}</p><span class="pick">ВСТАТЬ НА СТОРОНУ</span></div></button>
@@ -222,7 +222,7 @@ function pageHome() {
 
 <section class="section" id="chronicle"><div class="wrap">
   <div class="sec-head"><div class="eyebrow">Хронометр · поверни эпоху</div><h2>Как появился Меттенхейм</h2><p>Город не был построен за один день. Он вырос из дыма первых плавилен, пережил борьбу домов и подошёл к эпохе, в которой энергии не хватало даже для человеческих амбиций.</p></div>
-  <div class="chrono"><div class="dial" id="dial"><div class="face"></div><img class="gear" id="dialGear" src="assets/scroll-gear.webp" alt=""><div class="hand" id="dialHand"></div><div class="hub"></div></div>
+  <div class="chrono"><div class="dial" id="dial"><div class="face"></div><img class="gear" id="dialGear" src="assets/gear.webp" alt=""><div class="hand" id="dialHand"></div><div class="hub"></div></div>
   <article class="panel era" id="era" aria-live="polite"></article></div>
 </div></section>
 
@@ -288,7 +288,7 @@ function pageHome() {
 
       <aside class="app-preview"><div class="sticky">
         <div class="ftitle"><span>◈</span><div><small>ЛИЧНОЕ ДЕЛО</small><strong>Карточка персонажа</strong></div></div>
-        <div class="stage"><img class="flag" id="bFlag" alt=""><img class="ring-gear" src="assets/scroll-gear.webp" alt=""><div class="floor"></div><img class="fig" id="bFig" alt=""></div>
+        <div class="stage"><img class="flag" id="bFlag" alt=""><img class="ring-gear" src="assets/gear.webp" alt=""><div class="floor"></div><img class="fig" id="bFig" alt=""></div>
         <div class="panel dossier" id="bDossier"></div>
       </div></aside>
     </div>
