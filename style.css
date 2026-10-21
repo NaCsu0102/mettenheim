@@ -1812,3 +1812,20 @@ input[type="email"] { width: 100%; background: #0f0b08; border: 1px solid var(--
 @media (max-width: 520px) { .comm-right .community { grid-template-columns: 1fr; } .comm-right .community a { flex-direction: row; text-align: left; } }
 .comm-right { grid-template-rows: auto 1fr; align-content: stretch; }
 .comm-right #rsMini, .comm-right .rs-card { height: 100%; }
+
+/* Герой v2: подписи Домов сходятся к центру под гербом, симметрично */
+.hero-core .motto { margin-top: calc(min(250px, 56vw, 34svh) * .16 + 14px); }
+@media (min-width: 761px) {
+  .side:hover { flex-grow: 1; }
+  .side .caption { bottom: 34px; width: min(300px, 21vw); max-width: none; padding: 16px 22px 14px; }
+  .side.talbot .caption { left: auto; right: 14px; text-align: right; }
+  .side.dorn .caption { right: auto; left: 14px; text-align: left; }
+  .side.talbot .caption .pick { flex-direction: row-reverse; }
+  .side.dorn .caption .pick { flex-direction: row; }
+  .side .caption h2 { font-size: clamp(24px, 2.3vw, 36px); white-space: nowrap; }
+  .side .caption small { letter-spacing: .26em; }
+}
+/* Мастер: длинные слова не ломают колонки */
+.cab-col { min-width: 0; grid-template-columns: minmax(0, 1fr); }
+.cab-quenta, .cab-hist p, .cab-note p, .kv .wrow b { overflow-wrap: anywhere; word-break: break-word; }
+.cab-review > .cab-col > .panel { min-width: 0; overflow: hidden; }
