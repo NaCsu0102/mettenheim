@@ -178,7 +178,7 @@ main, .footer { position: relative; z-index: 1; }
 .side[aria-pressed="true"] .caption .pick { color: var(--house-hi); }
 .hero-core { position: absolute; left: 50%; top: 46%; transform: translate(-50%, -50%); z-index: 3; text-align: center; pointer-events: none; width: min(360px, 70vw); }
 .hero-core .ring { position: relative; width: min(250px, 56vw, 34svh); margin: 0 auto; aspect-ratio: 1; max-width: 100%; }
-.hero-core .ring .gear { position: absolute; inset: -14%; width: 128%; max-width: none; opacity: .5; animation: spin 60s linear infinite; filter: drop-shadow(0 0 30px var(--house-glow)); transition: filter .7s; }
+.hero-core .ring .gear { position: absolute; inset: -14%; width: 128%; max-width: none; opacity: .95; animation: spin 60s linear infinite; filter: drop-shadow(0 0 30px var(--house-glow)); transition: filter .7s; }
 .hero-core .ring .logo { position: relative; width: 100%; filter: drop-shadow(0 10px 30px rgba(0,0,0,.8)); }
 .hero-core .motto { margin-top: 18px; font-family: var(--f-mono); letter-spacing: .32em; font-size: 12px; color: var(--parch); text-shadow: 0 2px 10px #000; }
 .hero-core .status { margin-top: 8px; font-family: var(--f-display); font-size: 20px; color: var(--house-hi); text-shadow: 0 2px 12px #000; }
