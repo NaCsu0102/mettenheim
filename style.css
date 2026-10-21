@@ -1846,3 +1846,31 @@ input[type="email"] { width: 100%; background: #0f0b08; border: 1px solid var(--
   .side .caption h2 { font-size: clamp(22px, 3vw, 30px); }
   .side .caption .pick { letter-spacing: .14em; font-size: 11px; }
 }
+/* Герой: тёмная подложка под девизом, чтобы текст читался поверх персонажей */
+.hero-core::before { content: ""; position: absolute; z-index: -1; left: 50%; top: 56%; width: 150%; height: 70%; transform: translate(-50%, -50%); background: radial-gradient(ellipse at center, rgba(8,6,5,.78), rgba(8,6,5,.45) 45%, transparent 72%); pointer-events: none; }
+.hero-core .motto, .hero-core .status { position: relative; }
+@media (min-width: 761px) and (max-width: 1100px) {
+  .side .art { background-size: auto 74%; }
+  .hero-core .ring { width: min(210px, 30vw, 30svh); }
+  .hero-core .motto { margin-top: calc(min(210px, 30vw, 30svh) * .16 + 14px); letter-spacing: .24em; }
+}
+/* Герой на телефоне: герб сверху, два Дома рядом, плашки сходятся к центру */
+@media (max-width: 760px) {
+  .hero { flex-direction: row; flex-wrap: wrap; }
+  .hero-core { flex: 0 0 100%; padding: 22px 12px 6px; }
+  .hero-core::before { display: none; }
+  .hero-core .ring { width: 150px; }
+  .hero-core .motto { margin-top: 36px; font-size: 11px; letter-spacing: .22em; }
+  .hero-core .status { font-size: 17px; }
+  .side { flex: 1 1 50%; min-height: 440px !important; }
+  .side .art { background-size: auto 96% !important; }
+  .side.talbot .art { background-position: 72% 0 !important; }
+  .side.dorn .art { background-position: 28% 0 !important; }
+  .side .caption { left: 6px !important; right: 6px !important; bottom: 8px; width: auto; padding: 10px 10px 9px; }
+  .side.talbot .caption { text-align: right; } .side.dorn .caption { text-align: left; }
+  .side.talbot .caption .pick { flex-direction: row-reverse; } .side.dorn .caption .pick { flex-direction: row; }
+  .side .caption small { font-size: 10px; letter-spacing: .18em; }
+  .side .caption h2 { font-size: clamp(17px, 5vw, 24px); margin: 2px 0 4px; white-space: nowrap; }
+  .side .caption .pick { margin-top: 6px; font-size: 9.5px; letter-spacing: .1em; gap: 6px; }
+  .side .caption .pick::before { width: 14px; }
+}
