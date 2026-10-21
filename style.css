@@ -1836,3 +1836,13 @@ input[type="email"] { width: 100%; background: #0f0b08; border: 1px solid var(--
 .pbtns { align-content: start; justify-items: start; }
 .phint { margin: 4px 0 0; font-size: 13px; line-height: 1.5; color: var(--ash); max-width: 220px; }
 @media (max-width: 560px) { .portrait { grid-template-columns: 1fr; } .pframe { max-width: 320px; } .pbtns { grid-auto-flow: column; justify-content: start; } .phint { grid-column: 1 / -1; } }
+/* Герой: плашки не сжимаются на узком окне */
+@media (min-width: 761px) {
+  .side .caption { width: min(300px, calc(50vw - 40px)); }
+  .side .caption .pick { white-space: nowrap; }
+}
+@media (min-width: 761px) and (max-width: 1100px) {
+  .side .caption { padding: 14px 16px 12px; bottom: 22px; }
+  .side .caption h2 { font-size: clamp(22px, 3vw, 30px); }
+  .side .caption .pick { letter-spacing: .14em; font-size: 11px; }
+}
