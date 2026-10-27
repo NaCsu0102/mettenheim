@@ -647,7 +647,7 @@ function pageDiscord() {
 function pageStart() {
   const steps = [
     ['Познакомься с миром', 'Меттенхейм живёт между двумя заводами и двумя взглядами на будущее. Прочитай о городе, Люмерите и домах Талбот и Дорн.', 'city', 'Открыть город'],
-    ['Выбери народ и класс', 'Люди, полуэльфы, дворфы, гоблины или инферналы. Пять классов: Боец, Плут, Маг, Стрелок и Инженер. Посмотри древо развития своего класса. Часть мест ограничена — см. ниже.', 'races', 'Изучить народы'],
+    ['Выбери народ и класс', 'Люди, полуэльфы, дворфы, гоблины или инферналы. Пять классов: Боец, Плут, Маг, Стрелок и Инженер. Посмотри древо развития своего класса. Часть мест ограничена — смотри выше.', 'races', 'Изучить народы'],
     ['Прочитай правила', 'Ознакомься с правилами сообщества и ролевой игры, прежде чем вступать в сцену.', 'rules', 'Правила сервера'],
     ['Собери анкету', 'Выбери сторону, происхождение и предысторию, напиши квенту. Войди в личный кабинет через Discord и отправь квенту мастерам — ответ придёт в кабинет и в личку.', 'anketa', 'Открыть анкету'],
     ['Дождись решения мастеров', 'Мастер прочитает квенту и примет её, вернёт на доработку или отклонит. Решение придёт в кабинет и в личку Discord. После принятия бот откроет тебе личный канал персонажа, выдаст роли и сменит ник на «номер | имя».', 'cabinet', 'Личный кабинет'],
@@ -845,7 +845,7 @@ function mountGlossary() {
 }
 function pageChronicle() {
   return head({ eyebrow: 'Летопись игроков', title: 'Хроника сессии', lead: 'Что уже произошло в мире: сюжетные ветки, которые вели игроки и мастера. Читай, чтобы догнать историю.', bg: 'assets/codex/history.webp', crumbs: 'Мир' }) + subnav(LORE, 'chronicle') + `
-<section class="content"><div class="wrap">${M.chronicle.map(b => `<article class="panel chr-branch" id="chr-${b.id}"><div class="eyebrow">${b.tag}</div><h2>${b.title}</h2><p class="lead">${b.lead}</p>${b.parts.map(([h, t]) => `<h3>${h}</h3><p>${t}</p>`).join('')}${b.open ? `<p class="note">${b.open}</p>` : ''}</article>`).join('')}</div></section>`;
+<section class="content"><div class="wrap">${M.chronicle.length ? '' : '<article class="panel cab-empty"><h3>Летопись собирается</h3><p class="muted">Скоро здесь появятся сюжетные ветки игроков и мастеров.</p></article>'}${M.chronicle.map(b => `<article class="panel chr-branch" id="chr-${b.id}"><div class="eyebrow">${b.tag}</div><h2>${b.title}</h2><p class="lead">${b.lead}</p>${b.parts.map(([h, t]) => `<h3>${h}</h3><p>${t}</p>`).join('')}${b.open ? `<p class="note">${b.open}</p>` : ''}</article>`).join('')}</div></section>`;
 }
 function pageChat() { return head({ eyebrow: 'Город · на связи', title: 'Общий чат', lead: 'Один чат на сайт и Discord: пиши отсюда — сообщение увидят на сервере, ответы с сервера появятся здесь.', bg: 'assets/codex/city-v2.webp', crumbs: 'Начало' }) + `<section class="content"><div class="wrap" id="chatMount"></div></section>`; }
 function pageResidents() { return head({ eyebrow: 'Город · перепись', title: 'Жители Меттенхейма', lead: 'Все персонажи, чьи квенты приняли мастера. Ищи соседей, союзников и врагов для своей истории.', bg: 'assets/codex/city-v2.webp', crumbs: 'Начало' }) + `<section class="content"><div class="wrap" id="rsMount"></div></section>`; }
