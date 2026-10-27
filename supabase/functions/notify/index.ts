@@ -10,6 +10,10 @@ class Q {
   constructor(t: string) { this.t = t; }
   select(c = '*', o: { count?: string; head?: boolean } = {}) { this.sel = c; if (o.count) { this.cnt = true; this.head = !!o.head; } return this; }
   update(b: unknown) { this.m = 'PATCH'; this.body = b; return this; }
+  ord = ''; up = '';
+  insert(b: unknown, onConflict = '') { this.m = 'POST'; this.body = b; this.up = onConflict; return this; }
+  delete() { this.m = 'DELETE'; return this; }
+  order(k: string, o: { ascending?: boolean } = {}) { this.ord = `${k}.${o.ascending === false ? 'desc' : 'asc'}`; return this; }
   private op(k: string, o: string, v: unknown) { this.f.push(`${k}=${o}.${encodeURIComponent(String(v))}`); return this; }
   eq(k: string, v: unknown) { return this.op(k, 'eq', v); }
   gte(k: string, v: unknown) { return this.op(k, 'gte', v); }
@@ -20,10 +24,12 @@ class Q {
   maybeSingle() { this.one = true; return this; }
   async run() {
     const qs = [...this.f];
-    if (this.m === 'GET') { qs.unshift('select=' + encodeURIComponent(this.sel)); if (this.lim) qs.push('limit=' + this.lim); }
+    if (this.m === 'GET') { qs.unshift('select=' + encodeURIComponent(this.sel)); if (this.ord) qs.push('order=' + this.ord); if (this.lim) qs.push('limit=' + this.lim); }
+    if (this.m === 'POST' && this.up) qs.push('on_conflict=' + this.up);
     const h: Record<string, string> = { apikey: DB_KEY, Authorization: 'Bearer ' + DB_KEY, 'Content-Type': 'application/json' };
     if (this.cnt) h.Prefer = 'count=exact';
-    if (this.m === 'PATCH') h.Prefer = 'return=minimal';
+    if (this.m === 'PATCH' || this.m === 'DELETE') h.Prefer = 'return=minimal';
+    if (this.m === 'POST') h.Prefer = this.up ? 'resolution=ignore-duplicates,return=minimal' : 'return=minimal';
     const r = await fetch(`${DB_URL}/rest/v1/${this.t}?${qs.join('&')}`, { method: this.cnt && this.head ? 'HEAD' : this.m, headers: h, body: this.body ? JSON.stringify(this.body) : undefined });
     if (!r.ok) return { data: null, error: await r.text(), count: null };
     const count = this.cnt ? Number((r.headers.get('content-range') || '').split('/')[1]) || 0 : null;
@@ -210,6 +216,138 @@ async function giveRoles(userId: string) {
 let statsCache: { at: number; body: unknown } | null = null;
 
 /* ---------- обработка ---------- */
+/* ---------- картинки: портреты ---------- */
+function dataUrlBytes(u: string): [Uint8Array, string] | null {
+  const m = /^data:(image\/[a-z+]+);base64,(.+)$/i.exec(u || '');
+  if (!m) return null;
+  const bin = atob(m[2]); const a = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i);
+  return [a, m[1]];
+}
+async function image(qp: URLSearchParams) {
+  const kind = qp.get('img');
+  let src = '', fallback = '';
+  if (kind === 'ava' && /^[0-9a-f-]{36}$/i.test(qp.get('id') || '')) {
+    const { data } = await SB.from('profiles').select('portrait,avatar_url').eq('id', qp.get('id')).maybeSingle();
+    src = data?.portrait || ''; fallback = data?.avatar_url || '';
+  } else if (kind === 'char' && /^\d+$/.test(qp.get('n') || '')) {
+    const { data } = await SB.from('characters').select('portrait').eq('number', qp.get('n')).eq('status', 'approved').maybeSingle();
+    src = data?.portrait || '';
+  }
+  const b = dataUrlBytes(src);
+  if (b) return new Response(b[0], { headers: { 'Content-Type': b[1], 'Cache-Control': 'public, max-age=86400', 'Access-Control-Allow-Origin': '*' } });
+  if (fallback) return Response.redirect(fallback, 302);
+  return new Response('not found', { status: 404, headers: { 'Access-Control-Allow-Origin': '*' } });
+}
+
+/* ---------- чат сайта ↔ канал Discord ---------- */
+const CHAT_CHANNEL = Deno.env.get('DISCORD_CHAT_CHANNEL_ID') ?? '1564605532524908666';
+const kvGet = async (k: string) => (await SB.from('bot_kv').select('v,updated_at').eq('k', k).maybeSingle()).data as { v: string; updated_at: string } | null;
+const kvSet = (k: string, v: string) => SB.from('bot_kv').insert({ k, v, updated_at: new Date().toISOString() }, 'k').run().then(() => SB.from('bot_kv').update({ v, updated_at: new Date().toISOString() }).eq('k', k).run());
+const memberCache = new Map<string, { at: number; nick: string; avatar: string }>();
+
+async function chatWebhook(): Promise<{ id: string; token: string }> {
+  const saved = await kvGet('chat_webhook');
+  if (saved?.v) { const [id, token] = saved.v.split(':'); if (id && token) return { id, token }; }
+  const list: any[] = await discord('GET', `/channels/${CHAT_CHANNEL}/webhooks`);
+  let wh = list.find((w) => w.name === 'Сайт Меттенхейма' && w.token);
+  if (!wh) wh = await discord('POST', `/channels/${CHAT_CHANNEL}/webhooks`, { name: 'Сайт Меттенхейма' });
+  await kvSet('chat_webhook', `${wh.id}:${wh.token}`);
+  return { id: wh.id, token: wh.token };
+}
+const avatarOf = (u: any, m?: any) => m?.avatar ? `https://cdn.discordapp.com/guilds/${GUILD}/users/${u.id}/avatars/${m.avatar}.png?size=96`
+  : u.avatar ? `https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png?size=96` : `https://cdn.discordapp.com/embed/avatars/${Number((BigInt(u.id) >> 22n) % 6n)}.png`;
+async function memberOf(u: any) {
+  const c = memberCache.get(u.id);
+  if (c && Date.now() - c.at < 10 * 60 * 1000) return c;
+  let nick = u.global_name || u.username, avatar = avatarOf(u);
+  try { const m = await discord('GET', `/guilds/${GUILD}/members/${u.id}`); nick = m.nick || nick; avatar = avatarOf(u, m); } catch (_) { /* не на сервере */ }
+  const v = { at: Date.now(), nick, avatar }; memberCache.set(u.id, v); return v;
+}
+function plainBody(m: any) {
+  let t = String(m.content || '');
+  for (const u of m.mentions || []) t = t.replace(new RegExp(`<@!?${u.id}>`, 'g'), '@' + (u.global_name || u.username));
+  t = t.replace(/<@&\d+>/g, '@роль').replace(/<#\d+>/g, '#канал');
+  if (!t && m.sticker_items?.length) t = '[стикер] ' + m.sticker_items[0].name;
+  if (!t && m.embeds?.length) t = [m.embeds[0].title, m.embeds[0].description].filter(Boolean).join('\n');
+  return t.slice(0, 4000);
+}
+// забрать новые сообщения из Discord (не чаще раза в 3 секунды на всех)
+async function syncChat() {
+  const mark = await kvGet('chat_sync');
+  if (mark && Date.now() - new Date(mark.updated_at).getTime() < 3000) return { skip: true };
+  await kvSet('chat_sync', String(Date.now()));
+  const wh = await chatWebhook();
+  const last = (await kvGet('chat_last'))?.v || '';
+  const msgs: any[] = await discord('GET', `/channels/${CHAT_CHANNEL}/messages?limit=50${last ? '&after=' + last : ''}`);
+  if (!msgs.length) return { added: 0 };
+  msgs.sort((a, b) => (BigInt(a.id) < BigInt(b.id) ? -1 : 1));
+  const rows = [];
+  for (const m of msgs) {
+    if (m.webhook_id === wh.id) continue; // это сообщение с сайта, уже в базе
+    if (m.type !== 0 && m.type !== 19) continue; // только обычные сообщения и ответы
+    const mb = m.webhook_id ? { nick: m.author.username, avatar: avatarOf(m.author) } : await memberOf(m.author);
+    rows.push({
+      discord_id: m.id, source: 'discord', author: mb.nick, avatar: mb.avatar, body: plainBody(m),
+      attachments: (m.attachments || []).slice(0, 4).map((a: any) => ({ url: a.url, name: a.filename, image: /^image\//.test(a.content_type || '') })),
+      created_at: m.timestamp
+    });
+  }
+  if (rows.length) await SB.from('chat_messages').insert(rows, 'discord_id').run();
+  await kvSet('chat_last', msgs[msgs.length - 1].id);
+  return { added: rows.length };
+}
+async function userFrom(req: Request) {
+  const jwt = (req.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
+  if (!jwt) return null;
+  const r = await fetch(`${DB_URL}/auth/v1/user`, { headers: { apikey: DB_KEY, Authorization: 'Bearer ' + jwt } });
+  if (!r.ok) return null;
+  const u = await r.json();
+  return u?.id ? u : null;
+}
+async function chat(req: Request, action: string, CORS: Record<string, string>) {
+  const out = (o: unknown, status = 200) => new Response(JSON.stringify(o), { status, headers: CORS });
+  if (action === 'sync') return out(await syncChat());
+  if (req.method !== 'POST') return out({ error: 'POST only' }, 405);
+  const user = await userFrom(req);
+  if (!user) return out({ error: 'Войди через Discord, чтобы писать в чат' }, 401);
+  const { data: pr } = await SB.from('profiles').select('id,display_name,discord,avatar_url,portrait,role').eq('id', user.id).maybeSingle();
+  if (!pr) return out({ error: 'Профиль не найден' }, 403);
+  let body: any = {}; try { body = await req.json(); } catch (_) { /* пусто */ }
+
+  if (action === 'del') {
+    if (!['master', 'admin'].includes(pr.role)) return out({ error: 'Удалять сообщения могут только мастера' }, 403);
+    const { data: m } = await SB.from('chat_messages').select('id,discord_id').eq('id', Number(body.id)).maybeSingle();
+    if (!m) return out({ ok: true });
+    if (m.discord_id) { try { await discord('DELETE', `/channels/${CHAT_CHANNEL}/messages/${m.discord_id}`); } catch (_) { /* уже удалено */ } }
+    await SB.from('chat_messages').delete().eq('id', m.id).run();
+    return out({ ok: true });
+  }
+
+  if (action === 'send') {
+    const text = String(body.text || '').replace(/\r/g, '').trim().slice(0, 1500);
+    if (!text) return out({ error: 'Пустое сообщение' }, 400);
+    const { data: lastMine } = await SB.from('chat_messages').select('created_at').eq('profile_id', pr.id).order('created_at', { ascending: false }).limit(1).maybeSingle();
+    if (lastMine && Date.now() - new Date(lastMine.created_at).getTime() < 2500) return out({ error: 'Не так быстро — подожди пару секунд' }, 429);
+    // имя как на сервере: «N | персонаж», если персонаж принят
+    const { data: chs } = await SB.from('characters').select('number,name').eq('owner', pr.id).eq('status', 'approved').order('number', { ascending: true }).limit(1);
+    const ch = chs && chs[0];
+    const name = ((ch ? `${ch.number} | ${ch.name}` : pr.display_name || pr.discord || 'Гость сайта') + ' · сайт').replace(/discord/gi, 'dc').slice(0, 80);
+    const avatar = pr.portrait ? `${DB_URL}/functions/v1/notify?img=ava&id=${pr.id}&v=${pr.portrait.length}` : pr.avatar_url || '';
+    const wh = await chatWebhook();
+    const r = await fetch(`${API}/webhooks/${wh.id}/${wh.token}?wait=true`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: text, username: name, avatar_url: avatar || undefined, allowed_mentions: { parse: [] } })
+    });
+    if (r.status === 404) { await kvSet('chat_webhook', ''); return out({ error: 'Связь с каналом обновилась, отправь ещё раз' }, 503); }
+    if (!r.ok) return out({ error: 'Discord не принял сообщение: ' + (await r.text()).slice(0, 120) }, 502);
+    const msg = await r.json();
+    await SB.from('chat_messages').insert({ discord_id: msg.id, source: 'site', profile_id: pr.id, author: name.replace(/ · сайт$/, ''), avatar, body: text, created_at: msg.timestamp }, 'discord_id').run();
+    return out({ ok: true });
+  }
+  return out({ error: 'unknown action' }, 400);
+}
+
 Deno.serve(async (req) => {
   const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, content-type, apikey', 'Content-Type': 'application/json' };
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
@@ -229,6 +367,14 @@ Deno.serve(async (req) => {
       statsCache = { at: Date.now(), body: { name: g.name, icon: g.icon ? `https://cdn.discordapp.com/icons/${GUILD}/${g.icon}.png?size=128` : null, members: g.approximate_member_count, online: g.approximate_presence_count } };
     }
     return new Response(JSON.stringify(statsCache.body), { headers: { ...CORS, 'Cache-Control': 'public, max-age=60' } });
+  }
+  const qp = new URL(req.url).searchParams;
+  // картинки для сайта и Discord: портрет игрока и портрет принятого персонажа
+  if (qp.get('img')) return image(qp);
+  // чат сайта ↔ канал Discord
+  if (qp.get('chat')) {
+    try { return await chat(req, qp.get('chat')!, CORS); }
+    catch (e) { return new Response(JSON.stringify({ error: String((e as Error).message || e) }), { status: 500, headers: CORS }); }
   }
   if (req.method !== 'POST') return json({ error: 'POST only' }, 405);
   if (!TOKEN) return json({ error: 'DISCORD_BOT_TOKEN не задан' }, 500);

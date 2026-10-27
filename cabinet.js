@@ -113,10 +113,11 @@ function loginCard(el, after) {
   };
 }
 
+const avaOf = p => (p && (p.portrait || p.avatar_url)) || '';
 function topBar(prof, isAdminView) {
   const staff = prof && ['master', 'admin'].includes(prof.role);
   return `<div class="cab-top panel">
-    ${prof.avatar_url ? `<img class="cab-ava" src="${esc(prof.avatar_url)}" alt="">` : `<span class="cab-ava cab-ava-empty">${esc((prof.display_name || '?').slice(0, 1).toUpperCase())}</span>`}
+    ${avaOf(prof) ? `<img class="cab-ava" src="${esc(avaOf(prof))}" alt="">` : `<span class="cab-ava cab-ava-empty">${esc((prof.display_name || '?').slice(0, 1).toUpperCase())}</span>`}
     <div class="cab-who"><b>${esc(prof.display_name || 'Без имени')}</b><small>${ROLE[prof.role] || 'Игрок'}${prof.discord ? ' · Discord: ' + esc(prof.discord) : ''}</small></div>
     <nav class="cab-switch">${staff ? `<a href="#cabinet" class="${isAdminView ? '' : 'on'}">Мой кабинет</a><a href="#admin" class="${isAdminView ? 'on' : ''}">Кабинет мастера</a>` : ''}</nav>
     <button type="button" class="btn small ghost" id="cOut">Выйти</button></div>`;
@@ -172,7 +173,12 @@ async function playerView(el, sess, prof) {
         : `<article class="panel cab-empty"><h3>Пока ни одного персонажа</h3><p class="muted">Создай нового или перенеси анкету, которую собрал на главной странице. Квенту можно писать частями — черновик сохраняется на сервере.</p></article>`}`;
   }
   function profileHTML() {
-    return `<form class="panel cab-form" id="cProf"><div class="eyebrow">Профиль игрока</div>
+    return `<section class="panel cab-form cab-avabox"><div class="eyebrow">Портрет игрока</div>
+      <div class="cab-avarow">${avaOf(prof) ? `<img class="cab-avabig" id="pfAvaImg" src="${esc(avaOf(prof))}" alt="Портрет">` : `<span class="cab-avabig cab-ava-empty" id="pfAvaImg">${esc((prof.display_name || '?').slice(0, 1).toUpperCase())}</span>`}
+        <div><p class="muted">Показывается в шапке сайта, в кабинете и рядом с твоими сообщениями в чате — на сайте и в Discord. ${prof.portrait ? 'Сейчас стоит твой портрет.' : 'Сейчас стоит аватарка Discord.'}</p>
+        <div class="cab-acts"><button type="button" class="btn small" id="pfAvaPick">Загрузить портрет</button>${prof.portrait ? '<button type="button" class="btn small ghost" id="pfAvaDel">Вернуть аватарку Discord</button>' : ''}<input type="file" id="pfAvaFile" accept="image/png,image/jpeg,image/webp" hidden></div>
+        <small class="muted">Квадратный кадр, лицо по центру. Картинка ужмётся до 320×320.</small></div></div></section>
+      <form class="panel cab-form" id="cProf"><div class="eyebrow">Профиль игрока</div>
       <div class="cab-row">${field('pfName', 'Как к тебе обращаться', `<input id="pfName" maxlength="60" value="${esc(prof.display_name)}">`)}${field('pfDiscord', 'Ник в Discord', `<input id="pfDiscord" maxlength="60" value="${esc(prof.discord)}">`, 'По нему мастера напишут, если появятся вопросы')}</div>
       <div class="cab-row">${field('pfGame', 'Ник в Conan Exiles / Steam', `<input id="pfGame" maxlength="60" value="${esc(prof.game_nick)}">`)}${field('pfTz', 'Часовой пояс', `<input id="pfTz" maxlength="40" value="${esc(prof.timezone)}" placeholder="МСК, МСК+4…">`)}</div>
       ${field('pfAbout', 'О себе как об игроке', `<textarea id="pfAbout" rows="4" maxlength="1500">${esc(prof.about)}</textarea>`, 'Опыт в RP, когда обычно играешь, что любишь в сюжетах')}
@@ -279,6 +285,17 @@ async function playerView(el, sess, prof) {
   function render() {
     frame(tab === 'profile' ? profileHTML() : listHTML());
     if (tab === 'profile') {
+      const setAva = async v => { try { prof = await api().saveProfile(uid, { portrait: v }); paintHeader(headSess, prof); render(); toast(el, v ? 'Портрет сохранён' : 'Вернули аватарку Discord'); } catch (e) { toast(el, errText(e), true); } };
+      q('#pfAvaPick', el).onclick = () => q('#pfAvaFile', el).click();
+      q('#pfAvaFile', el).onchange = () => {
+        const f = q('#pfAvaFile', el).files[0]; if (!f) return;
+        const r = new FileReader(); r.onload = () => { const img = new Image(); img.onload = () => {
+          const S = 320, side = Math.min(img.width, img.height), c = document.createElement('canvas'); c.width = c.height = S;
+          c.getContext('2d').drawImage(img, (img.width - side) / 2, Math.max(0, (img.height - side) * .3), side, side, 0, 0, S, S);
+          setAva(c.toDataURL('image/jpeg', .86));
+        }; img.onerror = () => toast(el, 'Не получилось открыть картинку', true); img.src = r.result; }; r.readAsDataURL(f);
+      };
+      const ad = q('#pfAvaDel', el); if (ad) ad.onclick = () => setAva(null);
       q('#cProf', el).onsubmit = async ev => {
         ev.preventDefault();
         try { prof = await api().saveProfile(uid, { display_name: q('#pfName', el).value.trim(), discord: q('#pfDiscord', el).value.trim(), game_nick: q('#pfGame', el).value.trim(), timezone: q('#pfTz', el).value.trim(), about: q('#pfAbout', el).value.trim(), notify: q('#pfNotify', el).checked }); render(); toast(el, 'Профиль сохранён'); } catch (e) { toast(el, errText(e), true); }
@@ -431,16 +448,19 @@ function fillSlots(root) {
 
 /* ---------- шапка: аватарка из Discord ---------- */
 const liveSite = () => api().configured() && (!CFG.siteUrl || window.MH_CABINET_API || location.origin === new URL(CFG.siteUrl).origin);
-let headSess = null;
-function paintHeader(sess) {
+let headSess = null, headProf = null;
+function paintHeader(sess, prof) {
   headSess = sess;
+  if (prof !== undefined) headProf = prof;
+  if (!sess) headProf = null;
   const b = document.getElementById('cabBtn'); if (!b) return;
   const md = (sess && sess.user && sess.user.user_metadata) || {};
   const name = md.custom_claims && md.custom_claims.global_name || md.full_name || md.name || (sess && sess.user.email || '').split('@')[0];
   if (sess) {
     b.classList.add('in');
     b.title = 'Личный кабинет · ' + (name || '');
-    b.innerHTML = (md.avatar_url ? `<img class="cab-btn-ava" src="${esc(md.avatar_url)}" alt="">` : `<i class="cab-btn-ava">${esc((name || '?').slice(0, 1).toUpperCase())}</i>`) + `<span>${esc(name || 'Кабинет')}</span>`;
+    const own = headProf && headProf.portrait;
+    b.innerHTML = (own ? `<img class="cab-btn-ava" src="${esc(own)}" alt="">` : md.avatar_url ? `<img class="cab-btn-ava" src="${esc(md.avatar_url)}" alt="">` : `<i class="cab-btn-ava">${esc((name || '?').slice(0, 1).toUpperCase())}</i>`) + `<span>${esc(name || 'Кабинет')}</span>`;
   } else {
     b.classList.remove('in'); b.title = 'Личный кабинет';
     b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg><span>Войти</span>';
@@ -448,8 +468,9 @@ function paintHeader(sess) {
 }
 function initHeader() {
   if (!liveSite()) return;
-  api().session().then(paintHeader).catch(() => {});
-  api().onAuth(s => { paintHeader(s); }).catch(() => {});
+  const withProf = s => { paintHeader(s); if (s) api().myProfile(s.user.id).then(p => { if (p) paintHeader(s, p); }).catch(() => {}); };
+  api().session().then(withProf).catch(() => {});
+  api().onAuth(s => { if (!s || !headSess || s.user.id !== headSess.user.id) withProf(s); }).catch(() => {});
 }
 
 /* ---------- статусы квент на странице анкеты ---------- */
@@ -481,9 +502,11 @@ async function discordData() {
 const origin = (p, o) => (originsOf(p).find(x => x.id === o) || {});
 const figureOf = r => { const o = origin(r.p, r.o); return o.folder && r.c ? `assets/characters/${o.folder}/${r.g === 'male' ? 'male' : 'female'}-${r.c}.webp` : ''; };
 const numOf = n => '№' + String(n || 0).padStart(3, '0');
+const charPic = r => r.has_portrait && CFG.url ? `${CFG.url}/functions/v1/notify?img=char&n=${r.number}` : '';
 function residentRow(r) {
   const o = origin(r.p, r.o);
-  return `<li class="rs-row h-${r.house === 'dorn' ? 'dorn' : 'talbot'}">${o.emblem ? `<img src="${esc(o.emblem)}" alt="">` : '<i></i>'}<div><b>${numOf(r.number)} · ${esc(r.name || 'Без имени')}</b><small>${esc([nameOf(peoples(), r.p), o.name, nameOf(classes(), r.c)].filter(Boolean).join(' · '))}</small></div></li>`;
+  const pic = charPic(r);
+  return `<li class="rs-row h-${r.house === 'dorn' ? 'dorn' : 'talbot'}">${pic ? `<img class="rs-pic" src="${esc(pic)}" alt="" loading="lazy">` : o.emblem ? `<img src="${esc(o.emblem)}" alt="">` : '<i></i>'}<div><b>${numOf(r.number)} · ${esc(r.name || 'Без имени')}</b><small>${esc([nameOf(peoples(), r.p), o.name, nameOf(classes(), r.c)].filter(Boolean).join(' · '))}</small></div></li>`;
 }
 async function community(el) {
   if (!el) return;
@@ -496,7 +519,7 @@ async function community(el) {
         <li><b>🗝️ Личные кабинеты</b><span>Свой канал у каждого принятого персонажа</span></li>
         <li><b>🎙️ Голос и сцены</b><span>Ролевые каналы, гостевой войс, поиск игроков</span></li>
       </ul>
-      <a class="btn dc-join" href="${INVITE}" target="_blank" rel="noopener">Войти на сервер</a></article>`;
+      <div class="dc-btns"><a class="btn dc-join" href="${INVITE}" target="_blank" rel="noopener">Войти на сервер</a><a class="btn ghost" href="#chat">💬 Чат на сайте</a></div></article>`;
   if (rsEl) rsEl.innerHTML = `<article class="panel rs-card"><div class="eyebrow">Жители Меттенхейма</div><h3>Принятые персонажи</h3><ul class="rs-list"><li class="muted">Загружаю…</li></ul><a class="btn small ghost" href="#residents">Все жители →</a></article>`;
   const [dd, rs] = await Promise.all([discordData(), residentsData()]);
   const st = dd.stats, w = dd.widget;
@@ -525,7 +548,8 @@ async function residentsPage(el) {
     const qq = f.q.toLowerCase();
     const list = rs.filter(r => (!f.house || (r.house || 'talbot') === f.house) && (!f.p || r.p === f.p) && (!f.c || r.c === f.c) && (!qq || (r.name || '').toLowerCase().includes(qq) || String(r.number).includes(qq)));
     q('.rs-grid', el).innerHTML = list.length ? list.map(r => { const o = origin(r.p, r.o), fig = figureOf(r);
-      return `<article class="panel rs-tile h-${r.house === 'dorn' ? 'dorn' : 'talbot'}">${fig ? `<img class="rs-fig" src="${fig}" alt="" loading="lazy">` : ''}<div class="rs-info"><span class="rs-num">${numOf(r.number)}</span><h3>${esc(r.name || 'Без имени')}</h3><p>${esc([nameOf(peoples(), r.p), o.name].filter(Boolean).join(' · '))}</p><p>${esc(nameOf(classes(), r.c))} · ${r.house === 'dorn' ? 'Дом Дорн' : 'Дом Талбот'}</p></div></article>`; }).join('') : '<p class="muted">Никого не нашлось.</p>';
+      const pic = charPic(r);
+      return `<article class="panel rs-tile h-${r.house === 'dorn' ? 'dorn' : 'talbot'}${pic ? ' has-pic' : ''}">${pic ? `<img class="rs-portrait" src="${esc(pic)}" alt="Портрет: ${esc(r.name || '')}" loading="lazy">` : fig ? `<img class="rs-fig" src="${fig}" alt="" loading="lazy">` : ''}<div class="rs-info"><span class="rs-num">${numOf(r.number)}</span><h3>${esc(r.name || 'Без имени')}</h3><p>${esc([nameOf(peoples(), r.p), o.name].filter(Boolean).join(' · '))}</p><p>${esc(nameOf(classes(), r.c))} · ${r.house === 'dorn' ? 'Дом Дорн' : 'Дом Талбот'}</p></div></article>`; }).join('') : '<p class="muted">Никого не нашлось.</p>';
     q('.rs-count', el).textContent = `Жителей: ${list.length}${list.length !== rs.length ? ' из ' + rs.length : ''}`;
   };
   el.innerHTML = `<div class="rs-filters panel"><input type="search" id="rsQ" placeholder="Имя или номер" aria-label="Поиск по жителям">
@@ -541,7 +565,102 @@ async function residentsPage(el) {
   draw();
 }
 
-window.Cabinet = { mount, api: SupabaseApi, fillSlots, anketaStatus, initHeader, community, residentsPage };
+/* ---------- чат сайта ↔ канал Discord ---------- */
+const CHAT_URL = 'https://discord.com/channels/1467559507721982075/1564605532524908666';
+const fnUrl = qs => `${CFG.url}/functions/v1/notify?${qs}`;
+function chatText(t) {
+  return esc(t)
+    .replace(/&lt;(a?):([\w~]+):(\d+)&gt;/g, (_m, a, n, id) => `<img class="ch-emo" src="https://cdn.discordapp.com/emojis/${id}.${a ? 'gif' : 'webp'}?size=48" alt=":${n}:" title=":${n}:">`)
+    .replace(/(https?:\/\/[^\s<]+[^\s<.,:;!?)\]'"])/g, '<a href="$1" target="_blank" rel="noopener nofollow">$1</a>')
+    .replace(/\*\*([^*\n]+)\*\*/g, '<b>$1</b>')
+    .replace(/\n/g, '<br>');
+}
+const chatTime = d => { const t = new Date(d), now = new Date(); const hm = t.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }); return t.toDateString() === now.toDateString() ? hm : t.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }) + ', ' + hm; };
+async function chatPage(el) {
+  if (!el) return;
+  if (!api().configured() || window.MH_CABINET_API || !liveSite()) {
+    el.innerHTML = `<article class="panel cab-empty"><h3>Чат работает на основном сайте</h3><p class="muted">Он связан с каналом Discord и базой кабинета.</p>${CFG.siteUrl ? `<a class="btn" href="${esc(CFG.siteUrl)}#chat" target="_blank" rel="noopener">Открыть чат</a>` : ''}</article>`;
+    return;
+  }
+  el.innerHTML = `<div class="ch-wrap panel"><div class="ch-head"><div><div class="eyebrow">Город на связи</div><b>Общий чат</b><small>Сообщения идут в канал Discord и обратно</small></div><a class="btn small ghost" href="${CHAT_URL}" target="_blank" rel="noopener">Открыть в Discord</a></div>
+    <div class="ch-log" id="chLog" role="log" aria-live="polite" aria-label="Сообщения чата"><p class="muted ch-note">Загружаю сообщения…</p></div>
+    <div class="ch-foot" id="chFoot"></div><p class="cab-toast" role="status" aria-live="polite"></p></div>`;
+  const log = q('#chLog', el), foot = q('#chFoot', el);
+  const c = await sb();
+  let sess = null, prof = null;
+  try { sess = await api().session(); if (sess) prof = await api().myProfile(sess.user.id); } catch (_) {}
+  const staff = prof && ['master', 'admin'].includes(prof.role);
+  const msgs = new Map();
+  const atBottom = () => log.scrollHeight - log.scrollTop - log.clientHeight < 80;
+  function draw(stick) {
+    const list = [...msgs.values()].sort((a, b) => new Date(a.created_at) - new Date(b.created_at) || a.id - b.id);
+    if (!list.length) { log.innerHTML = '<p class="muted ch-note">Пока тихо. Напиши первым — сообщение появится и в Discord.</p>'; return; }
+    const keep = stick || atBottom();
+    let prev = null;
+    log.innerHTML = list.map(m => {
+      const cont = prev && prev.author === m.author && prev.source === m.source && new Date(m.created_at) - new Date(prev.created_at) < 5 * 60 * 1000;
+      prev = m;
+      const att = (m.attachments || []).map(a => a.image ? `<a href="${esc(a.url)}" target="_blank" rel="noopener"><img class="ch-img" src="${esc(a.url)}" alt="${esc(a.name)}" loading="lazy"></a>` : `<a class="ch-file" href="${esc(a.url)}" target="_blank" rel="noopener">📎 ${esc(a.name)}</a>`).join('');
+      return `<div class="ch-msg${cont ? ' cont' : ''}${m.profile_id && sess && m.profile_id === sess.user.id ? ' mine' : ''}" data-id="${m.id}">
+        ${cont ? '<span class="ch-ava-sp"></span>' : (m.avatar ? `<img class="ch-ava" src="${esc(m.avatar)}" alt="" loading="lazy">` : `<span class="ch-ava cab-ava-empty">${esc((m.author || '?').slice(0, 1).toUpperCase())}</span>`)}
+        <div class="ch-body">${cont ? '' : `<div class="ch-meta"><b>${esc(m.author || 'Без имени')}</b><span class="ch-src ${m.source}">${m.source === 'site' ? 'сайт' : 'discord'}</span><time>${chatTime(m.created_at)}</time></div>`}
+          ${m.body ? `<div class="ch-text">${chatText(m.body)}</div>` : ''}${att ? `<div class="ch-att">${att}</div>` : ''}</div>
+        ${staff ? `<button type="button" class="ch-del" data-del="${m.id}" title="Удалить сообщение" aria-label="Удалить сообщение">✕</button>` : ''}</div>`;
+    }).join('');
+    if (keep) log.scrollTop = log.scrollHeight;
+  }
+  const add = rows => rows.forEach(r => msgs.set(r.id, r));
+  try {
+    const r = await c.from('chat_messages').select('*').order('created_at', { ascending: false }).limit(80);
+    if (r.error) throw r.error;
+    add(r.data || []);
+  } catch (e) { log.innerHTML = `<p class="muted ch-note">Чат пока не подключён: ${esc(errText(e))}</p>`; return; }
+  draw(true);
+  // мгновенно: новые строки из базы
+  const rt = c.channel('mh-chat').on('postgres_changes', { event: '*', schema: 'public', table: 'chat_messages' }, p => {
+    if (p.eventType === 'DELETE') { msgs.delete(p.old.id); draw(); return; }
+    if (p.new && p.new.id) { const mine = atBottom(); msgs.set(p.new.id, p.new); draw(mine); if (p.new.source === 'discord') play('click'); }
+  }).subscribe();
+  // забираем новое из Discord, пока страница открыта
+  const sync = () => { if (document.hidden) return; fetch(fnUrl('chat=sync'), { headers: { Authorization: 'Bearer ' + CFG.anonKey, apikey: CFG.anonKey } }).catch(() => {}); };
+  sync(); const timer = setInterval(sync, 4000);
+  const stop = () => { clearInterval(timer); try { c.removeChannel(rt); } catch (_) {} window.removeEventListener('hashchange', stop); };
+  window.addEventListener('hashchange', stop);
+
+  if (staff) log.addEventListener('click', async ev => {
+    const b = ev.target.closest('[data-del]'); if (!b) return;
+    if (!b.dataset.sure) { b.dataset.sure = '1'; b.textContent = 'Удалить?'; setTimeout(() => { if (b.isConnected) { delete b.dataset.sure; b.textContent = '✕'; } }, 3000); return; }
+    const s = await api().session();
+    const r = await fetch(fnUrl('chat=del'), { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + s.access_token, apikey: CFG.anonKey }, body: JSON.stringify({ id: +b.dataset.del }) });
+    if (!r.ok) toast(el, (await r.json().catch(() => ({}))).error || 'Не удалось удалить', true);
+  });
+
+  if (!sess) {
+    foot.innerHTML = `<p class="ch-login">Читать может каждый. Чтобы писать, <button type="button" class="ch-link" id="chLogin">войди через Discord</button>.</p>`;
+    q('#chLogin', el).onclick = async () => { try { sessionStorage.setItem(AFTER_KEY, 'chat'); } catch (_) {} try { await api().signInDiscord(); } catch (e) { toast(el, errText(e), true); } };
+    return;
+  }
+  foot.innerHTML = `<form class="ch-form" id="chForm">${avaOf(prof) ? `<img class="ch-ava" src="${esc(avaOf(prof))}" alt="">` : ''}<textarea id="chIn" rows="1" maxlength="1500" placeholder="Сообщение в общий чат… Enter — отправить, Shift+Enter — новая строка" aria-label="Сообщение"></textarea><button class="btn small" type="submit">Отправить</button></form>`;
+  const form = q('#chForm', el), inp = q('#chIn', el);
+  const grow = () => { inp.style.height = 'auto'; inp.style.height = Math.min(160, inp.scrollHeight) + 'px'; };
+  inp.addEventListener('input', grow);
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); form.requestSubmit(); } });
+  form.onsubmit = async ev => {
+    ev.preventDefault();
+    const text = inp.value.trim(); if (!text) return;
+    const btn = q('button', form); btn.disabled = true;
+    try {
+      const s = await api().session();
+      const r = await fetch(fnUrl('chat=send'), { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + s.access_token, apikey: CFG.anonKey }, body: JSON.stringify({ text }) });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(j.error || 'Сообщение не ушло');
+      inp.value = ''; grow(); play('click');
+    } catch (e) { toast(el, errText(e), true); }
+    btn.disabled = false; inp.focus();
+  };
+}
+
+window.Cabinet = { mount, api: SupabaseApi, fillSlots, anketaStatus, initHeader, community, residentsPage, chat: chatPage };
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initHeader); else setTimeout(initHeader, 0);
 // после входа через Discord / почту вернуть игрока туда, откуда он пришёл
 if (CFG.url && CFG.anonKey && /[?&](code|error_description)=/.test(location.search)) {
