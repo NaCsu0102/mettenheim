@@ -2152,3 +2152,20 @@ body.tree-mode .pipe-side { display: none; }
 .grid3 .link-card:hover .eyebrow { letter-spacing: .3em; } .grid3 .link-card .eyebrow { transition: letter-spacing .3s; }
 .grid3 .link-card::before { border-width: 2px; background: radial-gradient(300px circle at var(--mx) var(--my), var(--house-hi), color-mix(in srgb, var(--house-hi) 40%, transparent) 35%, transparent 70%) border-box; }
 .grid3 .link-card { transition: border-color .3s, box-shadow .3s, transform .3s; } .grid3 .link-card:hover { transform: translateY(-3px); }
+
+/* ===== Изобретения: каталог чертежей ===== */
+.iv-tiers { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-bottom: 22px; }
+.iv-tier h3 { margin: 4px 0 6px; font-size: 20px; } .iv-tier p { margin: 0 0 10px; color: var(--smoke); font-size: 14px; }
+.iv-slots { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--smoke); } .iv-slots b { color: var(--house-hi); }
+.iv-kind { margin-bottom: 22px; }
+.iv-head { display: flex; gap: 18px; align-items: flex-start; margin-bottom: 16px; } .iv-head h2 { margin: 4px 0 6px; } .iv-head .lead { margin: 0; font-size: 16px; color: var(--smoke); }
+.iv-ico { flex: none; width: 58px; height: 58px; display: grid; place-items: center; font-size: 30px; color: var(--house-hi); border: 1px solid var(--house); background: radial-gradient(circle, color-mix(in srgb, var(--house) 22%, transparent), transparent 70%); }
+.iv-cols { display: grid; grid-template-columns: minmax(0, 320px) minmax(0, 1fr); gap: 26px; }
+.iv-open { font-size: 14px; margin: 12px 0; }
+.iv-list { display: grid; gap: 8px; } .iv-li { padding: 9px 12px; border-left: 2px solid var(--house); background: rgba(0,0,0,.18); }
+.iv-li b { color: var(--parch); font-size: 15px; } .iv-li p { margin: 3px 0 0; color: var(--smoke); font-size: 14px; line-height: 1.5; }
+.iv-weak { margin: 0; padding-left: 18px; color: var(--smoke); font-size: 14px; line-height: 1.6; }
+.iv-zones { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.iv-zn { display: flex; gap: 10px; align-items: center; padding: 8px; border: 1px solid var(--rivet); background: rgba(0,0,0,.18); } .iv-zn b { color: var(--parch); } .iv-zn p { margin: 2px 0 0; font-size: 13px; color: var(--smoke); }
+.iv-grid.sm { width: 74px; flex: none; gap: 2px; }
+@media (max-width: 860px) { .iv-tiers, .iv-cols { grid-template-columns: 1fr; } .iv-zones { grid-template-columns: 1fr; } }

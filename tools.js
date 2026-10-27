@@ -2380,15 +2380,8 @@ const INV_AUTO_RULES = [
 ];
 const Inventor = {
   mount(el) {
-    const blank = () => ({ name: '', fn: 'scout', how: '', weak: 0, weakOwn: '', pow: 0 });
-    const st = Object.assign({ t: 1, g: [blank(), blank(), blank()], tur: { name: '', zone: 'cone', mod: 'shot', how: '' }, auto: { name: '', mem: 0, proto: [], quirk: '' }, genius: false }, MH.store.get('inventor', {}));
-    while (st.g.length < 3) st.g.push(blank());
-    const save = () => MH.store.set('inventor', st);
-    const T = () => INV_TIERS[st.t - 1];
-    const nG = () => Math.min(3, T().slots.gadget + (st.genius ? 1 : 0));
-    const opt = (list, cur, lab = x => x[1], val = (x, i) => x[0]) => list.map((x, i) => `<option value="${esc(val(x, i))}"${String(val(x, i)) === String(cur) ? ' selected' : ''}>${esc(lab(x))}</option>`).join('');
     const statRows = k => `<div class="kv iv-stats">${INV_STATS[k].map(([a, b]) => `<div class="wrow"><span>${a}</span><b>${b}</b></div>`).join('')}</div>`;
-    const mats = k => `<div class="iv-mats"><small>Материалы · Механика ${INV_DC[k]}</small><div>${INV_MAT[k].map(([i, n]) => matChip(i, n)).join('')}</div></div>`;
+    const mats = k => `<div class="iv-mats"><small>Материалы для сборки · проверка Механики ${INV_DC[k]}</small><div>${INV_MAT[k].map(([i, n]) => matChip(i, n)).join('')}</div></div>`;
     function zoneGrid(z) {
       const N = 7, on = new Set(); let tx = 3, ty = 6;
       if (z === 'cone') { for (let d = 1; d <= 3; d++) for (let w = -Math.min(1, d - 1); w <= Math.min(1, d - 1); w++) on.add(`${tx + w},${ty - d}`); }
@@ -2397,88 +2390,27 @@ const Inventor = {
       if (z === 'post') { [[3, 1], [4, 1], [3, 2], [4, 2]].forEach(([x, y]) => on.add(`${x},${y}`)); }
       let h = '';
       for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) h += `<i class="${x === tx && y === ty ? 'me' : on.has(`${x},${y}`) ? 'on' : ''}"></i>`;
-      return `<div class="iv-grid" aria-hidden="true">${h}</div>`;
+      return `<div class="iv-grid sm" aria-hidden="true">${h}</div>`;
     }
-    const lock = (what, need) => `<article class="panel iv-card iv-lock"><div class="eyebrow">${what}</div><p class="muted">Откроется на ${need}.</p></article>`;
-    function gadgetCard(i) {
-      const g = st.g[i], fn = INV_FN.find(f => f[0] === g.fn) || INV_FN[0];
-      return `<article class="panel iv-card" data-gi="${i}"><div class="iv-head">${iconImg('inv-fn-' + g.fn, 'iv-ic')}<div class="eyebrow">Слот помощника ${i + 1}</div></div>
-        <label class="iv-f"><span>Название</span><input data-k="name" maxlength="60" value="${esc(g.name)}" placeholder="Например, «Сверчок» — латунный жук-отмычка"></label>
-        <div class="iv-row"><label class="iv-f"><span>Функция</span><select data-k="fn">${opt(INV_FN, g.fn)}</select></label>
-        <label class="iv-f"><span>Питание</span><select data-k="pow">${opt(INV_POWER, g.pow, x => x, (x, i) => i)}</select></label></div>
-        <p class="iv-hint">${fn[2]}</p>
-        <label class="iv-f"><span>Как он работает — своими словами</span><textarea data-k="how" rows="3" maxlength="600" placeholder="Облик, повадки, что именно делает и как выглядит со стороны">${esc(g.how)}</textarea></label>
-        <label class="iv-f"><span>Слабость</span><select data-k="weak">${opt(INV_WEAK, g.weak, x => x, (x, i) => i)}</select></label>
-        ${g.weak === INV_WEAK.length - 1 ? `<label class="iv-f"><span>Своя слабость</span><input data-k="weakOwn" maxlength="120" value="${esc(g.weakOwn)}"></label>` : ''}
-        ${statRows('gadget')}${mats('gadget')}</article>`;
-    }
-    function turretCard() {
-      const u = st.tur, z = INV_ZONE.find(x => x[0] === u.zone) || INV_ZONE[0], m = INV_MOD.find(x => x[0] === u.mod) || INV_MOD[0];
-      return `<article class="panel iv-card iv-wide" data-tur><div class="iv-head">${iconImg('inv-tier2', 'iv-ic')}${iconImg('inv-mod-' + u.mod, 'iv-ic')}<div class="eyebrow">Боевая турель</div></div>
-        <div class="iv-split"><div>
-        <label class="iv-f"><span>Название</span><input data-k="name" maxlength="60" value="${esc(u.name)}" placeholder="Например, «Сторожевая цапля»"></label>
-        <div class="iv-f"><span>Зона обстрела</span><div class="iv-seg" role="radiogroup">${INV_ZONE.map(x => `<button type="button" data-zone="${x[0]}" aria-checked="${x[0] === u.zone}" role="radio">${x[1]}</button>`).join('')}</div></div>
-        <p class="iv-hint">${z[2]}</p>
-        <label class="iv-f"><span>Модуль</span><select data-k="mod">${opt(INV_MOD, u.mod)}</select></label>
-        <p class="iv-hint">${m[2]}</p>
-        <label class="iv-f"><span>Как она работает — своими словами</span><textarea data-k="how" rows="3" maxlength="600" placeholder="Как разворачивается, чем стреляет, как выбирает цель">${esc(u.how)}</textarea></label>
-        </div><div class="iv-zone">${zoneGrid(u.zone)}<small>■ турель · ▦ зона обстрела</small></div></div>
-        <p class="iv-hint">Зону выбирают при развёртывании и не меняют до конца боя. ДОП и 1 Деталь — повернуть турель. Выпала 1 на Атаке турели — она бьёт ближайшего в зоне, даже союзника.</p>
-        ${statRows('turret')}${mats('turret')}</article>`;
-    }
-    function autoCard() {
-      const a = st.auto, open = INV_MEM.filter(n => a.mem >= n).length;
-      return `<article class="panel iv-card iv-wide" data-auto><div class="iv-head">${iconImg('inv-tier3', 'iv-ic')}<div class="eyebrow">Автоматон в кейсе</div></div>
-        <div class="iv-split"><div>
-        <label class="iv-f"><span>Имя</span><input data-k="name" maxlength="60" value="${esc(a.name)}" placeholder="Например, «Фрейя-7» или просто «Ящик»"></label>
-        <div class="iv-f"><span>Память: <b>${a.mem}</b> ПМ · протоколов ${a.proto.length} из ${open}</span><div class="iv-mem"><button type="button" class="btn small ghost" data-mem="-1" aria-label="Меньше памяти">−</button><input type="range" min="0" max="20" value="${a.mem}" data-k="mem" aria-label="Память автоматона"><button type="button" class="btn small ghost" data-mem="1" aria-label="Больше памяти">+</button></div>
-        <ol class="iv-steps">${INV_MEM.map((n, i) => `<li class="${a.mem >= n ? 'on' : ''}">${n} ПМ</li>`).join('')}</ol></div>
-        <div class="iv-protos">${INV_PROTO.map(p => { const on = a.proto.includes(p[0]); const can = on || a.proto.length < open; return `<button type="button" class="iv-proto${on ? ' on' : ''}" data-proto="${p[0]}" aria-pressed="${on}"${can ? '' : ' disabled'}>${iconImg('inv-pr-' + p[0], 'iv-pic')}<b>${p[1]}</b><small>${p[2]}</small></button>`; }).join('')}</div>
-        <label class="iv-f"><span>Характер${a.mem >= 10 ? '' : ' — откроется на 10 ПМ'}</span><textarea data-k="quirk" rows="2" maxlength="400"${a.mem >= 10 ? '' : ' disabled'} placeholder="Привычка, манера, любимое слово">${esc(a.quirk)}</textarea></label>
-        </div><div>${statRows('auto')}<p class="iv-hint">Улучшения — как у конструкта: <a href="#body">Протезы и конструкты</a>.</p></div></div>
-        <div class="kv">${INV_AUTO_RULES.map(([k, v]) => `<div class="wrow"><span>${k}</span><b>${v}</b></div>`).join('')}</div>
-        ${mats('auto')}</article>`;
-    }
-    function text() {
-      const L = [`Заявка изобретателя · ${T().name} (${st.t} тир)`];
-      for (let i = 0; i < nG(); i++) { const g = st.g[i], fn = INV_FN.find(f => f[0] === g.fn); L.push(`\nПомощник ${i + 1}: ${g.name || 'без названия'}\nФункция: ${fn[1]} — ${fn[2]}\nПитание: ${INV_POWER[g.pow]}\nКак работает: ${g.how || '—'}\nСлабость: ${g.weak === INV_WEAK.length - 1 ? g.weakOwn || '—' : INV_WEAK[g.weak]}`); }
-      if (T().slots.turret) { const u = st.tur, z = INV_ZONE.find(x => x[0] === u.zone), m = INV_MOD.find(x => x[0] === u.mod); L.push(`\nТурель: ${u.name || 'без названия'}\nЗона: ${z[1]} — ${z[2]}\nМодуль: ${m[1]} — ${m[2]}\nКак работает: ${u.how || '—'}`); }
-      if (T().slots.auto) { const a = st.auto; L.push(`\nАвтоматон: ${a.name || 'без имени'}\nПамять: ${a.mem} ПМ\nПротоколы: ${a.proto.map(p => INV_PROTO.find(x => x[0] === p)[1]).join(', ') || '—'}${a.mem >= 10 ? `\nХарактер: ${a.quirk || '—'}` : ''}`); }
-      return L.join('\n');
-    }
-    function draw() {
-      const s = T().slots;
-      el.innerHTML = `<div class="iv-tiers" role="radiogroup" aria-label="Тир изобретателя">${INV_TIERS.map(x => `<button type="button" role="radio" data-t="${x.t}" aria-checked="${x.t === st.t}">${iconImg('inv-tier' + x.t, 'iv-tic')}<span>${'I II III'.split(' ')[x.t - 1]}</span><b>${x.name}</b><small>${x.open}</small></button>`).join('')}</div>
-        <label class="iv-genius"><input type="checkbox" id="ivGen"${st.genius ? ' checked' : ''}> Изучена вершина «Гений механики» — ещё один слот помощника</label>
-        <div class="iv-cards">${[0, 1, 2].map(i => i < nG() ? gadgetCard(i) : i < 2 ? lock('Слот помощника ' + (i + 1), 'II тире') : '').join('')}
-        ${s.turret ? turretCard() : lock('Боевая турель', 'II тире')}${s.auto ? autoCard() : lock('Автоматон в кейсе', 'III тире')}</div>
-        <div class="iv-out"><button type="button" class="btn" id="ivCopy">Скопировать заявку мастеру</button><textarea id="ivTxt" hidden readonly rows="8"></textarea></div>`;
-    }
-    const cardOf = t => t.closest('[data-gi]') ? st.g[+t.closest('[data-gi]').dataset.gi] : t.closest('[data-tur]') ? st.tur : t.closest('[data-auto]') ? st.auto : null;
-    el.addEventListener('input', e => {
-      const t = e.target, k = t.dataset.k, o = cardOf(t); if (!k || !o) return;
-      const num = ['weak', 'pow', 'mem'].includes(k);
-      o[k] = num ? +t.value : t.value;
-      if (k === 'mem') { const open = INV_MEM.filter(n => o.mem >= n).length; o.proto = o.proto.slice(0, open); }
-      save();
-      if (t.tagName === 'SELECT' || k === 'mem') draw();
-    });
-    el.addEventListener('change', e => { if (e.target.id === 'ivGen') { st.genius = e.target.checked; save(); play('click'); draw(); } });
-    el.addEventListener('click', e => {
-      const b = e.target.closest('button'); if (!b) return;
-      if (b.dataset.t) { st.t = +b.dataset.t; }
-      else if (b.dataset.zone) { st.tur.zone = b.dataset.zone; }
-      else if (b.dataset.mem) { st.auto.mem = Math.max(0, Math.min(20, st.auto.mem + +b.dataset.mem)); st.auto.proto = st.auto.proto.slice(0, INV_MEM.filter(n => st.auto.mem >= n).length); }
-      else if (b.dataset.proto) { const p = b.dataset.proto, a = st.auto; a.proto = a.proto.includes(p) ? a.proto.filter(x => x !== p) : [...a.proto, p]; }
-      else if (b.id === 'ivCopy') {
-        const txt = text(), ta = q('#ivTxt', el);
-        const fb = () => { ta.hidden = false; ta.value = txt; ta.select(); };
-        try { navigator.clipboard.writeText(txt).then(() => { b.textContent = 'Скопировано ✓'; setTimeout(() => b.textContent = 'Скопировать заявку мастеру', 1800); }, fb); } catch (_) { fb(); }
-        return;
-      } else return;
-      play('click'); save(); draw();
-    });
-    draw();
+    const list = rows => `<div class="iv-list">${rows.map(([, n, d]) => `<div class="iv-li"><b>${esc(n)}</b><p>${esc(d)}</p></div>`).join('')}</div>`;
+    const tierOf = k => INV_TIERS.find(t => t.slots[k] > 0);
+    const kind = (k, icon, title, lead, body) => { const t = tierOf(k); return `<article class="panel iv-kind" id="iv-${k}">
+      <div class="iv-head"><span class="iv-ico">${icon}</span><div><div class="eyebrow">Чертёж · тир ${t.t} · ${esc(t.name)}</div><h2>${title}</h2><p class="lead">${lead}</p></div></div>
+      <div class="iv-cols"><div><div class="al-sub">Характеристики</div>${statRows(k)}<p class="muted iv-open"><b>Открывается:</b> ${esc(t.open)}</p>${mats(k)}</div><div>${body}</div></div></article>`; };
+    el.innerHTML = `
+      <div class="iv-tiers">${INV_TIERS.map(t => `<div class="panel iv-tier"><div class="eyebrow">Тир ${t.t}</div><h3>${esc(t.name)}</h3><p>${esc(t.open)}</p><div class="iv-slots"><span>Помощники: <b>${t.slots.gadget}</b></span><span>Турели: <b>${t.slots.turret}</b></span><span>Автоматоны: <b>${t.slots.auto}</b></span></div></div>`).join('')}</div>
+      ${kind('gadget', '⚙', 'Помощник', 'Маленький механизм на одну задачу: разведчик, ключ-отмычка, носильщик, сигнальщик. Действует вашим дополнительным действием.',
+        `<div class="al-sub">Что умеет — одна функция на выбор</div>${list(INV_FN)}<div class="al-sub">Питание</div><p class="muted">${INV_POWER.join(' · ')}</p><div class="al-sub">Слабость — обязательна, одна на выбор</div><ul class="iv-weak">${INV_WEAK.map(w => `<li>${esc(w)}</li>`).join('')}</ul>`)}
+      ${kind('turret', '⌖', 'Боевая турель', 'Стационарное орудие. Разворачивается раз за бой и стреляет в конце вашего хода по одной цели в своей зоне.',
+        `<div class="al-sub">Зона обстрела — одна на выбор</div><div class="iv-zones">${INV_ZONE.map(([z, n, d]) => `<div class="iv-zn">${zoneGrid(z)}<div><b>${esc(n)}</b><p>${esc(d)}</p></div></div>`).join('')}</div><div class="al-sub">Боеприпас — один на выбор</div>${list(INV_MOD)}`)}
+      ${kind('auto', '♜', 'Автоматон', 'Механический спутник в кейсе за спиной. Сражается рядом с вами, учится и со временем обретает характер.',
+        `<div class="al-sub">Протоколы — учит по мере опыта</div>${list(INV_PROTO)}<p class="muted">Новый протокол открывается на ${INV_MEM.join(', ')} Памяти.</p><div class="al-sub">Особенности</div>${list(INV_AUTO_RULES.map(([a, b]) => ['', a, b]))}`)}
+      <article class="panel"><div class="eyebrow">Общие правила</div><div class="iv-list">
+        <div class="iv-li"><b>Своя идея</b><p>Можно придумать свою функцию или протокол — мастер приравняет их по силе к строке из списка.</p></div>
+        <div class="iv-li"><b>Сборка</b><p>На верстаке из материалов чертежа и проверкой Механики. Провал — сборка переносится, материалы целы.</p></div>
+        <div class="iv-li"><b>Слоты</b><p>Механизм занимает слот, пока существует. Разобрать — вернуть половину материалов. «Гений механики» даёт ещё один слот помощника.</p></div>
+        <div class="iv-li"><b>Поломки</b><p>Механизмы как конструкты: яды не действуют, вместо травм — поломки. Чинят ремкомплектом и «Полевым ремонтом». На 0 ОЗ отключается до починки.</p></div>
+      </div></article>`;
   }
 };
 window.INV_RULES = INV_RULES;
