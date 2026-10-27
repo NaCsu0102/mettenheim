@@ -1917,3 +1917,6 @@ input[type="email"] { width: 100%; background: #0f0b08; border: 1px solid var(--
 .ch-link { background: none; border: 0; padding: 0; color: var(--house-hi); text-decoration: underline; cursor: pointer; font: inherit; }
 .ch-wrap .cab-toast { margin: 0; padding: 0 14px 10px; }
 @media (max-width: 560px) { .ch-wrap { height: calc(100svh - 150px); } .ch-msg { grid-template-columns: 44px minmax(0, 1fr) auto; padding-right: 8px; } .ch-ava { width: 32px; height: 32px; } .ch-form .ch-ava { display: none; } }
+/* Инферно: культура */
+.inf-lore { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+.inf-lore h3 { margin: 6px 0 8px; font-size: 19px; } .inf-lore p { margin: 0; color: var(--smoke); font-size: 15px; line-height: 1.6; }
