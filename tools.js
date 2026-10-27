@@ -2392,11 +2392,11 @@ const Inventor = {
       for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) h += `<i class="${x === tx && y === ty ? 'me' : on.has(`${x},${y}`) ? 'on' : ''}"></i>`;
       return `<div class="iv-grid sm" aria-hidden="true">${h}</div>`;
     }
-    const list = rows => `<div class="iv-list">${rows.map(([, n, d]) => `<div class="iv-li"><b>${esc(n)}</b><p>${esc(d)}</p></div>`).join('')}</div>`;
+    const list = rows => `<div class="cards-list">${rows.map(([, n, d]) => `<div class="cardrow"><b>${esc(n)}</b><p>${esc(d)}</p></div>`).join('')}</div>`;
     const tierOf = k => INV_TIERS.find(t => t.slots[k] > 0);
     const kind = (k, icon, title, lead, body) => { const t = tierOf(k); return `<article class="panel iv-kind" id="iv-${k}">
       <div class="iv-head"><span class="iv-ico">${icon}</span><div><div class="eyebrow">Чертёж · тир ${t.t} · ${esc(t.name)}</div><h2>${title}</h2><p class="lead">${lead}</p></div></div>
-      <div class="iv-cols"><div><div class="al-sub">Характеристики</div>${statRows(k)}<p class="muted iv-open"><b>Открывается:</b> ${esc(t.open)}</p>${mats(k)}</div><div>${body}</div></div></article>`; };
+      <div class="iv-cols"><div><div class="al-sub">Характеристики</div>${statRows(k)}</div><div><p class="muted iv-open"><b>Открывается:</b> ${esc(t.open)}</p>${mats(k)}</div></div><div class="iv-body">${body}</div></article>`; };
     el.innerHTML = `
       <div class="iv-tiers">${INV_TIERS.map(t => `<div class="panel iv-tier"><div class="eyebrow">Тир ${t.t}</div><h3>${esc(t.name)}</h3><p>${esc(t.open)}</p><div class="iv-slots"><span>Помощники: <b>${t.slots.gadget}</b></span><span>Турели: <b>${t.slots.turret}</b></span><span>Автоматоны: <b>${t.slots.auto}</b></span></div></div>`).join('')}</div>
       ${kind('gadget', '⚙', 'Помощник', 'Маленький механизм на одну задачу: разведчик, ключ-отмычка, носильщик, сигнальщик. Действует вашим дополнительным действием.',
@@ -2405,12 +2405,12 @@ const Inventor = {
         `<div class="al-sub">Зона обстрела — одна на выбор</div><div class="iv-zones">${INV_ZONE.map(([z, n, d]) => `<div class="iv-zn">${zoneGrid(z)}<div><b>${esc(n)}</b><p>${esc(d)}</p></div></div>`).join('')}</div><div class="al-sub">Боеприпас — один на выбор</div>${list(INV_MOD)}`)}
       ${kind('auto', '♜', 'Автоматон', 'Механический спутник в кейсе за спиной. Сражается рядом с вами, учится и со временем обретает характер.',
         `<div class="al-sub">Протоколы — учит по мере опыта</div>${list(INV_PROTO)}<p class="muted">Новый протокол открывается на ${INV_MEM.join(', ')} Памяти.</p><div class="al-sub">Особенности</div>${list(INV_AUTO_RULES.map(([a, b]) => ['', a, b]))}`)}
-      <article class="panel"><div class="eyebrow">Общие правила</div><div class="iv-list">
-        <div class="iv-li"><b>Своя идея</b><p>Можно придумать свою функцию или протокол — мастер приравняет их по силе к строке из списка.</p></div>
-        <div class="iv-li"><b>Сборка</b><p>На верстаке из материалов чертежа и проверкой Механики. Провал — сборка переносится, материалы целы.</p></div>
-        <div class="iv-li"><b>Слоты</b><p>Механизм занимает слот, пока существует. Разобрать — вернуть половину материалов. «Гений механики» даёт ещё один слот помощника.</p></div>
-        <div class="iv-li"><b>Поломки</b><p>Механизмы как конструкты: яды не действуют, вместо травм — поломки. Чинят ремкомплектом и «Полевым ремонтом». На 0 ОЗ отключается до починки.</p></div>
-      </div></article>`;
+      <div class="sec-head" style="margin-top:40px"><div class="eyebrow">Для всех чертежей</div><h2>Общие правила</h2></div><div class="cards-list">
+        <div class="cardrow"><b>Своя идея</b><p>Можно придумать свою функцию или протокол — мастер приравняет их по силе к строке из списка.</p></div>
+        <div class="cardrow"><b>Сборка</b><p>На верстаке из материалов чертежа и проверкой Механики. Провал — сборка переносится, материалы целы.</p></div>
+        <div class="cardrow"><b>Слоты</b><p>Механизм занимает слот, пока существует. Разобрать — вернуть половину материалов. «Гений механики» даёт ещё один слот помощника.</p></div>
+        <div class="cardrow"><b>Поломки</b><p>Механизмы как конструкты: яды не действуют, вместо травм — поломки. Чинят ремкомплектом и «Полевым ремонтом». На 0 ОЗ отключается до починки.</p></div>
+      </div>`;
   }
 };
 window.INV_RULES = INV_RULES;

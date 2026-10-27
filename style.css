@@ -2169,3 +2169,6 @@ body.tree-mode .pipe-side { display: none; }
 .iv-zn { display: flex; gap: 10px; align-items: center; padding: 8px; border: 1px solid var(--rivet); background: rgba(0,0,0,.18); } .iv-zn b { color: var(--parch); } .iv-zn p { margin: 2px 0 0; font-size: 13px; color: var(--smoke); }
 .iv-grid.sm { width: 74px; flex: none; gap: 2px; }
 @media (max-width: 860px) { .iv-tiers, .iv-cols { grid-template-columns: 1fr; } .iv-zones { grid-template-columns: 1fr; } }
+.iv-cols { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-bottom: 8px; }
+.iv-body .al-sub { margin-top: 18px; } .iv-body .cards-list { margin-top: 8px; }
+.iv-kind .cards-list { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
