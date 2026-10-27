@@ -2108,3 +2108,5 @@ body.tree-mode .pipe-side { display: none; }
 .fx-needle { inset: auto; left: 50%; top: 50%; width: 74%; aspect-ratio: 1; transform: translate(-50%, -50%) rotate(var(--fx-a, 0deg)); }
 @media (max-width: 760px) { .hero-run { margin-top: 0; } }
 .crop-wrap { overflow: auto; } .crop-card { width: min(560px, 100%, calc((100svh - 250px) * var(--ar, 1) + 50px)); min-width: min(300px, 100%); }
+.engine-plate > span:not(.eng-dot):not(.eng-ue) { color: #1f1408; font-weight: 600; text-shadow: 0 1px 0 rgba(255,230,170,.35); }
+.fx-gauge b { font-size: 9px; letter-spacing: .1em; bottom: 27%; }

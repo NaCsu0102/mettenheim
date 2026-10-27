@@ -733,7 +733,7 @@ async function liveBlock(el) {
     const t = F.talbot || 0, d = F.dorn || 0, sum = t + d, pt = sum ? Math.round(t / sum * 100) : 50;
     const fxEl = q('#fxMount'); if (fxEl) fxEl.innerHTML = `<div class="panel fx-board"><div class="eyebrow">Счёт Домов · общий пул очков фракции</div>
       <div class="fx-h t"><small>Жёлтые</small><b>Дом Талбот</b><span class="fx-n">${t}</span></div>
-      <div class="fx-gauge" role="img" aria-label="Перевес: ${sum ? (t > d ? 'Талбот' : d > t ? 'Дорн' : 'равенство') : 'пока равенство'}"><div class="fx-needle" style="--fx-a:${((50 - pt) / 50 * -110).toFixed(1)}deg"></div><b>Давление Домов</b></div>
+      <div class="fx-gauge" role="img" aria-label="Перевес: ${sum ? (t > d ? 'Талбот' : d > t ? 'Дорн' : 'равенство') : 'пока равенство'}"><div class="fx-needle" style="--fx-a:${((50 - pt) / 50 * -110).toFixed(1)}deg"></div><b>Перевес</b></div>
       <div class="fx-h d"><small>Красные</small><b>Дом Дорн</b><span class="fx-n">${d}</span></div>
       <div class="fx-vs">${sum ? (t > d ? '◀ ведут Жёлтые' : d > t ? 'ведут Красные ▶' : 'ничья') : 'сезон начинается'}</div>
       <div class="fx-tube"><div class="fx-bar" role="img" aria-label="Талбот ${t}, Дорн ${d}"><i class="t" style="width:${pt}%"></i><i class="d" style="width:${100 - pt}%"></i></div></div>
