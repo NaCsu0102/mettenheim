@@ -216,7 +216,7 @@ async function giveRoles(userId: string) {
 let statsCache: { at: number; body: unknown } | null = null;
 
 /* ---------- обработка ---------- */
-/* ---------- картинки: портреты ---------- */
+/* ---------- портреты персонажей в публичном хранилище (для сайта и Discord) ---------- */
 function dataUrlBytes(u: string): [Uint8Array, string] | null {
   const m = /^data:(image\/[a-z+]+);base64,(.+)$/i.exec(u || '');
   if (!m) return null;
@@ -224,20 +224,22 @@ function dataUrlBytes(u: string): [Uint8Array, string] | null {
   for (let i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i);
   return [a, m[1]];
 }
-async function image(qp: URLSearchParams) {
-  const kind = qp.get('img');
-  let src = '', fallback = '';
-  if (kind === 'ava' && /^[0-9a-f-]{36}$/i.test(qp.get('id') || '')) {
-    const { data } = await SB.from('profiles').select('portrait,avatar_url').eq('id', qp.get('id')).maybeSingle();
-    src = data?.portrait || ''; fallback = data?.avatar_url || '';
-  } else if (kind === 'char' && /^\d+$/.test(qp.get('n') || '')) {
-    const { data } = await SB.from('characters').select('portrait').eq('number', qp.get('n')).eq('status', 'approved').maybeSingle();
-    src = data?.portrait || '';
-  }
-  const b = dataUrlBytes(src);
-  if (b) return new Response(b[0], { headers: { 'Content-Type': b[1], 'Cache-Control': 'public, max-age=86400', 'Access-Control-Allow-Origin': '*' } });
-  if (fallback) return Response.redirect(fallback, 302);
-  return new Response('not found', { status: 404, headers: { 'Access-Control-Allow-Origin': '*' } });
+async function publishPortrait(ch: any) {
+  const b = dataUrlBytes(ch.portrait || '');
+  if (!b || !ch.number) return null;
+  const path = `char/${ch.number}.jpg`;
+  const r = await fetch(`${DB_URL}/storage/v1/object/portraits/${path}`, { method: 'POST', headers: { apikey: DB_KEY, Authorization: 'Bearer ' + DB_KEY, 'Content-Type': b[1], 'x-upsert': 'true', 'Cache-Control': '3600' }, body: b[0] });
+  if (!r.ok) throw new Error('storage ' + r.status + ' ' + (await r.text()).slice(0, 120));
+  const url = `${DB_URL}/storage/v1/object/public/portraits/${path}?v=${(ch.portrait as string).length}`;
+  await SB.from('characters').update({ portrait_url: url }).eq('id', ch.id);
+  return url;
+}
+// разово: выложить портреты уже принятых персонажей
+async function backfillPortraits() {
+  const { data } = await SB.from('characters').select('id,number,portrait,portrait_url').eq('status', 'approved');
+  let n = 0;
+  for (const ch of data || []) if (ch.portrait && !ch.portrait_url) { try { if (await publishPortrait(ch)) n++; } catch (_) { /* дальше */ } }
+  return { published: n };
 }
 
 /* ---------- чат сайта ↔ канал Discord ---------- */
@@ -333,7 +335,7 @@ async function chat(req: Request, action: string, CORS: Record<string, string>) 
     const { data: chs } = await SB.from('characters').select('number,name').eq('owner', pr.id).eq('status', 'approved').order('number', { ascending: true }).limit(1);
     const ch = chs && chs[0];
     const name = ((ch ? `${ch.number} | ${ch.name}` : pr.display_name || pr.discord || 'Гость сайта') + ' · сайт').replace(/discord/gi, 'dc').slice(0, 80);
-    const avatar = pr.portrait ? `${DB_URL}/functions/v1/notify?img=ava&id=${pr.id}&v=${pr.portrait.length}` : pr.avatar_url || '';
+    const avatar = (/^https:\/\//.test(pr.portrait || '') ? pr.portrait : '') || pr.avatar_url || '';
     const wh = await chatWebhook();
     const r = await fetch(`${API}/webhooks/${wh.id}/${wh.token}?wait=true`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -369,8 +371,8 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify(statsCache.body), { headers: { ...CORS, 'Cache-Control': 'public, max-age=60' } });
   }
   const qp = new URL(req.url).searchParams;
-  // картинки для сайта и Discord: портрет игрока и портрет принятого персонажа
-  if (qp.get('img')) return image(qp);
+  // разово выложить портреты принятых персонажей
+  if (qp.get('portraits') === 'backfill') return new Response(JSON.stringify(await backfillPortraits()), { headers: CORS });
   // чат сайта ↔ канал Discord
   if (qp.get('chat')) {
     try { return await chat(req, qp.get('chat')!, CORS); }
@@ -455,6 +457,7 @@ Deno.serve(async (req) => {
   // канал персонажа при принятии
   let channel: string | null = ch.discord_channel_id || null;
   if (rv.verdict === 'approved' && ch.number) {
+    try { await publishPortrait(ch); } catch (e) { console.log('portrait', e); }
     try {
       const { data: staff } = await SB.from('profiles').select('discord_id').in('role', ['master', 'admin']);
       if (!channel) {

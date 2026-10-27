@@ -68,6 +68,8 @@ const SupabaseApi = {
   async counts() { const c = await sb(); const out = {}; for (const s of ['submitted', 'revision', 'approved', 'rejected']) { const r = await c.from('characters').select('id', { count: 'exact', head: true }).eq('status', s); out[s] = r.count || 0; } return out; },
   async profiles(ids) { const c = await sb(); let qy = c.from('profiles').select('*').order('created_at', { ascending: true }); if (ids) qy = qy.in('id', ids); return must(await qy.limit(500)); },
   async slots() { const c = await sb(); const rows = must(await c.rpc('slot_counts')); const o = {}; (rows || []).forEach(r => { o[r.kind] = { taken: +r.taken, pending: +r.pending }; }); return o; },
+  async uploadAva(uid, blob) { const c = await sb(); const path = `ava/${uid}.jpg`; must(await c.storage.from('portraits').upload(path, blob, { upsert: true, contentType: 'image/jpeg', cacheControl: '3600' })); return c.storage.from('portraits').getPublicUrl(path).data.publicUrl + '?v=' + Date.now(); },
+  async removeAva(uid) { const c = await sb(); await c.storage.from('portraits').remove([`ava/${uid}.jpg`]); },
   async setRole(id, role) { const c = await sb(); return must(await c.from('profiles').update({ role }).eq('id', id).select().single()); }
 };
 const api = () => window.MH_CABINET_API || SupabaseApi;
@@ -285,14 +287,14 @@ async function playerView(el, sess, prof) {
   function render() {
     frame(tab === 'profile' ? profileHTML() : listHTML());
     if (tab === 'profile') {
-      const setAva = async v => { try { prof = await api().saveProfile(uid, { portrait: v }); paintHeader(headSess, prof); render(); toast(el, v ? 'Портрет сохранён' : 'Вернули аватарку Discord'); } catch (e) { toast(el, errText(e), true); } };
+      const setAva = async blob => { try { const url = blob ? await api().uploadAva(uid, blob) : (await api().removeAva(uid), null); prof = await api().saveProfile(uid, { portrait: url }); paintHeader(headSess, prof); render(); toast(el, blob ? 'Портрет сохранён' : 'Вернули аватарку Discord'); } catch (e) { toast(el, errText(e), true); } };
       q('#pfAvaPick', el).onclick = () => q('#pfAvaFile', el).click();
       q('#pfAvaFile', el).onchange = () => {
         const f = q('#pfAvaFile', el).files[0]; if (!f) return;
         const r = new FileReader(); r.onload = () => { const img = new Image(); img.onload = () => {
           const S = 320, side = Math.min(img.width, img.height), c = document.createElement('canvas'); c.width = c.height = S;
           c.getContext('2d').drawImage(img, (img.width - side) / 2, Math.max(0, (img.height - side) * .3), side, side, 0, 0, S, S);
-          setAva(c.toDataURL('image/jpeg', .86));
+          c.toBlob(b => b ? setAva(b) : toast(el, 'Не получилось обработать картинку', true), 'image/jpeg', .86);
         }; img.onerror = () => toast(el, 'Не получилось открыть картинку', true); img.src = r.result; }; r.readAsDataURL(f);
       };
       const ad = q('#pfAvaDel', el); if (ad) ad.onclick = () => setAva(null);
@@ -502,7 +504,7 @@ async function discordData() {
 const origin = (p, o) => (originsOf(p).find(x => x.id === o) || {});
 const figureOf = r => { const o = origin(r.p, r.o); return o.folder && r.c ? `assets/characters/${o.folder}/${r.g === 'male' ? 'male' : 'female'}-${r.c}.webp` : ''; };
 const numOf = n => '№' + String(n || 0).padStart(3, '0');
-const charPic = r => r.has_portrait && CFG.url ? `${CFG.url}/functions/v1/notify?img=char&n=${r.number}` : '';
+const charPic = r => /^https:\/\//.test(r.portrait_url || '') ? r.portrait_url : '';
 function residentRow(r) {
   const o = origin(r.p, r.o);
   const pic = charPic(r);
