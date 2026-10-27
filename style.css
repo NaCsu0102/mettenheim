@@ -2034,3 +2034,77 @@ a.rs-tile { text-decoration: none; color: inherit; transition: transform .2s, bo
 @media (min-width: 761px) { .hc-btns { flex-wrap: nowrap; gap: 12px; } .side.talbot .hc-btns { flex-direction: row-reverse; justify-content: flex-start; } .hlink { font-size: 11px; letter-spacing: .1em; white-space: nowrap; } .side .caption { width: min(340px, calc(50vw - 30px)); } }
 @media (min-width: 761px) and (max-height: 780px) { .side .caption small { display: none; } .side .caption h2 { margin: 0 0 4px; } .hc-btns { margin-top: 6px; } }
 .hbtn { white-space: nowrap; }
+
+/* ===== Плашки Домов: ширина по содержимому (Montserrat шире) ===== */
+@media (min-width: 761px) { .side .caption { width: max-content; min-width: 260px; max-width: calc(50vw - 30px); } .side .caption h2 { white-space: nowrap; } }
+
+/* ===== Трубы ===== */
+.pipe-run { position: relative; height: 44px; margin: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+.pr-pipe { position: absolute; left: 0; right: 0; top: 50%; height: 22px; transform: translateY(-50%); background: url("assets/pipes/pipe-h.webp") repeat-x left center / auto 22px; filter: drop-shadow(0 4px 6px rgba(0,0,0,.6)); }
+.pr-joint { position: absolute; top: 50%; width: 58px; height: 42px; transform: translateY(-50%); background: url("assets/pipes/joint.webp") center / contain no-repeat; filter: drop-shadow(0 5px 8px rgba(0,0,0,.6)); }
+.pr-joint.a { left: 14%; } .pr-joint.b { right: 14%; }
+.pr-valve { position: absolute; left: 50%; top: -26px; width: 46px; height: 46px; margin-left: -23px; animation: valveTurn 14s linear infinite; filter: drop-shadow(0 4px 6px rgba(0,0,0,.7)); }
+.pr-steam { position: absolute; left: calc(14% + 18px); top: -70px; width: 90px; height: 100px; background: url("assets/pipes/steam.webp") center bottom / contain no-repeat; opacity: 0; animation: steamPuff 7s ease-out infinite; }
+.pipe-run + .pipe-run .pr-steam, section + .pipe-run .pr-steam { animation-delay: 2.5s; }
+@keyframes valveTurn { to { transform: rotate(360deg); } }
+@keyframes steamPuff { 0%, 62% { opacity: 0; transform: translateY(20px) scale(.5); } 70% { opacity: .55; } 100% { opacity: 0; transform: translateY(-40px) scale(1.25); } }
+.engine-plate { position: relative; z-index: 2; pointer-events: auto; display: flex; align-items: center; gap: 10px; padding: 9px 26px; font-size: 13px; color: #2a1a0c; letter-spacing: .03em;
+  background: url("assets/pipes/plate.webp") center / 100% 100% no-repeat; min-height: 44px; filter: drop-shadow(0 6px 12px rgba(0,0,0,.6)); }
+.engine-plate b { color: #1a0f06; font-weight: 700; }
+.engine-plate .eng-ue { color: #3a220c; border-color: rgba(58,34,12,.5); font-weight: 700; }
+.engine-plate .eng-dot { background: #2f9a50; box-shadow: 0 0 6px #2f9a50; }
+.hero-run { margin-top: -22px; z-index: 4; height: 48px; }
+@media (max-width: 760px) { .pr-joint.a { left: 4%; } .pr-joint.b { right: 4%; } .engine-plate { font-size: 11px; padding: 8px 16px; gap: 6px; flex-wrap: wrap; justify-content: center; text-align: center; } .pr-steam { display: none; } }
+@media (prefers-reduced-motion: reduce) { .pr-valve, .pr-steam { animation: none; } }
+/* труба под шапкой на каждой странице и над подвалом */
+.topbar::after { content: ""; position: absolute; left: 0; right: 0; bottom: -9px; height: 16px; background: url("assets/pipes/pipe-h.webp") repeat-x left center / auto 16px; filter: drop-shadow(0 3px 4px rgba(0,0,0,.7)); pointer-events: none; z-index: 1; }
+.footer { position: relative; border-top: 0; } .footer::before { content: ""; position: absolute; left: 0; right: 0; top: -8px; height: 16px; background: url("assets/pipes/pipe-h.webp") repeat-x left center / auto 16px; filter: drop-shadow(0 3px 4px rgba(0,0,0,.7)); }
+.ph-pipe { position: absolute; left: 0; right: 0; bottom: 0; height: 22px; z-index: 3; background: url("assets/pipes/joint.webp") 18% center / auto 30px no-repeat, url("assets/pipes/joint.webp") 82% center / auto 30px no-repeat, url("assets/pipes/pipe-h.webp") repeat-x left center / auto 18px; filter: drop-shadow(0 4px 6px rgba(0,0,0,.6)); pointer-events: none; }
+/* боковые трубы вдоль страницы на широких экранах */
+.pipe-side { position: fixed; top: 64px; bottom: 0; width: 18px; z-index: 1; pointer-events: none; background: url("assets/pipes/pipe-v.webp") repeat-y center top / 18px auto; opacity: .85; filter: drop-shadow(3px 0 6px rgba(0,0,0,.6)); }
+.pipe-side.l { left: 10px; } .pipe-side.r { right: 10px; }
+.pipe-side i { position: absolute; left: 50%; width: 30px; height: 42px; margin-left: -15px; background: url("assets/pipes/joint-v.webp") center / contain no-repeat; }
+.pipe-side i:nth-child(1) { top: 30%; } .pipe-side i:nth-child(2) { top: 72%; }
+@media (max-width: 1280px) { .pipe-side { display: none; } }
+body.tree-mode .pipe-side { display: none; }
+
+/* ===== Счёт Домов: манометр и стеклянная трубка ===== */
+.fx-sec { padding-top: 26px; }
+.fx-board { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px 26px; align-items: center; text-align: left; }
+.fx-board > .eyebrow, .fx-board > .muted { grid-column: 1 / -1; text-align: center; }
+.fx-gauge { position: relative; width: 170px; aspect-ratio: 1; grid-column: 2; grid-row: 2 / span 2; background: url("assets/pipes/gauge.webp") center / contain no-repeat; filter: drop-shadow(0 8px 16px rgba(0,0,0,.6)); }
+.fx-needle { position: absolute; inset: 6%; background: url("assets/pipes/needle.webp") center / contain no-repeat; transform: rotate(var(--fx-a, 0deg)); transition: transform 1.2s cubic-bezier(.3,1.6,.5,1); }
+.fx-gauge b { position: absolute; left: 0; right: 0; bottom: 24%; text-align: center; font-size: 10px; letter-spacing: .14em; color: #3a2a18; text-transform: uppercase; }
+.fx-tube { grid-column: 1 / -1; position: relative; height: 34px; margin-top: 6px; }
+.fx-tube .fx-bar { position: absolute; left: 4.2%; right: 4.2%; top: 30%; bottom: 30%; border: 0; }
+.fx-tube::after { content: ""; position: absolute; inset: 0; background: url("assets/pipes/tube.webp") center / 100% 100% no-repeat; pointer-events: none; }
+.fx-board .fx-h.t { grid-column: 1; grid-row: 2; text-align: right; } .fx-board .fx-h.d { grid-column: 3; grid-row: 2; text-align: left; }
+.fx-board .fx-vs { grid-column: 1 / -1; text-align: center; }
+@media (max-width: 640px) { .fx-board { grid-template-columns: 1fr 1fr; } .fx-gauge { grid-column: 1 / -1; grid-row: auto; justify-self: center; width: 140px; } .fx-board .fx-h.t { grid-column: 1; grid-row: auto; text-align: left; } .fx-board .fx-h.d { grid-column: 2; grid-row: auto; text-align: right; } }
+
+/* ===== Подсветка навигации за курсором ===== */
+.nav-btn, .rail a, .subnav a, .doc-toc a, .link-card, .cab-tabs button, .hlink, .gl-item, .rs-tile { position: relative; --mx: -300px; --my: -300px; }
+.nav-btn::before, .rail a::before, .subnav a::before, .link-card::before, .cab-tabs button::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 2; border: 1px solid transparent; opacity: 0; transition: opacity .3s;
+  background: radial-gradient(130px circle at var(--mx) var(--my), var(--house-hi), transparent 70%) border-box;
+  -webkit-mask: linear-gradient(#000 0 0) padding-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) padding-box exclude, linear-gradient(#000 0 0); }
+.nav:hover .nav-btn::before, .rail:hover a::before, .subnav:hover a::before, .grid3:hover .link-card::before, .cab-tabs:hover button::before { opacity: 1; }
+.nav-btn:hover, .rail a:hover, .subnav a:hover, .cab-tabs button:hover { background-image: radial-gradient(90px circle at var(--mx) var(--my), color-mix(in srgb, var(--house) 30%, transparent), transparent 75%); color: var(--parch); text-shadow: 0 0 10px color-mix(in srgb, var(--house-hi) 60%, transparent); }
+.link-card:hover { box-shadow: 0 0 0 1px var(--house), 0 0 26px color-mix(in srgb, var(--house) 35%, transparent); }
+.rail a { display: block; }
+@media (hover: none) { .nav-btn::before, .rail a::before, .subnav a::before, .link-card::before, .cab-tabs button::before { display: none; } }
+
+/* ===== Кадрирование ===== */
+.crop-wrap { position: fixed; inset: 0; z-index: 200; background: rgba(6,4,3,.86); display: grid; place-items: center; padding: 16px; }
+.crop-card { width: min(560px, 100%); display: grid; gap: 14px; }
+.crop-card h3 { margin: 0; }
+.crop-stage { position: relative; width: 100%; overflow: hidden; background: #0b0806; touch-action: none; cursor: grab; border: 1px solid var(--rivet); user-select: none; }
+.crop-stage:active { cursor: grabbing; }
+.crop-stage img { position: absolute; left: 0; top: 0; transform-origin: 0 0; max-width: none; pointer-events: none; }
+.crop-stage::after { content: ""; position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 0 2px var(--house-hi); background: linear-gradient(transparent 33.2%, rgba(255,255,255,.18) 33.3%, transparent 33.5%, transparent 66.5%, rgba(255,255,255,.18) 66.6%, transparent 66.8%), linear-gradient(90deg, transparent 33.2%, rgba(255,255,255,.18) 33.3%, transparent 33.5%, transparent 66.5%, rgba(255,255,255,.18) 66.6%, transparent 66.8%); }
+.crop-stage.round::before { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: radial-gradient(circle, transparent 69.5%, rgba(6,4,3,.6) 70%); }
+.crop-zoom { display: flex; gap: 10px; align-items: center; } .crop-zoom input { flex: 1; }
+.crop-acts { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
+.fx-needle { inset: auto; left: 50%; top: 50%; width: 74%; aspect-ratio: 1; transform: translate(-50%, -50%) rotate(var(--fx-a, 0deg)); }
+@media (max-width: 760px) { .hero-run { margin-top: 0; } }
+.crop-wrap { overflow: auto; } .crop-card { width: min(560px, 100%, calc((100svh - 250px) * var(--ar, 1) + 50px)); min-width: min(300px, 100%); }

@@ -243,12 +243,11 @@ async function playerView(el, sess, prof) {
       F('eU').onchange = () => { F('eCu').disabled = F('eU').value !== 'curse'; };
       F('ePpick').onclick = () => F('ePfile').click();
       F('ePfile').onchange = () => {
-        const f = F('ePfile').files[0]; if (!f) return;
-        const r = new FileReader(); r.onload = () => { const img = new Image(); img.onload = () => {
-          const c = document.createElement('canvas'), k = Math.min(1, 640 / Math.max(img.width, img.height)); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
-          c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); portrait = c.toDataURL('image/jpeg', .8); dirty = true;
+        const f = F('ePfile').files[0]; F('ePfile').value = ''; if (!f) return;
+        window.MHCrop(f, { aspect: 3 / 4, w: 480, title: 'Кадр портрета персонажа' }).then(c => {
+          if (!c) return; portrait = c.toDataURL('image/jpeg', .84); dirty = true;
           const box = F('ePimg'); box.outerHTML = `<img class="cab-portrait" id="ePimg" src="${portrait}" alt="Портрет">`;
-        }; img.src = r.result; }; r.readAsDataURL(f);
+        });
       };
       if (F('ePdel')) F('ePdel').onclick = () => { portrait = null; dirty = true; F('ePimg').outerHTML = '<div class="cab-portrait cab-pempty" id="ePimg">Нет портрета</div>'; };
       F('eTreeAdd').onclick = () => {
@@ -290,12 +289,8 @@ async function playerView(el, sess, prof) {
       const setAva = async blob => { try { const url = blob ? await api().uploadAva(uid, blob) : (await api().removeAva(uid), null); prof = await api().saveProfile(uid, { portrait: url }); paintHeader(headSess, prof); render(); toast(el, blob ? 'Портрет сохранён' : 'Вернули аватарку Discord'); } catch (e) { toast(el, errText(e), true); } };
       q('#pfAvaPick', el).onclick = () => q('#pfAvaFile', el).click();
       q('#pfAvaFile', el).onchange = () => {
-        const f = q('#pfAvaFile', el).files[0]; if (!f) return;
-        const r = new FileReader(); r.onload = () => { const img = new Image(); img.onload = () => {
-          const S = 320, side = Math.min(img.width, img.height), c = document.createElement('canvas'); c.width = c.height = S;
-          c.getContext('2d').drawImage(img, (img.width - side) / 2, Math.max(0, (img.height - side) * .3), side, side, 0, 0, S, S);
-          c.toBlob(b => b ? setAva(b) : toast(el, 'Не получилось обработать картинку', true), 'image/jpeg', .86);
-        }; img.onerror = () => toast(el, 'Не получилось открыть картинку', true); img.src = r.result; }; r.readAsDataURL(f);
+        const f = q('#pfAvaFile', el).files[0]; q('#pfAvaFile', el).value = ''; if (!f) return;
+        window.MHCrop(f, { aspect: 1, w: 320, round: true, title: 'Кадр аватара' }).then(c => { if (c) c.toBlob(b => b ? setAva(b) : toast(el, 'Не получилось обработать картинку', true), 'image/jpeg', .86); });
       };
       const ad = q('#pfAvaDel', el); if (ad) ad.onclick = () => setAva(null);
       q('#cProf', el).onsubmit = async ev => {
@@ -737,8 +732,11 @@ async function liveBlock(el) {
     const F = Object.fromEntries(((fx.data) || []).map(r => [r.house, r.points]));
     const t = F.talbot || 0, d = F.dorn || 0, sum = t + d, pt = sum ? Math.round(t / sum * 100) : 50;
     const fxEl = q('#fxMount'); if (fxEl) fxEl.innerHTML = `<div class="panel fx-board"><div class="eyebrow">Счёт Домов · общий пул очков фракции</div>
-      <div class="fx-row"><div class="fx-h t"><small>Жёлтые</small><b>Дом Талбот</b><span class="fx-n">${t}</span></div><div class="fx-vs">${sum ? (t > d ? '◀ ведут Жёлтые' : d > t ? 'ведут Красные ▶' : 'ничья') : 'сезон начинается'}</div><div class="fx-h d"><small>Красные</small><b>Дом Дорн</b><span class="fx-n">${d}</span></div></div>
-      <div class="fx-bar" role="img" aria-label="Талбот ${t}, Дорн ${d}"><i class="t" style="width:${pt}%"></i><i class="d" style="width:${100 - pt}%"></i></div>
+      <div class="fx-h t"><small>Жёлтые</small><b>Дом Талбот</b><span class="fx-n">${t}</span></div>
+      <div class="fx-gauge" role="img" aria-label="Перевес: ${sum ? (t > d ? 'Талбот' : d > t ? 'Дорн' : 'равенство') : 'пока равенство'}"><div class="fx-needle" style="--fx-a:${((50 - pt) / 50 * -110).toFixed(1)}deg"></div><b>Давление Домов</b></div>
+      <div class="fx-h d"><small>Красные</small><b>Дом Дорн</b><span class="fx-n">${d}</span></div>
+      <div class="fx-vs">${sum ? (t > d ? '◀ ведут Жёлтые' : d > t ? 'ведут Красные ▶' : 'ничья') : 'сезон начинается'}</div>
+      <div class="fx-tube"><div class="fx-bar" role="img" aria-label="Талбот ${t}, Дорн ${d}"><i class="t" style="width:${pt}%"></i><i class="d" style="width:${100 - pt}%"></i></div></div>
       <p class="muted">Очки приносят ивенты, задания и победы в сюжете. Уровни пула открывают Дому бонусы — подробнее в главе <a href="#factions">Фракции</a>.</p></div>`;
     const news = (nw.data || []).filter(n => n.body || (n.images || []).length), evs = (ev.data || []).filter(e => e.status !== 3 && e.status !== 4);
     el.innerHTML = `<div class="live-grid${evs.length ? '' : ' solo'}"><div><div class="live-head"><div class="eyebrow">Хроники Меттенхейма</div><h2>Новости и анонсы</h2><a class="btn small ghost" href="#news">Все новости</a></div>

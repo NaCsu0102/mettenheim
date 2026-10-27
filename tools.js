@@ -2699,3 +2699,55 @@ const Armor = {
 window.__mh = () => ({ REG, GATHER, RES, W_REC, M_REC, POTIONS, DISHES, setKey, depthOf, extra: [...PARTS.map(partRec).filter(Boolean), ...CONSTRUCT_CONS.map(c => c[3]), ...DORN_MAT.map(m => m[3])] });
 window.__craftItems = craftItems; window.Gathering = Gathering; window.Blueprints = Blueprints; window.Crystal = Crystal; window.Inventor = Inventor; window.SPELL_COST = SPELL_COST; window.RECHARGE = RECHARGE; window.CRYSTAL_RULES = CRYSTAL_RULES; window.Tree = Tree; window.Forge = Forge; window.Armor = Armor; window.Craft = Craft; window.Recycler = Recycler; window.Eloquence = Eloquence; window.Alchemy = Alchemy; window.Cooking = Cooking; window.Healing = Healing; window.BodyLab = BodyLab; window.CurseLab = CurseLab; window.Factions = Factions;
 })();
+
+/* Кадрирование картинки перед загрузкой: MHCrop(file, { aspect: 3/4, w: 480, round: false }) → Promise<canvas|null> */
+(() => {
+  window.MHCrop = (file, o = {}) => new Promise(resolve => {
+    const aspect = o.aspect || 1, OW = o.w || 480, OH = Math.round(OW / aspect);
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+    img.onload = () => {
+      const wrap = document.createElement('div'); wrap.className = 'crop-wrap';
+      wrap.innerHTML = `<div class="panel crop-card" style="--ar:${aspect}" role="dialog" aria-modal="true" aria-label="Кадрирование"><div class="eyebrow">Портрет</div><h3>${o.title || 'Выбери кадр'}</h3>
+        <div class="crop-stage${o.round ? ' round' : ''}" style="aspect-ratio:${aspect}"><img alt=""></div>
+        <label class="crop-zoom"><span class="muted">Масштаб</span><input type="range" min="1" max="4" step="0.01" value="1" aria-label="Масштаб"></label>
+        <p class="muted" style="margin:0;font-size:13px">Перетащи картинку мышкой или пальцем, колесо мыши — приблизить.</p>
+        <div class="crop-acts"><button type="button" class="btn ghost" data-c="no">Отмена</button><button type="button" class="btn" data-c="ok">Готово</button></div></div>`;
+      document.body.appendChild(wrap);
+      const st = wrap.querySelector('.crop-stage'), im = wrap.querySelector('.crop-stage img'), zoom = wrap.querySelector('input');
+      im.src = url;
+      let SW = 0, SH = 0, base = 1, z = 1, x = 0, y = 0;
+      const fit = () => { const r = st.getBoundingClientRect(); SW = r.width; SH = r.height; base = Math.max(SW / img.width, SH / img.height); };
+      const clamp = () => { const s = base * z, w = img.width * s, h = img.height * s; x = Math.min(0, Math.max(SW - w, x)); y = Math.min(0, Math.max(SH - h, y)); };
+      const draw = () => { clamp(); im.style.transform = `translate(${x}px,${y}px) scale(${base * z})`; };
+      const setZ = (nz, cx = SW / 2, cy = SH / 2) => { nz = Math.min(4, Math.max(1, nz)); const s0 = base * z, s1 = base * nz; x = cx - (cx - x) * s1 / s0; y = cy - (cy - y) * s1 / s0; z = nz; zoom.value = z; draw(); };
+      requestAnimationFrame(() => { fit(); x = (SW - img.width * base) / 2; y = (SH - img.height * base) / 2; draw(); });
+      zoom.oninput = () => setZ(+zoom.value);
+      st.addEventListener('wheel', e => { e.preventDefault(); const r = st.getBoundingClientRect(); setZ(z * (e.deltaY < 0 ? 1.08 : 1 / 1.08), e.clientX - r.left, e.clientY - r.top); }, { passive: false });
+      const pts = new Map(); let pinch = 0;
+      st.addEventListener('pointerdown', e => { st.setPointerCapture(e.pointerId); pts.set(e.pointerId, [e.clientX, e.clientY]); });
+      st.addEventListener('pointermove', e => {
+        if (!pts.has(e.pointerId)) return;
+        const [px, py] = pts.get(e.pointerId); pts.set(e.pointerId, [e.clientX, e.clientY]);
+        if (pts.size === 2) { const [a, b] = [...pts.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]); if (pinch) setZ(z * d / pinch); pinch = d; return; }
+        x += e.clientX - px; y += e.clientY - py; draw();
+      });
+      const up = e => { pts.delete(e.pointerId); if (pts.size < 2) pinch = 0; };
+      st.addEventListener('pointerup', up); st.addEventListener('pointercancel', up);
+      const onResize = () => { const s = base * z; const cx = (SW / 2 - x) / s, cy = (SH / 2 - y) / s; fit(); const s2 = base * z; x = SW / 2 - cx * s2; y = SH / 2 - cy * s2; draw(); };
+      addEventListener('resize', onResize);
+      const close = res => { removeEventListener('resize', onResize); removeEventListener('keydown', key); wrap.remove(); URL.revokeObjectURL(url); resolve(res); };
+      const key = e => { if (e.key === 'Escape') close(null); };
+      addEventListener('keydown', key);
+      wrap.querySelector('[data-c=no]').onclick = () => close(null);
+      wrap.querySelector('[data-c=ok]').onclick = () => {
+        const s = base * z, c = document.createElement('canvas'); c.width = OW; c.height = OH;
+        const g = c.getContext('2d'); g.imageSmoothingQuality = 'high';
+        g.drawImage(img, -x / s, -y / s, SW / s, SH / s, 0, 0, OW, OH);
+        close(c);
+      };
+      wrap.querySelector('[data-c=ok]').focus();
+    };
+    img.src = url;
+  });
+})();

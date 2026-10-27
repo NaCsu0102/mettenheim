@@ -177,7 +177,7 @@ addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && (e.key === 'k
 const CH_BG = { start: 'bg-start', faq: 'bg-faq', modlist: 'bg-modlist', rules: 'bg-rules', discord: 'bg-discord', city: 'bg-city', history: 'bg-history', houses: 'bg-houses', lumerite: 'bg-lumerite', faith: 'bg-faith', magic: 'bg-magic', world: 'bg-world', deck: 'bg-deck', races: 'bg-peoples', 'people-humans': 'bg-humans', 'people-elves': 'bg-elves', 'people-dwarves': 'bg-dwarves', 'people-goblins': 'bg-goblins', 'people-infernals': 'bg-peoples', classes: 'bg-classes', system: 'bg-rules', eloquence: 'bg-houses', forge: 'bg-forge', armor: 'bg-armor', craft: 'bg-forge', recycle: 'bg-armor', alchemy: 'bg-magic', cooking: 'bg-forge', healing: 'bg-faith', body: 'bg-forge', curses: 'bg-deck', factions: 'bg-houses', inventions: 'bg-forge', gathering: 'bg-armor', blueprints: 'bg-forge', inferno: 'bg-peoples' };
 const head = ({ eyebrow, title, lead, bg, crumbs }) => (bg = CH_BG[currentRoute] ? 'assets/art/' + CH_BG[currentRoute] + '.webp' : bg, `
 <section class="page-head"><div class="bg" style="background-image:url('${bg || 'assets/city-bg.webp'}')"></div>
-<div class="wrap reveal">${crumbs ? `<div class="crumbs"><a href="#home">Главная</a> / ${crumbs}</div>` : ''}<div class="eyebrow">${eyebrow || 'Хроники Меттенхейма'}</div><h1>${title}</h1>${lead ? `<p>${lead}</p>` : ''}</div></section>`);
+<div class="wrap reveal">${crumbs ? `<div class="crumbs"><a href="#home">Главная</a> / ${crumbs}</div>` : ''}<div class="eyebrow">${eyebrow || 'Хроники Меттенхейма'}</div><h1>${title}</h1>${lead ? `<p>${lead}</p>` : ''}</div><div class="ph-pipe" aria-hidden="true"></div></section>`);
 const subnav = (items, cur) => `<nav class="subnav" aria-label="Подразделы"><div class="wrap">${items.map(([r, t]) => `<a href="#${r}" ${r === cur ? 'aria-current="page"' : ''}>${t}</a>`).join('')}</div></nav>`;
 const LORE = [['city', 'Меттенхейм'], ['history', 'История города'], ['houses', 'Дома'], ['lumerite', 'Люмерит'], ['faith', 'Вера'], ['magic', 'Магия'], ['world', 'История мира'], ['chronicle', 'Хроника'], ['deck', 'Проклятая колода']];
 const PEOPLE_NAV = [['races', 'Все народы'], ...M.peoples.map(p => ['people-' + p.id, p.name]), ['inferno', 'Инферно']];
@@ -208,16 +208,24 @@ function pageHomeRaw() {
     <div class="caption"><small>${H.talbot.side.toUpperCase()}</small><h2>${H.talbot.name}</h2><div class="hc-btns"><button type="button" class="hbtn" data-pick="talbot" aria-pressed="false"><span>Встать на сторону</span></button><a class="hlink" href="#houses">Подробнее</a></div></div></div>
   <div class="hero-core"><div class="ring"><img class="gear" src="assets/gear-md.webp" alt=""><img class="logo" src="assets/logo-md.webp" alt="Хроники Меттенхейма"></div>
     <h1 class="sr-only">Хроники Меттенхейма — ролевой сервер Conan Exiles, RP 21+</h1>
-    <div class="core-plate"><div class="motto">ГОРОД ПАРА, СТАЛИ И АМБИЦИЙ</div><div class="status" id="heroStatus"></div>
-    <div class="engine"><span class="eng-dot"></span><span>Переехали на <b>Conan Exiles Enhanced</b></span><span class="eng-ue">Unreal Engine 5</span></div></div></div>
+    <div class="core-plate"><div class="motto">ГОРОД ПАРА, СТАЛИ И АМБИЦИЙ</div><div class="status" id="heroStatus"></div></div></div>
   <div class="side dorn" data-side="dorn"><div class="art"></div>
     <div class="caption"><small>${H.dorn.side.toUpperCase()}</small><h2>${H.dorn.name}</h2><div class="hc-btns"><button type="button" class="hbtn" data-pick="dorn" aria-pressed="false"><span>Встать на сторону</span></button><a class="hlink" href="#houses">Подробнее</a></div></div></div>
 </section>
 
+<div class="pipe-run hero-run" aria-hidden="false"><span class="pr-pipe"></span><i class="pr-joint a"></i><i class="pr-joint b"><img class="pr-valve" src="assets/pipes/valve.webp" alt=""></i><i class="pr-steam"></i>
+  <div class="engine-plate"><span class="eng-dot"></span><span>Мы переехали на <b>Conan Exiles Enhanced</b></span><span class="eng-ue">Unreal Engine 5</span></div></div>
+
+<section class="section tight fx-sec"><div class="wrap"><div id="fxMount"></div></div></section>
+
+<section class="section tight"><div class="wrap">
+  <div class="sec-head"><div class="eyebrow">Путеводитель</div><h2>Куда дальше</h2></div>
+  <div class="grid3">${portals.map(([r, t, d, img]) => `<a class="link-card" href="#${r}"><div class="bg" style="background-image:url('${img}')"></div><div class="eyebrow">Раздел</div><h3>${t}</h3><p>${d}</p></a>`).join('')}</div>
+</div></section>
+
 <section class="section tight sides-sec"><div class="wrap">
   <div class="sec-head"><div class="eyebrow">Выбери свою сторону</div><h2>Два завода, два будущих</h2><p>Принадлежность к Дому отражает взгляды и интересы персонажа. Жёлтые и Красные — не светлая и тёмная сторона, а два ответа на вопрос, кому должен служить прогресс.</p></div>
   <div class="houses">${['talbot', 'dorn'].map(k => `<article class="panel house-card ${k === house ? 'lit' : ''}" data-hcard="${k}"><img src="${H[k].img}" alt=""><div><div class="eyebrow ${k[0]}">${H[k].side}</div><h3>${H[k].name}</h3><p>${H[k].head}</p>${ul(H[k].points)}<p style="margin-top:14px"><button class="btn small" data-pick="${k}" aria-pressed="false">Выбрать ${k === 'talbot' ? 'Жёлтых' : 'Красных'}</button></p></div></article>`).join('')}</div>
-  <div id="fxMount" style="margin-top:22px"></div>
 </div></section>
 
 <section class="section tight live-sec"><div class="wrap" id="liveMount"></div></section>
@@ -236,20 +244,7 @@ function pageHomeRaw() {
   </div>
 </div></section>
 
-<img class="divider" src="assets/divider.webp" alt="">
-
-<section class="section" id="chronicle"><div class="wrap">
-  <div class="sec-head"><div class="eyebrow">Хронометр · поверни эпоху</div><h2>Как появился Меттенхейм</h2><p>Город не был построен за один день. Он вырос из дыма первых плавилен, пережил борьбу домов и подошёл к эпохе, в которой энергии не хватало даже для человеческих амбиций.</p></div>
-  <div class="chrono"><div class="dial" id="dial"><div class="face"></div><img class="gear" id="dialGear" src="assets/gear-md.webp" alt=""><div class="hand" id="dialHand"></div><div class="hub"></div></div>
-  <article class="panel era" id="era" aria-live="polite"></article></div>
-</div></section>
-
-<section class="section tight"><div class="wrap">
-  <div class="sec-head"><div class="eyebrow">Путеводитель</div><h2>Куда дальше</h2></div>
-  <div class="grid3">${portals.map(([r, t, d, img]) => `<a class="link-card" href="#${r}"><div class="bg" style="background-image:url('${img}')"></div><div class="eyebrow">Раздел</div><h3>${t}</h3><p>${d}</p></a>`).join('')}</div>
-</div></section>
-
-<img class="divider" src="assets/divider.webp" alt="">
+<div class="pipe-run" aria-hidden="true"><span class="pr-pipe"></span><i class="pr-joint a"></i><i class="pr-joint b"><img class="pr-valve" src="assets/pipes/valve.webp" alt=""></i><i class="pr-steam"></i></div>
 
 <section class="section" id="builder"><div class="wrap">
   <div class="app-banner" id="aBanner"><img id="aBannerImg" alt=""><div class="shade"></div><div class="cap"><span id="aBannerSide"></span><strong id="aBannerName"></strong></div></div>
@@ -347,26 +342,6 @@ function mountHome() {
   setVars();
   MH.onHouse(hcards);
   hcards();
-  // хронометр
-  const dial = $('#dial'), N = M.eras.length;
-  M.eras.forEach((e, i) => {
-    const a = (i / N) * Math.PI * 2 - Math.PI / 2, b = document.createElement('button');
-    b.className = 'mark'; b.textContent = e.n; b.setAttribute('aria-label', `Эпоха ${e.n}: ${e.title}`);
-    b.style.left = (50 + Math.cos(a) * 43) + '%'; b.style.top = (50 + Math.sin(a) * 43) + '%';
-    b.addEventListener('click', () => era(i)); dial.append(b);
-  });
-  let cur = 0;
-  function era(i) {
-    cur = (i + N) % N; const e = M.eras[cur];
-    $$('.mark', dial).forEach((m, j) => m.setAttribute('aria-selected', String(j === cur)));
-    $('#dialHand').style.setProperty('--a', (cur / N * 360 + 180) + 'deg');
-    $('#dialGear').style.transform = `rotate(${cur * -60}deg)`;
-    const box = $('#era');
-    box.innerHTML = `<div class="era-in"><div class="years">ЭПОХА ${e.n} · ${e.years}</div><h3>${e.title}</h3>${e.text.map(p => `<p>${p}</p>`).join('')}
-      <div class="pager"><button class="btn small ghost" data-step="-1">← Раньше</button><button class="btn small" data-step="1">Позже →</button><a class="btn small ghost" href="#history">Вся хроника</a></div></div>`;
-    $$('[data-step]', box).forEach(s => s.addEventListener('click', () => { era(cur + +s.dataset.step); if (soundOn) { snd.gears.currentTime = 0; snd.gears.volume = .25; snd.gears.play().catch(() => {}); clearTimeout(stopT); stopT = setTimeout(() => gearFade(0, 200), 400); } }));
-  }
-  era(0);
   mountBuilder();
   mountDice($('[data-dice]').parentElement);
 }
@@ -390,14 +365,10 @@ function mountBuilder() {
   showP(portrait);
   $('#pPick').onclick = () => $('#pFile').click();
   $('#pFile').onchange = () => {
-    const f = $('#pFile').files[0]; if (!f) return;
-    const r = new FileReader(); r.onload = () => {
-      const img = new Image(); img.onload = () => {
-        const c = document.createElement('canvas'), k = Math.min(1, 720 / Math.max(img.width, img.height));
-        c.width = img.width * k; c.height = img.height * k; c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-        const url = c.toDataURL('image/jpeg', .82); store.set('portrait', url); showP(url);
-      }; img.src = r.result;
-    }; r.readAsDataURL(f);
+    const f = $('#pFile').files[0]; $('#pFile').value = ''; if (!f) return;
+    window.MHCrop(f, { aspect: 3 / 4, w: 480, title: 'Кадр портрета персонажа' }).then(c => {
+      if (!c) return; const url = c.toDataURL('image/jpeg', .84); store.set('portrait', url); showP(url);
+    });
   };
   $('#pDel').onclick = () => { store.set('portrait', null); showP(null); };
 
@@ -501,8 +472,38 @@ function pageCity() {
 <div class="grid2">${['talbot', 'dorn'].map(k => `<a class="link-card" href="#houses"><div class="bg" style="background-image:url('${M.houses[k].banner}')"></div><div class="eyebrow">${M.houses[k].side}</div><h3>${M.houses[k].name}</h3><p>${M.houses[k].motto}</p></a>`).join('')}</div>
 </div></div></section>`;
 }
+const CHRONO_HTML = `<section class="section tight" id="chrono"><div class="wrap">
+  <div class="sec-head"><div class="eyebrow">Хронометр · поверни эпоху</div><h2>Как появился Меттенхейм</h2><p>Город не был построен за один день. Он вырос из дыма первых плавилен, пережил борьбу домов и подошёл к эпохе, в которой энергии не хватало даже для человеческих амбиций.</p></div>
+  <div class="chrono"><div class="dial" id="dial"><div class="face"></div><img class="gear" id="dialGear" src="assets/gear-md.webp" alt=""><div class="hand" id="dialHand"></div><div class="hub"></div></div>
+  <article class="panel era" id="era" aria-live="polite"></article></div>
+</div></section>
+`;
+function mountChrono() {
+  if (!$('#dial')) return;
+  // хронометр
+  const dial = $('#dial'), N = M.eras.length;
+  M.eras.forEach((e, i) => {
+    const a = (i / N) * Math.PI * 2 - Math.PI / 2, b = document.createElement('button');
+    b.className = 'mark'; b.textContent = e.n; b.setAttribute('aria-label', `Эпоха ${e.n}: ${e.title}`);
+    b.style.left = (50 + Math.cos(a) * 43) + '%'; b.style.top = (50 + Math.sin(a) * 43) + '%';
+    b.addEventListener('click', () => era(i)); dial.append(b);
+  });
+  let cur = 0;
+  function era(i) {
+    cur = (i + N) % N; const e = M.eras[cur];
+    $$('.mark', dial).forEach((m, j) => m.setAttribute('aria-selected', String(j === cur)));
+    $('#dialHand').style.setProperty('--a', (cur / N * 360 + 180) + 'deg');
+    $('#dialGear').style.transform = `rotate(${cur * -60}deg)`;
+    const box = $('#era');
+    box.innerHTML = `<div class="era-in"><div class="years">ЭПОХА ${e.n} · ${e.years}</div><h3>${e.title}</h3>${e.text.map(p => `<p>${p}</p>`).join('')}
+      <div class="pager"><button class="btn small ghost" data-step="-1">← Раньше</button><button class="btn small" data-step="1">Позже →</button></div></div>`;
+    $$('[data-step]', box).forEach(s => s.addEventListener('click', () => { era(cur + +s.dataset.step); if (soundOn) { snd.gears.currentTime = 0; snd.gears.volume = .25; snd.gears.play().catch(() => {}); clearTimeout(stopT); stopT = setTimeout(() => gearFade(0, 200), 400); } }));
+  }
+  era(0);
+}
 function pageHistory() {
   return head({ eyebrow: 'Архив Меттенхейма · Том I', title: 'История города', lead: 'От поселения у плавилен до города машин. Ранняя история остаётся реконструкцией архивариусов: даты связывают события, но не являются окончательным каноном.', bg: 'assets/codex/history.webp', crumbs: 'Мир' }) + subnav(LORE, 'history') + `
+${CHRONO_HTML}
 <section class="content"><div class="wrap"><div class="prose reveal" style="max-width:860px">
 ${M.eras.map(e => `<article class="panel" style="margin-bottom:6px"><div class="eyebrow">Эпоха ${e.n} · ${e.years}</div><h2 style="margin:6px 0 12px;font-size:30px">${e.title}</h2>${e.text.map(p => `<p style="margin-bottom:10px">${p}</p>`).join('')}</article>`).join('')}
 </div></div></section>`;
@@ -859,7 +860,7 @@ const ROUTES = {
   residents: [pageResidents, () => window.Cabinet.residentsPage($('#rsMount'))],
   inferno: [pageInferno, () => window.Inferno.mountDiary($('#hungerMount'))],
   cabinet: [() => pageCabinet('player'), () => window.Cabinet.mount($('#cabMount'), 'player')], admin: [() => pageCabinet('admin'), () => window.Cabinet.mount($('#cabMount'), 'admin')],
-  city: [pageCity], history: [pageHistory], houses: [pageHouses, () => { $$('[data-pick]').forEach(b => b.addEventListener('click', () => { if (b.dataset.pick !== house) applyHouse(b.dataset.pick, true); })); setVars(); MH.onHouse(hcards); }],
+  city: [pageCity], history: [pageHistory, mountChrono], houses: [pageHouses, () => { $$('[data-pick]').forEach(b => b.addEventListener('click', () => { if (b.dataset.pick !== house) applyHouse(b.dataset.pick, true); })); setVars(); MH.onHouse(hcards); }],
   lumerite: [pageLumerite], faith: [pageFaith], magic: [pageMagic, () => window.Crystal.mount($('#crystalMount'))], world: [pageWorld], deck: [pageDeck, mountDeck],
   rules: [pageRules], discord: [pageDiscord], start: [pageStart], faq: [pageFaq], modlist: [pageModlist],
   races: [pageRaces, mountRaces], classes: [pageClasses, mountClasses], system: [pageSystem, () => mountDice($('[data-dice]').parentElement)], eloquence: [pageEloquence, () => window.Eloquence.mount($('#eloqMount'))], healing: [pageHealing, () => window.Healing.mount($('#healMount'))],
@@ -946,4 +947,17 @@ function route() {
 }
 addEventListener('hashchange', route);
 route();
+/* подсветка навигации за курсором: соседние пункты ловят отблеск */
+const RV = '.nav-btn, .rail a, .subnav a, .link-card, .cab-tabs button';
+let rvRaf = 0, rvEv = null;
+addEventListener('pointermove', e => {
+  if (e.pointerType !== 'mouse') return;
+  rvEv = e; if (rvRaf) return;
+  rvRaf = requestAnimationFrame(() => {
+    rvRaf = 0; const ev = rvEv;
+    const box = ev.target.closest && ev.target.closest('.nav, .rail, .subnav, .grid3, .cab-tabs');
+    if (!box) return;
+    box.querySelectorAll(RV).forEach(el => { const r = el.getBoundingClientRect(); el.style.setProperty('--mx', (ev.clientX - r.left) + 'px'); el.style.setProperty('--my', (ev.clientY - r.top) + 'px'); });
+  });
+}, { passive: true });
 })();
