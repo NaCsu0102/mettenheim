@@ -2178,3 +2178,5 @@ body.tree-mode .pipe-side { display: none; }
 .pipe-run:not(.hero-run) .pr-pipe { height: 18px; background-size: auto 18px; opacity: .85; }
 .pipe-run:not(.hero-run) .pr-joint { width: 49px; height: 35px; }
 .topbar::after { display: none !important; }
+.ev-sec { padding-top: 6px; }
+.ev-posts { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); margin-top: 14px; }

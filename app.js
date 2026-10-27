@@ -218,6 +218,8 @@ function pageHomeRaw() {
 
 <section class="section tight fx-sec"><div class="wrap"><div id="fxMount"></div></div></section>
 
+<section class="section tight ev-sec"><div class="wrap" id="evMount"></div></section>
+
 <section class="section tight"><div class="wrap">
   <div class="sec-head"><div class="eyebrow">Путеводитель</div><h2>Куда дальше</h2></div>
   <div class="grid3">${portals.map(([r, t, d, img]) => `<a class="link-card" href="#${r}"><div class="bg" style="background-image:url('${img}')"></div><div class="eyebrow">Раздел</div><h3>${t}</h3><p>${d}</p></a>`).join('')}</div>

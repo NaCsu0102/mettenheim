@@ -352,6 +352,7 @@ async function chat(req: Request, action: string, CORS: Record<string, string>) 
 
 /* ---------- новости и события из Discord ---------- */
 const NEWS_CHANNEL = Deno.env.get('DISCORD_NEWS_CHANNEL_ID') ?? '1471498060625477856';
+const EVENT_CHANNEL = Deno.env.get('DISCORD_EVENT_CHANNEL_ID') ?? '1470110267416379502'; // «📢┋event-мероприятия»
 async function toMedia(url: string, path: string) {
   try {
     const r = await fetch(url);
@@ -370,8 +371,12 @@ async function throttle(key: string, ms: number) {
 }
 async function syncNews(force = false) {
   if (!force && await throttle('news_sync', 60000)) return { skip: true };
-  const msgs: any[] = await discord('GET', `/channels/${NEWS_CHANNEL}/messages?limit=40`);
-  const { data: have } = await SB.from('news').select('discord_id,edited_at,body,images').limit(200);
+  const a = await syncChannel(NEWS_CHANNEL, 'news'), b = await syncChannel(EVENT_CHANNEL, 'event');
+  return { news: a, events: b };
+}
+async function syncChannel(channel: string, kind: string) {
+  const msgs: any[] = await discord('GET', `/channels/${channel}/messages?limit=40`);
+  const { data: have } = await SB.from('news').select('discord_id,edited_at,body,images').eq('kind', kind).limit(200);
   const known = new Map((have || []).map((n: any) => [n.discord_id, n]));
   let added = 0, updated = 0;
   for (const m of msgs) {
@@ -393,7 +398,7 @@ async function syncNews(force = false) {
     }
     let body = plainBody(m);
     if (!m.content && m.embeds?.length) body = [m.embeds[0].title ? '## ' + m.embeds[0].title : '', m.embeds[0].description || ''].filter(Boolean).join('\n');
-    await SB.from('news').insert({ discord_id: m.id, author: mb.nick, avatar: mb.avatar, body, images: pics, created_at: m.timestamp, edited_at: edited }, 'discord_id').run();
+    await SB.from('news').insert({ discord_id: m.id, kind, author: mb.nick, avatar: mb.avatar, body, images: pics, created_at: m.timestamp, edited_at: edited }, 'discord_id').run();
     if (prev) await SB.from('news').update({ author: mb.nick, avatar: mb.avatar, body, images: pics, edited_at: edited }).eq('discord_id', m.id).run();
     prev ? updated++ : added++;
   }
@@ -401,7 +406,7 @@ async function syncNews(force = false) {
   if (msgs.length) {
     const ids = new Set(msgs.map((m) => m.id));
     const oldest = msgs[msgs.length - 1].timestamp;
-    const { data: recent } = await SB.from('news').select('discord_id,created_at').gte('created_at', oldest).limit(100);
+    const { data: recent } = await SB.from('news').select('discord_id,created_at').eq('kind', kind).gte('created_at', oldest).limit(100);
     for (const n of recent || []) if (!ids.has(n.discord_id)) await SB.from('news').delete().eq('discord_id', n.discord_id).run();
   }
   return { added, updated };

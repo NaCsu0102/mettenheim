@@ -724,8 +724,9 @@ async function liveBlock(el) {
   if (!liveOk()) { el.innerHTML = ''; return; }
   const c = await sb();
   const draw = async () => {
-    const [nw, ev, fx] = await Promise.all([
-      c.from('news').select('*').order('created_at', { ascending: false }).limit(3),
+    const [nw, ep, ev, fx] = await Promise.all([
+      c.from('news').select('*').eq('kind', 'news').order('created_at', { ascending: false }).limit(3),
+      c.from('news').select('*').eq('kind', 'event').order('created_at', { ascending: false }).limit(3),
       c.from('events').select('*').order('starts_at', { ascending: true }).limit(4),
       c.from('faction_score').select('*')
     ]);
@@ -739,14 +740,20 @@ async function liveBlock(el) {
       <div class="fx-tube"><div class="fx-bar" role="img" aria-label="Талбот ${t}, Дорн ${d}"><i class="t" style="width:${pt}%"></i><i class="d" style="width:${100 - pt}%"></i></div></div>
       <p class="muted">Очки приносят ивенты, задания и победы в сюжете. Уровни пула открывают Дому бонусы — подробнее в главе <a href="#factions">Фракции</a>.</p></div>`;
     const news = (nw.data || []).filter(n => n.body || (n.images || []).length), evs = (ev.data || []).filter(e => e.status !== 3 && e.status !== 4);
-    el.innerHTML = `<div class="live-grid${evs.length ? '' : ' solo'}"><div><div class="live-head"><div class="eyebrow">Хроники Меттенхейма</div><h2>Новости и анонсы</h2><a class="btn small ghost" href="#news">Все новости</a></div>
-        ${news.length ? `<div class="nw-list">${news.map((n, i) => newsCard(n, false)).join('')}</div>` : '<article class="panel cab-empty"><p class="muted">Скоро здесь появятся новости из нашего Discord.</p></article>'}</div>
-      ${evs.length ? `<div><div class="live-head"><div class="eyebrow">Календарь</div><h2>Ближайшие события</h2></div><div class="ev-list">${evs.map(eventCard).join('')}</div></div>` : ''}</div>`;
+    const posts = (ep.data || []).filter(n => n.body || (n.images || []).length);
+    const evEl = q('#evMount');
+    if (evEl) evEl.innerHTML = `<div class="live-head"><div class="eyebrow">Ивенты и мероприятия</div><h2>События</h2><a class="btn small ghost" href="#news">Все события</a></div>
+      ${evs.length ? `<div class="ev-list wide">${evs.map(eventCard).join('')}</div>` : ''}
+      ${posts.length ? `<div class="nw-list ev-posts">${posts.map(n => newsCard(n, false)).join('')}</div>` : ''}
+      ${!evs.length && !posts.length ? '<article class="panel cab-empty"><p class="muted">Здесь появятся события из нашего Discord — с картинками и кнопкой «Записаться».</p></article>' : ''}`;
+    el.innerHTML = `<div class="live-grid solo"><div><div class="live-head"><div class="eyebrow">Хроники Меттенхейма</div><h2>Новости и анонсы</h2><a class="btn small ghost" href="#news">Все новости</a></div>
+        ${news.length ? `<div class="nw-list">${news.map(n => newsCard(n, false)).join('')}</div>` : '<article class="panel cab-empty"><p class="muted">Скоро здесь появятся новости из нашего Discord.</p></article>'}</div></div>`;
   };
   await draw().catch(() => {});
   liveSync().then(() => setTimeout(() => draw().catch(() => {}), 2500));
   const ch = c.channel('mh-live').on('postgres_changes', { event: '*', schema: 'public', table: 'faction_score' }, () => draw().catch(() => {}))
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'news' }, () => draw().catch(() => {})).subscribe();
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'news' }, () => draw().catch(() => {}))
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, () => draw().catch(() => {})).subscribe();
   const stop = () => { try { c.removeChannel(ch); } catch (_) {} window.removeEventListener('hashchange', stop); };
   window.addEventListener('hashchange', stop);
 }
@@ -756,10 +763,11 @@ async function newsPage(el) {
   el.innerHTML = '<p class="muted">Загружаю новости…</p>';
   const c = await sb();
   const draw = async () => {
-    const [nw, ev] = await Promise.all([c.from('news').select('*').order('created_at', { ascending: false }).limit(40), c.from('events').select('*').order('starts_at', { ascending: true }).limit(20)]);
-    const evs = (ev.data || []).filter(e => e.status !== 3 && e.status !== 4);
+    const [nw, ep, ev] = await Promise.all([c.from('news').select('*').eq('kind', 'news').order('created_at', { ascending: false }).limit(40), c.from('news').select('*').eq('kind', 'event').order('created_at', { ascending: false }).limit(20), c.from('events').select('*').order('starts_at', { ascending: true }).limit(20)]);
+    const evs = (ev.data || []).filter(e => e.status !== 3 && e.status !== 4), posts = (ep.data || []).filter(n => n.body || (n.images || []).length);
     el.innerHTML = `${evs.length ? `<div class="sec-head"><div class="eyebrow">Календарь</div><h2>События сервера</h2><p>Записаться можно прямо в Discord: кнопка откроет событие.</p></div><div class="ev-list wide">${evs.map(eventCard).join('')}</div>` : ''}
-      <div class="sec-head" style="margin-top:${evs.length ? 50 : 0}px"><div class="eyebrow">Из канала анонсов Discord</div><h2>Новости</h2></div>
+      ${posts.length ? `<div class="sec-head" style="margin-top:${evs.length ? 40 : 0}px"><div class="eyebrow">Из канала мероприятий</div><h2>Ивенты</h2></div><div class="nw-feed">${posts.map(n => newsCard(n, true)).join('')}</div>` : ''}
+      <div class="sec-head" style="margin-top:${evs.length || posts.length ? 50 : 0}px"><div class="eyebrow">Из канала анонсов Discord</div><h2>Новости</h2></div>
       ${(nw.data || []).some(n => n.body || (n.images || []).length) ? `<div class="nw-feed">${nw.data.filter(n => n.body || (n.images || []).length).map(n => newsCard(n, true)).join('')}</div>` : '<article class="panel cab-empty"><p class="muted">Новостей пока нет.</p></article>'}`;
   };
   await draw().catch(e => { el.innerHTML = `<p class="muted">${esc(errText(e))}</p>`; });
