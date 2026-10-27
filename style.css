@@ -2110,3 +2110,45 @@ body.tree-mode .pipe-side { display: none; }
 .crop-wrap { overflow: auto; } .crop-card { width: min(560px, 100%, calc((100svh - 250px) * var(--ar, 1) + 50px)); min-width: min(300px, 100%); }
 .engine-plate > span:not(.eng-dot):not(.eng-ue) { color: #1f1408; font-weight: 600; text-shadow: 0 1px 0 rgba(255,230,170,.35); }
 .fx-gauge b { font-size: 9px; letter-spacing: .1em; bottom: 27%; }
+
+/* ===== Трубы v2: толстые латунные, поверх страницы ===== */
+.pr-pipe { height: 30px; background: url("assets/pipes/pipe-t.webp") repeat-x left center / auto 30px; filter: drop-shadow(0 6px 8px rgba(0,0,0,.7)); }
+.pipe-run { height: 64px; z-index: 6; }
+.pr-joint { width: 81px; height: 58px; }
+.pr-valve { top: -30px; width: 58px; height: 58px; margin-left: -29px; }
+.hero-run { margin-top: -32px; height: 64px; }
+.topbar::after { height: 18px; bottom: -10px; background: url("assets/pipes/pipe-t.webp") repeat-x left center / auto 18px; z-index: 60; }
+.footer::before { height: 18px; top: -9px; background: url("assets/pipes/pipe-t.webp") repeat-x left center / auto 18px; }
+.ph-pipe { height: 48px; bottom: -2px; background: url("assets/pipes/joint.webp") 16% center / auto 46px no-repeat, url("assets/pipes/joint.webp") 84% center / auto 46px no-repeat, url("assets/pipes/pipe-t.webp") repeat-x left center / auto 24px; }
+.page-head { overflow: visible; } .page-head > .bg { overflow: hidden; }
+.pipe-side { width: 24px; z-index: 45; opacity: 1; background: url("assets/pipes/pipe-tv.webp") repeat-y center top / 24px auto; }
+.pipe-side.l { left: 6px; } .pipe-side.r { right: 6px; }
+.pipe-side i { width: 46px; height: 65px; margin-left: -23px; }
+.engine-plate { background: linear-gradient(180deg, #2a1f15, #140e09); border: 2px solid #b8893f; box-shadow: inset 0 0 0 2px #140e09, inset 0 0 0 3px rgba(240,201,106,.35), 0 8px 18px rgba(0,0,0,.7); color: #e8d6b4; padding: 10px 26px; clip-path: polygon(12px 0, calc(100% - 12px) 0, 100% 12px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 12px 100%, 0 calc(100% - 12px), 0 12px); }
+.engine-plate > span:not(.eng-dot):not(.eng-ue) { color: #e8d6b4; text-shadow: none; font-weight: 500; }
+.engine-plate b { color: #f3d58a; font-weight: 700; }
+.engine-plate .eng-ue { color: #f0c96a; border-color: rgba(240,201,106,.5); }
+.engine-plate .eng-dot { background: #f0c96a; box-shadow: 0 0 8px #f0c96a; }
+@media (max-width: 760px) { .pr-pipe { height: 22px; background-size: auto 22px; } .pr-joint { width: 59px; height: 43px; } .pr-valve { width: 44px; height: 44px; margin-left: -22px; top: -22px; } .hero-run { margin-top: 0; } }
+
+/* ===== Подсветка навигации v2: ярче, как неон ===== */
+.nav-btn::before, .rail a::before, .subnav a::before, .link-card::before, .cab-tabs button::before { border-width: 1px; background: radial-gradient(180px circle at var(--mx) var(--my), var(--house-hi), color-mix(in srgb, var(--house-hi) 35%, transparent) 40%, transparent 75%) border-box; }
+.nav-btn::after, .rail a::after, .subnav a::after, .cab-tabs button::after { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: -1; opacity: 0; transition: opacity .3s;
+  background: radial-gradient(160px circle at var(--mx) var(--my), color-mix(in srgb, var(--house) 22%, transparent), transparent 70%); }
+.nav:hover .nav-btn::after, .rail:hover a::after, .subnav:hover a::after, .cab-tabs:hover button::after { opacity: 1; }
+.nav-btn, .rail a, .subnav a, .cab-tabs button { isolation: isolate; transition: color .2s, text-shadow .2s; }
+.nav-btn:hover, .rail a:hover, .subnav a:hover, .cab-tabs button:hover { color: #fff6e2; text-shadow: 0 0 12px var(--house-hi), 0 0 2px var(--house-hi); background-image: radial-gradient(110px circle at var(--mx) var(--my), color-mix(in srgb, var(--house) 45%, transparent), transparent 75%); box-shadow: 0 0 18px color-mix(in srgb, var(--house) 35%, transparent); }
+.link-card::before { z-index: 3; }
+
+/* ===== «Куда дальше»: прожектор за курсором, соседние карточки ловят отблеск ===== */
+.grid3 .link-card .bg { opacity: .38; filter: saturate(.7) brightness(.85); transition: opacity .4s, filter .4s, transform .8s var(--ease); }
+.grid3 .link-card::after { background:
+  radial-gradient(260px circle at var(--mx) var(--my), color-mix(in srgb, var(--house) 26%, transparent), transparent 70%),
+  linear-gradient(0deg, rgba(17,13,10,.96) 15%, rgba(17,13,10,.25)); transition: opacity .3s; }
+.grid3:hover .link-card .bg { opacity: .5; }
+.grid3 .link-card:hover .bg { opacity: .95; filter: saturate(1.1) brightness(1.05); transform: scale(1.05); }
+.grid3 .link-card:hover { border-color: var(--house-hi); box-shadow: 0 0 0 1px var(--house-hi), 0 0 30px color-mix(in srgb, var(--house) 45%, transparent), inset 0 0 40px color-mix(in srgb, var(--house) 20%, transparent); }
+.grid3 .link-card:hover h3 { color: #fff6e2; text-shadow: 0 0 14px var(--house-hi); }
+.grid3 .link-card:hover .eyebrow { letter-spacing: .3em; } .grid3 .link-card .eyebrow { transition: letter-spacing .3s; }
+.grid3 .link-card::before { border-width: 2px; background: radial-gradient(300px circle at var(--mx) var(--my), var(--house-hi), color-mix(in srgb, var(--house-hi) 40%, transparent) 35%, transparent 70%) border-box; }
+.grid3 .link-card { transition: border-color .3s, box-shadow .3s, transform .3s; } .grid3 .link-card:hover { transform: translateY(-3px); }

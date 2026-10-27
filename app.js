@@ -214,7 +214,7 @@ function pageHomeRaw() {
 </section>
 
 <div class="pipe-run hero-run" aria-hidden="false"><span class="pr-pipe"></span><i class="pr-joint a"></i><i class="pr-joint b"><img class="pr-valve" src="assets/pipes/valve.webp" alt=""></i><i class="pr-steam"></i>
-  <div class="engine-plate"><span class="eng-dot"></span><span>Мы переехали на <b>Conan Exiles Enhanced</b></span><span class="eng-ue">Unreal Engine 5</span></div></div>
+  <div class="engine-plate"><span class="eng-dot"></span><b>Conan Exiles</b><span class="eng-ue">Unreal Engine 5</span></div></div>
 
 <section class="section tight fx-sec"><div class="wrap"><div id="fxMount"></div></div></section>
 
@@ -652,7 +652,7 @@ function pageStart() {
     ['Прочитай правила', 'Ознакомься с правилами сообщества и ролевой игры, прежде чем вступать в сцену.', 'rules', 'Правила сервера'],
     ['Собери анкету', 'Выбери сторону, происхождение и предысторию, напиши квенту. Войди в личный кабинет через Discord и отправь квенту мастерам — ответ придёт в кабинет и в личку.', 'anketa', 'Открыть анкету'],
     ['Дождись решения мастеров', 'Мастер прочитает квенту и примет её, вернёт на доработку или отклонит. Решение придёт в кабинет и в личку Discord. После принятия бот откроет тебе личный канал персонажа, выдаст роли и сменит ник на «номер | имя».', 'cabinet', 'Личный кабинет'],
-    ['Подключись', 'Сервер работает на Conan Exiles Enhanced (Unreal Engine 5). Модлист собирается — ссылка появится в Discord и на сайте. Если что-то не работает, загляни в FAQ.', 'faq', 'Частые вопросы']
+    ['Подключись', 'Сервер работает на Conan Exiles на Unreal Engine 5. Модлист собирается — ссылка появится в Discord и на сайте. Если что-то не работает, загляни в FAQ.', 'faq', 'Частые вопросы']
   ];
   return head({ eyebrow: 'Первые шаги', title: 'Как начать играть', lead: 'От знакомства с городом до первой ролевой сцены — шаг за шагом.', bg: 'assets/codex/archive.webp', crumbs: 'Начать' }) + subnav(START_NAV, 'start') + `
 <section class="content"><div class="wrap"><div class="panel start-slots"><div class="eyebrow">Ограниченные места</div><h3>Не все роли бесконечны</h3><div class="ss-grid"><div><b>7</b><span>Инферналы</span></div><div><b>7</b><span>Проклятые</span></div><div><b>15</b><span>Гоблины</span></div></div><p class="muted">Счётчики свободных мест — в анкете. Пока квента на проверке, место держится за тобой.</p></div><ol class="steps" style="list-style:none;padding:0;margin:0;max-width:820px">${steps.map(([t, d, r, b], i) => `<li class="panel step reveal" style="animation-delay:${i * 70}ms"><div class="num">${i + 1}</div><div><h3>${t}</h3><p>${d}</p><p style="margin-top:12px"><a class="btn small ghost" href="#${r}">${b}</a></p></div></li>`).join('')}</ol></div></section>`;
