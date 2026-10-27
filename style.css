@@ -2172,3 +2172,8 @@ body.tree-mode .pipe-side { display: none; }
 .iv-cols { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-bottom: 8px; }
 .iv-body .al-sub { margin-top: 18px; } .iv-body .cards-list { margin-top: 8px; }
 .iv-kind .cards-list { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+/* трубы — меньше: без боковых и без труб под заголовками страниц */
+.pipe-side, .ph-pipe { display: none !important; }
+.pipe-run:not(.hero-run) { height: 40px; } .pipe-run:not(.hero-run) .pr-valve, .pipe-run:not(.hero-run) .pr-steam { display: none; }
+.pipe-run:not(.hero-run) .pr-pipe { height: 18px; background-size: auto 18px; opacity: .85; }
+.pipe-run:not(.hero-run) .pr-joint { width: 49px; height: 35px; }
