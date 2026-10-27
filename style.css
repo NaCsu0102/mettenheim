@@ -2177,3 +2177,4 @@ body.tree-mode .pipe-side { display: none; }
 .pipe-run:not(.hero-run) { height: 40px; } .pipe-run:not(.hero-run) .pr-valve, .pipe-run:not(.hero-run) .pr-steam { display: none; }
 .pipe-run:not(.hero-run) .pr-pipe { height: 18px; background-size: auto 18px; opacity: .85; }
 .pipe-run:not(.hero-run) .pr-joint { width: 49px; height: 35px; }
+.topbar::after { display: none !important; }
