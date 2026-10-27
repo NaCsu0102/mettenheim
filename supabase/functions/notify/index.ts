@@ -371,14 +371,14 @@ async function throttle(key: string, ms: number) {
 async function syncNews(force = false) {
   if (!force && await throttle('news_sync', 60000)) return { skip: true };
   const msgs: any[] = await discord('GET', `/channels/${NEWS_CHANNEL}/messages?limit=40`);
-  const { data: have } = await SB.from('news').select('discord_id,edited_at,images').limit(200);
+  const { data: have } = await SB.from('news').select('discord_id,edited_at,body,images').limit(200);
   const known = new Map((have || []).map((n: any) => [n.discord_id, n]));
   let added = 0, updated = 0;
   for (const m of msgs) {
     if (m.type !== 0 && m.type !== 19) continue;
     const prev: any = known.get(m.id);
     const edited = m.edited_timestamp || null;
-    if (prev && (prev.edited_at || null) === edited && prev.images) continue;
+    if (prev && (prev.edited_at || null) === edited && (prev.body || (prev.images || []).length)) continue;
     const mb = m.webhook_id ? { nick: m.author.username, avatar: avatarOf(m.author) } : await memberOf(m.author);
     const pics: any[] = [];
     let i = 0;
@@ -426,10 +426,16 @@ async function syncEvents(force = false) {
 
 /* ---------- для мастеров: чтение каналов Discord (хроника сессии) ---------- */
 async function staffRead(req: Request, qp: URLSearchParams) {
-  const user = await userFrom(req);
-  if (!user) return { error: 'нужен вход', status: 401 };
-  const { data: pr } = await SB.from('profiles').select('role').eq('id', user.id).maybeSingle();
-  if (!pr || !['master', 'admin'].includes(pr.role)) return { error: 'только мастера', status: 403 };
+  // временный ключ чтения (ставится вручную в bot_kv, живёт час) или вход мастера
+  const rk = req.headers.get('x-read-key') || '';
+  const kv = rk ? await kvGet('read_key') : null;
+  const keyOk = !!(kv && kv.v && kv.v.length >= 24 && kv.v === rk && Date.now() - new Date(kv.updated_at).getTime() < 3600000);
+  if (!keyOk) {
+    const user = await userFrom(req);
+    if (!user) return { error: 'нужен вход', status: 401 };
+    const { data: pr } = await SB.from('profiles').select('role').eq('id', user.id).maybeSingle();
+    if (!pr || !['master', 'admin'].includes(pr.role)) return { error: 'только мастера', status: 403 };
+  }
   const what = qp.get('discord');
   if (what === 'channels') {
     const chans: any[] = await discord('GET', `/guilds/${GUILD}/channels`);
@@ -456,7 +462,7 @@ async function staffRead(req: Request, qp: URLSearchParams) {
 }
 
 Deno.serve(async (req) => {
-  const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, content-type, apikey', 'Content-Type': 'application/json' };
+  const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, content-type, apikey, x-read-key', 'Content-Type': 'application/json' };
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
   // проверка ролей без изменений: какие роли бот снимет и выдаст
   if (new URL(req.url).searchParams.get('roles') === 'check') {

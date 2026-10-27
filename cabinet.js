@@ -740,7 +740,7 @@ async function liveBlock(el) {
       <div class="fx-row"><div class="fx-h t"><small>Жёлтые</small><b>Дом Талбот</b><span class="fx-n">${t}</span></div><div class="fx-vs">${sum ? (t > d ? '◀ ведут Жёлтые' : d > t ? 'ведут Красные ▶' : 'ничья') : 'сезон начинается'}</div><div class="fx-h d"><small>Красные</small><b>Дом Дорн</b><span class="fx-n">${d}</span></div></div>
       <div class="fx-bar" role="img" aria-label="Талбот ${t}, Дорн ${d}"><i class="t" style="width:${pt}%"></i><i class="d" style="width:${100 - pt}%"></i></div>
       <p class="muted">Очки приносят ивенты, задания и победы в сюжете. Уровни пула открывают Дому бонусы — подробнее в главе <a href="#factions">Фракции</a>.</p></div>`;
-    const news = nw.data || [], evs = (ev.data || []).filter(e => e.status !== 3 && e.status !== 4);
+    const news = (nw.data || []).filter(n => n.body || (n.images || []).length), evs = (ev.data || []).filter(e => e.status !== 3 && e.status !== 4);
     el.innerHTML = `<div class="live-grid${evs.length ? '' : ' solo'}"><div><div class="live-head"><div class="eyebrow">Хроники Меттенхейма</div><h2>Новости и анонсы</h2><a class="btn small ghost" href="#news">Все новости</a></div>
         ${news.length ? `<div class="nw-list">${news.map((n, i) => newsCard(n, false)).join('')}</div>` : '<article class="panel cab-empty"><p class="muted">Скоро здесь появятся новости из нашего Discord.</p></article>'}</div>
       ${evs.length ? `<div><div class="live-head"><div class="eyebrow">Календарь</div><h2>Ближайшие события</h2></div><div class="ev-list">${evs.map(eventCard).join('')}</div></div>` : ''}</div>`;
@@ -762,7 +762,7 @@ async function newsPage(el) {
     const evs = (ev.data || []).filter(e => e.status !== 3 && e.status !== 4);
     el.innerHTML = `${evs.length ? `<div class="sec-head"><div class="eyebrow">Календарь</div><h2>События сервера</h2><p>Записаться можно прямо в Discord: кнопка откроет событие.</p></div><div class="ev-list wide">${evs.map(eventCard).join('')}</div>` : ''}
       <div class="sec-head" style="margin-top:${evs.length ? 50 : 0}px"><div class="eyebrow">Из канала анонсов Discord</div><h2>Новости</h2></div>
-      ${(nw.data || []).length ? `<div class="nw-feed">${nw.data.map(n => newsCard(n, true)).join('')}</div>` : '<article class="panel cab-empty"><p class="muted">Новостей пока нет.</p></article>'}`;
+      ${(nw.data || []).some(n => n.body || (n.images || []).length) ? `<div class="nw-feed">${nw.data.filter(n => n.body || (n.images || []).length).map(n => newsCard(n, true)).join('')}</div>` : '<article class="panel cab-empty"><p class="muted">Новостей пока нет.</p></article>'}`;
   };
   await draw().catch(e => { el.innerHTML = `<p class="muted">${esc(errText(e))}</p>`; });
   liveSyncAt = 0; liveSync().then(() => setTimeout(() => draw().catch(() => {}), 2500));
