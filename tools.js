@@ -334,7 +334,7 @@ const Tree = {
       const house = css.getPropertyValue('--house').trim() || '#d6a23f', hi = css.getPropertyValue('--house-hi').trim() || '#f2cc72';
       let s = '';
       Object.values(RADII).forEach(r => { s += `<circle r="${r}" fill="none" stroke="#2a211a" stroke-width="1" stroke-dasharray="2 9"/>`; });
-      s += `<circle r="180" fill="none" stroke="#3a2e23" stroke-width="2"/><image href="assets/gear.webp" x="-150" y="-150" width="300" height="300" opacity=".35"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="80s" repeatCount="indefinite"/></image>`;
+      s += `<circle r="180" fill="none" stroke="#3a2e23" stroke-width="2"/><image href="assets/gear-md.webp" x="-150" y="-150" width="300" height="300" opacity=".35"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="80s" repeatCount="indefinite"/></image>`;
       s += `<text y="6" text-anchor="middle" fill="#a7967c" font-family="Montserrat, Arial, sans-serif" font-weight="700" font-size="28" letter-spacing="3" stroke="#120e0b" stroke-width="5" paint-order="stroke">МЕТТЕНХЕЙМ</text>`;
       for (const [a, b] of links) {
         const A = byId[a], B = byId[b], rootOpen = x => byId[x].type === 'root' && unlocked(got), on = (got.has(a) || (rootOpen(a) && got.has(b))) && (got.has(b) || (rootOpen(b) && got.has(a))), can = ((got.has(a) || rootOpen(a)) && canTake(b)) || ((got.has(b) || rootOpen(b)) && canTake(a));

@@ -350,6 +350,111 @@ async function chat(req: Request, action: string, CORS: Record<string, string>) 
   return out({ error: 'unknown action' }, 400);
 }
 
+/* ---------- новости и события из Discord ---------- */
+const NEWS_CHANNEL = Deno.env.get('DISCORD_NEWS_CHANNEL_ID') ?? '1471498060625477856';
+async function toMedia(url: string, path: string) {
+  try {
+    const r = await fetch(url);
+    if (!r.ok) return url;
+    const type = r.headers.get('content-type') || 'image/png';
+    if (!/^image\//.test(type)) return url;
+    const up = await fetch(`${DB_URL}/storage/v1/object/media/${path}`, { method: 'POST', headers: { apikey: DB_KEY, Authorization: 'Bearer ' + DB_KEY, 'Content-Type': type, 'x-upsert': 'true', 'Cache-Control': '604800' }, body: await r.arrayBuffer() });
+    return up.ok ? `${DB_URL}/storage/v1/object/public/media/${path}` : url;
+  } catch (_) { return url; }
+}
+async function throttle(key: string, ms: number) {
+  const mark = await kvGet(key);
+  if (mark && Date.now() - new Date(mark.updated_at).getTime() < ms) return true;
+  await kvSet(key, String(Date.now()));
+  return false;
+}
+async function syncNews(force = false) {
+  if (!force && await throttle('news_sync', 60000)) return { skip: true };
+  const msgs: any[] = await discord('GET', `/channels/${NEWS_CHANNEL}/messages?limit=40`);
+  const { data: have } = await SB.from('news').select('discord_id,edited_at,images').limit(200);
+  const known = new Map((have || []).map((n: any) => [n.discord_id, n]));
+  let added = 0, updated = 0;
+  for (const m of msgs) {
+    if (m.type !== 0 && m.type !== 19) continue;
+    const prev: any = known.get(m.id);
+    const edited = m.edited_timestamp || null;
+    if (prev && (prev.edited_at || null) === edited && prev.images) continue;
+    const mb = m.webhook_id ? { nick: m.author.username, avatar: avatarOf(m.author) } : await memberOf(m.author);
+    const pics: any[] = [];
+    let i = 0;
+    for (const a of (m.attachments || []).slice(0, 6)) {
+      if (!/^image\//.test(a.content_type || '')) continue;
+      const ext = (a.filename.split('.').pop() || 'png').toLowerCase().replace(/[^a-z0-9]/g, '');
+      pics.push({ url: await toMedia(a.url, `news/${m.id}-${i++}.${ext}`), w: a.width || null, h: a.height || null });
+    }
+    for (const e of (m.embeds || []).slice(0, 2)) {
+      const u = e.image?.url || e.thumbnail?.url;
+      if (u) pics.push({ url: await toMedia(u, `news/${m.id}-${i++}.png`), w: e.image?.width || null, h: e.image?.height || null });
+    }
+    let body = plainBody(m);
+    if (!m.content && m.embeds?.length) body = [m.embeds[0].title ? '## ' + m.embeds[0].title : '', m.embeds[0].description || ''].filter(Boolean).join('\n');
+    await SB.from('news').insert({ discord_id: m.id, author: mb.nick, avatar: mb.avatar, body, images: pics, created_at: m.timestamp, edited_at: edited }, 'discord_id').run();
+    if (prev) await SB.from('news').update({ author: mb.nick, avatar: mb.avatar, body, images: pics, edited_at: edited }).eq('discord_id', m.id).run();
+    prev ? updated++ : added++;
+  }
+  // удалённые в Discord — убрать и с сайта (в пределах загруженного окна)
+  if (msgs.length) {
+    const ids = new Set(msgs.map((m) => m.id));
+    const oldest = msgs[msgs.length - 1].timestamp;
+    const { data: recent } = await SB.from('news').select('discord_id,created_at').gte('created_at', oldest).limit(100);
+    for (const n of recent || []) if (!ids.has(n.discord_id)) await SB.from('news').delete().eq('discord_id', n.discord_id).run();
+  }
+  return { added, updated };
+}
+async function syncEvents(force = false) {
+  if (!force && await throttle('events_sync', 120000)) return { skip: true };
+  const list: any[] = await discord('GET', `/guilds/${GUILD}/scheduled-events?with_user_count=true`);
+  const ids: string[] = [];
+  for (const e of list) {
+    ids.push(e.id);
+    const image = e.image ? await toMedia(`https://cdn.discordapp.com/guild-events/${e.id}/${e.image}.png?size=1024`, `events/${e.id}-${e.image}.png`) : '';
+    const row = { id: e.id, name: e.name || '', description: e.description || '', starts_at: e.scheduled_start_time, ends_at: e.scheduled_end_time || null,
+      location: e.entity_metadata?.location || (e.channel_id ? 'Голосовой канал Discord' : ''), image, interested: e.user_count || 0, status: e.status, updated_at: new Date().toISOString() };
+    await SB.from('events').insert(row, 'id').run();
+    await SB.from('events').update(row).eq('id', e.id).run();
+  }
+  // прошедшие и отменённые события Discord уже не отдаёт — убрать
+  const { data: have } = await SB.from('events').select('id').limit(200);
+  for (const h of have || []) if (!ids.includes(h.id)) await SB.from('events').delete().eq('id', h.id).run();
+  return { events: list.length };
+}
+
+/* ---------- для мастеров: чтение каналов Discord (хроника сессии) ---------- */
+async function staffRead(req: Request, qp: URLSearchParams) {
+  const user = await userFrom(req);
+  if (!user) return { error: 'нужен вход', status: 401 };
+  const { data: pr } = await SB.from('profiles').select('role').eq('id', user.id).maybeSingle();
+  if (!pr || !['master', 'admin'].includes(pr.role)) return { error: 'только мастера', status: 403 };
+  const what = qp.get('discord');
+  if (what === 'channels') {
+    const chans: any[] = await discord('GET', `/guilds/${GUILD}/channels`);
+    const act: any = await discord('GET', `/guilds/${GUILD}/threads/active`);
+    return { channels: chans.map((c) => ({ id: c.id, name: c.name, type: c.type, parent: c.parent_id })), threads: (act.threads || []).map((t: any) => ({ id: t.id, name: t.name, parent: t.parent_id })) };
+  }
+  if (what === 'archived') {
+    const ch = qp.get('channel') || '';
+    const pub: any = await discord('GET', `/channels/${ch}/threads/archived/public?limit=100`).catch(() => ({ threads: [] }));
+    return { threads: (pub.threads || []).map((t: any) => ({ id: t.id, name: t.name, parent: t.parent_id })) };
+  }
+  if (what === 'messages') {
+    const ch = qp.get('channel') || '';
+    let before = '', out: any[] = [];
+    for (let i = 0; i < 6; i++) {
+      const page: any[] = await discord('GET', `/channels/${ch}/messages?limit=100${before ? '&before=' + before : ''}`);
+      out = out.concat(page.map((m) => ({ id: m.id, at: m.timestamp, author: m.author?.global_name || m.author?.username, text: plainBody(m), files: (m.attachments || []).map((a: any) => a.filename) })));
+      if (page.length < 100) break;
+      before = page[page.length - 1].id;
+    }
+    return { messages: out.reverse() };
+  }
+  return { error: 'unknown', status: 400 };
+}
+
 Deno.serve(async (req) => {
   const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, content-type, apikey', 'Content-Type': 'application/json' };
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
@@ -371,6 +476,15 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify(statsCache.body), { headers: { ...CORS, 'Cache-Control': 'public, max-age=60' } });
   }
   const qp = new URL(req.url).searchParams;
+  // новости и события Discord для сайта и лаунчера
+  if (qp.get('live') === 'sync') {
+    const [news, events] = await Promise.all([syncNews().catch((e) => ({ error: String(e) })), syncEvents().catch((e) => ({ error: String(e) }))]);
+    return new Response(JSON.stringify({ news, events }), { headers: CORS });
+  }
+  if (qp.get('discord')) {
+    try { const r: any = await staffRead(req, qp); return new Response(JSON.stringify(r), { status: r.status || 200, headers: CORS }); }
+    catch (e) { return new Response(JSON.stringify({ error: String((e as Error).message || e) }), { status: 500, headers: CORS }); }
+  }
   // разово выложить портреты принятых персонажей
   if (qp.get('portraits') === 'backfill') return new Response(JSON.stringify(await backfillPortraits()), { headers: CORS });
   // чат сайта ↔ канал Discord

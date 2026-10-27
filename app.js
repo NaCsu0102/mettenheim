@@ -90,6 +90,7 @@ function applyHouse(h, animate) {
 function setVars() {
   document.documentElement.dataset.house = house;
   $$('.house-gear').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.h === house)));
+  $$('.side[data-side]').forEach(b => b.classList.toggle('on', b.dataset.side === house));
   $$('[data-pick]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.pick === house)));
   const st = $('#heroStatus'); if (st) st.textContent = 'Твоя сторона: ' + M.houses[house].name;
   houseHooks.forEach(f => { try { f(house); } catch (e) { console.warn(e); } });
@@ -101,9 +102,9 @@ setVars();
 /* ================= НАВИГАЦИЯ ================= */
 /* Книга: части и главы. Порядок здесь задаёт оглавление и кнопки «Назад / Дальше». */
 const BOOK = [
-  ['Начало', [['start', 'Как начать играть'], ['faq', 'Частые вопросы'], ['modlist', 'Модлист'], ['residents', 'Жители города'], ['chat', 'Общий чат']]],
+  ['Начало', [['start', 'Как начать играть'], ['faq', 'Частые вопросы'], ['modlist', 'Модлист'], ['news', 'Новости и события'], ['residents', 'Жители города'], ['chat', 'Общий чат'], ['glossary', 'Словарь терминов']]],
   ['Правила', [['rules', 'Правила сервера'], ['discord', 'Правила Discord']]],
-  ['Мир', [['city', 'Меттенхейм'], ['history', 'История города'], ['houses', 'Дома Талбот и Дорн'], ['lumerite', 'Люмерит'], ['faith', 'Вера'], ['magic', 'Магия'], ['world', 'История мира'], ['deck', 'Проклятая колода']]],
+  ['Мир', [['city', 'Меттенхейм'], ['history', 'История города'], ['houses', 'Дома Талбот и Дорн'], ['lumerite', 'Люмерит'], ['faith', 'Вера'], ['magic', 'Магия'], ['world', 'История мира'], ['chronicle', 'Хроника сессии'], ['deck', 'Проклятая колода']]],
   ['Народы', [['races', 'Народы и отношения'], ...M.peoples.map(p => ['people-' + p.id, p.name]), ['inferno', 'Инферно и Короли']]],
   ['Классы и системы', [['classes', 'Классы'], ['system', 'Ролевая система'], ['eloquence', 'Красноречие'], ['healing', 'Лекари и травмы'], ['curses', 'Развитие Проклятых'], ['factions', 'Фракции'], ['inventions', 'Изобретения Инженера']]],
   ['Древо талантов', [['tree', 'Древо талантов']]],
@@ -178,7 +179,7 @@ const head = ({ eyebrow, title, lead, bg, crumbs }) => (bg = CH_BG[currentRoute]
 <section class="page-head"><div class="bg" style="background-image:url('${bg || 'assets/city-bg.webp'}')"></div>
 <div class="wrap reveal">${crumbs ? `<div class="crumbs"><a href="#home">Главная</a> / ${crumbs}</div>` : ''}<div class="eyebrow">${eyebrow || 'Хроники Меттенхейма'}</div><h1>${title}</h1>${lead ? `<p>${lead}</p>` : ''}</div></section>`);
 const subnav = (items, cur) => `<nav class="subnav" aria-label="Подразделы"><div class="wrap">${items.map(([r, t]) => `<a href="#${r}" ${r === cur ? 'aria-current="page"' : ''}>${t}</a>`).join('')}</div></nav>`;
-const LORE = [['city', 'Меттенхейм'], ['history', 'История города'], ['houses', 'Дома'], ['lumerite', 'Люмерит'], ['faith', 'Вера'], ['magic', 'Магия'], ['world', 'История мира'], ['deck', 'Проклятая колода']];
+const LORE = [['city', 'Меттенхейм'], ['history', 'История города'], ['houses', 'Дома'], ['lumerite', 'Люмерит'], ['faith', 'Вера'], ['magic', 'Магия'], ['world', 'История мира'], ['chronicle', 'Хроника'], ['deck', 'Проклятая колода']];
 const PEOPLE_NAV = [['races', 'Все народы'], ...M.peoples.map(p => ['people-' + p.id, p.name]), ['inferno', 'Инферно']];
 const CLS_NAV = [['classes', 'Классы'], ['tree', 'Древо талантов'], ['system', 'Ролевая система'], ['eloquence', 'Красноречие'], ['healing', 'Лекари'], ['curses', 'Проклятые'], ['factions', 'Фракции'], ['inventions', 'Изобретения'], ['forge', 'Оружейная'], ['armor', 'Бронник'], ['craft', 'Крафт-станция'], ['gathering', 'Добыча'], ['blueprints', 'Чертежи'], ['recycle', 'Переработчик'], ['alchemy', 'Алхимия'], ['cooking', 'Кулинария'], ['body', 'Протезы']];
 const START_NAV = [['start', 'Как начать'], ['faq', 'FAQ'], ['modlist', 'Модлист'], ['rules', 'Правила']];
@@ -187,10 +188,15 @@ const charImg = (folder, g, c) => `assets/characters/${folder}/${g}-${c}.webp`;
 
 /* ================= ГЛАВНАЯ ================= */
 function pageHome() {
+  const html = pageHomeRaw(), cut = html.indexOf('</section>') + 10;
+  // всё ниже заставки грузится по мере прокрутки
+  return html.slice(0, cut) + html.slice(cut).replace(/<img (?![^>]*loading=)/g, '<img loading="lazy" decoding="async" ');
+}
+function pageHomeRaw() {
   const H = M.houses;
   const portals = [
     ['city', 'Меттенхейм', 'Город двух заводов и Люмерита', 'assets/codex/city-v2.webp'],
-    ['races', 'Народы', 'Люди, полуэльфы, дворфы, гоблины', 'assets/codex/peoples.webp'],
+    ['races', 'Народы', 'Люди, полуэльфы, дворфы, гоблины, инферналы', 'assets/codex/peoples.webp'],
     ['classes', 'Классы', 'Пять путей и новое древо развития', 'assets/codex/arcane-v2.webp'],
     ['forge', 'Мастерская', 'Оружие и броня с обвесами', 'assets/codex/workshop-v2.webp'],
     ['rules', 'Правила', 'Сцены, бой и взаимодействие', 'assets/codex/rules.webp'],
@@ -198,18 +204,23 @@ function pageHome() {
   ];
   return `
 <section class="hero" aria-label="Выбор стороны">
-  <button class="side talbot" data-pick="talbot" aria-pressed="false"><div class="art"></div>
-    <div class="caption"><small>${H.talbot.side.toUpperCase()}</small><h2>${H.talbot.name}</h2><span class="pick">ВСТАТЬ НА СТОРОНУ</span></div></button>
-  <div class="hero-core"><div class="ring"><img class="gear" src="assets/gear.webp" alt=""><img class="logo" src="assets/logo.webp" alt="Хроники Меттенхейма"></div>
-    <div class="motto">ГОРОД ПАРА, СТАЛИ И АМБИЦИЙ</div><div class="status" id="heroStatus"></div></div>
-  <button class="side dorn" data-pick="dorn" aria-pressed="false"><div class="art"></div>
-    <div class="caption"><small>${H.dorn.side.toUpperCase()}</small><h2>${H.dorn.name}</h2><span class="pick">ВСТАТЬ НА СТОРОНУ</span></div></button>
+  <div class="side talbot" data-side="talbot"><div class="art"></div>
+    <div class="caption"><small>${H.talbot.side.toUpperCase()}</small><h2>${H.talbot.name}</h2><div class="hc-btns"><button type="button" class="hbtn" data-pick="talbot" aria-pressed="false"><span>Встать на сторону</span></button><a class="hlink" href="#houses">Подробнее</a></div></div></div>
+  <div class="hero-core"><div class="ring"><img class="gear" src="assets/gear-md.webp" alt=""><img class="logo" src="assets/logo-md.webp" alt="Хроники Меттенхейма"></div>
+    <h1 class="sr-only">Хроники Меттенхейма — ролевой сервер Conan Exiles, RP 21+</h1>
+    <div class="core-plate"><div class="motto">ГОРОД ПАРА, СТАЛИ И АМБИЦИЙ</div><div class="status" id="heroStatus"></div>
+    <div class="engine"><span class="eng-dot"></span><span>Переехали на <b>Conan Exiles Enhanced</b></span><span class="eng-ue">Unreal Engine 5</span></div></div></div>
+  <div class="side dorn" data-side="dorn"><div class="art"></div>
+    <div class="caption"><small>${H.dorn.side.toUpperCase()}</small><h2>${H.dorn.name}</h2><div class="hc-btns"><button type="button" class="hbtn" data-pick="dorn" aria-pressed="false"><span>Встать на сторону</span></button><a class="hlink" href="#houses">Подробнее</a></div></div></div>
 </section>
 
 <section class="section tight sides-sec"><div class="wrap">
   <div class="sec-head"><div class="eyebrow">Выбери свою сторону</div><h2>Два завода, два будущих</h2><p>Принадлежность к Дому отражает взгляды и интересы персонажа. Жёлтые и Красные — не светлая и тёмная сторона, а два ответа на вопрос, кому должен служить прогресс.</p></div>
   <div class="houses">${['talbot', 'dorn'].map(k => `<article class="panel house-card ${k === house ? 'lit' : ''}" data-hcard="${k}"><img src="${H[k].img}" alt=""><div><div class="eyebrow ${k[0]}">${H[k].side}</div><h3>${H[k].name}</h3><p>${H[k].head}</p>${ul(H[k].points)}<p style="margin-top:14px"><button class="btn small" data-pick="${k}" aria-pressed="false">Выбрать ${k === 'talbot' ? 'Жёлтых' : 'Красных'}</button></p></div></article>`).join('')}</div>
+  <div id="fxMount" style="margin-top:22px"></div>
 </div></section>
+
+<section class="section tight live-sec"><div class="wrap" id="liveMount"></div></section>
 
 <section class="section tight" style="padding-top:0"><div class="wrap">
   <div class="comm-layout">
@@ -229,7 +240,7 @@ function pageHome() {
 
 <section class="section" id="chronicle"><div class="wrap">
   <div class="sec-head"><div class="eyebrow">Хронометр · поверни эпоху</div><h2>Как появился Меттенхейм</h2><p>Город не был построен за один день. Он вырос из дыма первых плавилен, пережил борьбу домов и подошёл к эпохе, в которой энергии не хватало даже для человеческих амбиций.</p></div>
-  <div class="chrono"><div class="dial" id="dial"><div class="face"></div><img class="gear" id="dialGear" src="assets/gear.webp" alt=""><div class="hand" id="dialHand"></div><div class="hub"></div></div>
+  <div class="chrono"><div class="dial" id="dial"><div class="face"></div><img class="gear" id="dialGear" src="assets/gear-md.webp" alt=""><div class="hand" id="dialHand"></div><div class="hub"></div></div>
   <article class="panel era" id="era" aria-live="polite"></article></div>
 </div></section>
 
@@ -242,7 +253,7 @@ function pageHome() {
 
 <section class="section" id="builder"><div class="wrap">
   <div class="app-banner" id="aBanner"><img id="aBannerImg" alt=""><div class="shade"></div><div class="cap"><span id="aBannerSide"></span><strong id="aBannerName"></strong></div></div>
-  <div class="sec-head" style="margin-top:34px"><div class="eyebrow">Анкета игрока</div><h2>Создать персонажа</h2><p>Выбранный Дом автоматически переносится в анкету. Анкета сохраняется в этом браузере, готовый текст можно скопировать и отправить в Discord.</p></div>
+  <div class="sec-head" style="margin-top:34px"><div class="eyebrow">Анкета игрока</div><h2>Создать персонажа</h2><p>Выбранный Дом переносится в анкету, черновик сохраняется в этом браузере. Когда всё готово — войди в личный кабинет через Discord и отправь квенту мастерам: решение придёт в кабинет и в личку.</p></div>
   <form id="aForm" class="app-form" autocomplete="off">
     <div class="ornament"><span></span><b>ДОСЬЕ ПЕРСОНАЖА</b><span></span></div>
     <div class="app-layout">
@@ -295,7 +306,7 @@ function pageHome() {
 
       <aside class="app-preview"><div class="sticky">
         <div class="ftitle"><span>◈</span><div><small>ЛИЧНОЕ ДЕЛО</small><strong>Карточка персонажа</strong></div></div>
-        <div class="stage"><img class="flag" id="bFlag" alt=""><img class="ring-gear" src="assets/gear.webp" alt=""><div class="floor"></div><img class="fig" id="bFig" alt=""></div>
+        <div class="stage"><img class="flag" id="bFlag" alt=""><img class="ring-gear" src="assets/gear-md.webp" alt=""><div class="floor"></div><img class="fig" id="bFig" alt=""></div>
         <div class="panel dossier" id="bDossier"></div>
       </div></aside>
     </div>
@@ -332,6 +343,7 @@ function mountDice(root) {
 function mountHome() {
   // выбор стороны
   $$('[data-pick]').forEach(b => b.addEventListener('click', () => { if (b.dataset.pick !== house) applyHouse(b.dataset.pick, true); }));
+  $$('.side[data-side]').forEach(b => b.addEventListener('click', e => { if (e.target.closest('a,button')) return; if (b.dataset.side !== house) applyHouse(b.dataset.side, true); }));
   setVars();
   MH.onHouse(hcards);
   hcards();
@@ -406,7 +418,7 @@ function mountBuilder() {
     $('#bGender').innerHTML = chip('g', 'female', 'Женский', st.g) + chip('g', 'male', 'Мужской', st.g);
     $('#bPeople').innerHTML = M.peoples.map(p => chip('p', p.id, ({ humans: 'Человек', elves: 'Полуэльф', dwarves: 'Дворф', goblins: 'Гоблин', infernals: 'Инфернал' })[p.id] || p.name, st.p, p.emblem)).join('');
     $('#bOrigin').innerHTML = people().origins.map(o => chip('o', o.id, o.name, st.o)).join('');
-    $('#bOriginNote').innerHTML = `<strong>${origin().name}</strong><p>${origin().tagline} ${origin().culture.split('. ').slice(0, 2).join('. ')}.</p>`;
+    $('#bOriginNote').innerHTML = `${st.p === 'goblins' ? '<div class="slot-box" data-slot="goblin" style="margin-bottom:12px"></div>' : ''}<strong>${origin().name}</strong><p>${origin().tagline} ${origin().culture.split('. ').slice(0, 2).join('. ')}.</p>`;
     $('#bClass').innerHTML = M.classes.map(c => chip('c', c.id, c.name, st.c, c.emblem)).join('');
     const chaos = origin().id === 'ice' ? 'ice' : 'fire', KS = M.kings.filter(k => k.chaos === chaos);
     if (isInf() && !KS.some(k => k.id === st.ik)) st.ik = KS[0].id;
@@ -507,12 +519,15 @@ function pageHouses() {
 </div></div></section>`;
 }
 function pageLumerite() {
-  return head({ eyebrow: 'Энергия лей-линий', title: 'Люмерит', lead: 'Новый материал, позволивший Меттенхейму шагнуть на два столетия вперёд.', bg: 'assets/codex/magic.webp', crumbs: 'Мир' }) + subnav(LORE, 'lumerite') + `
+  return head({ eyebrow: 'Энергия лей-линий', title: 'Люмерит', lead: 'Застывшая магия мира. Источник энергии для заводов и единственный источник маны для магов.', bg: 'assets/codex/magic.webp', crumbs: 'Мир' }) + subnav(LORE, 'lumerite') + `
 <section class="content"><div class="wrap"><img class="wide-art" src="assets/art/head-lumerite.webp" alt=""><div class="prose reveal">
-<h2>Происхождение</h2><p>Люмерит — застывшие жилы лей-линий, которые кристаллизовались и обрели твёрдую форму. Его обнаружили в шахтах Меттенхейма. Чистый кристалл светится изнутри холодным золотом и тёплый на ощупь.</p>
+<h2>Гибель Тихого древа</h2><p>Когда было уничтожено последнее Тихое древо — последний оплот магии этого мира, — лей-линии потеряли опору. Нити силы, что текли сквозь всё живое, кристаллизовались и ушли под землю. Так родились люмеритовые жилы: застывшая магия мира, спрятанная в камне.</p>
+<p>Чистый кристалл светится изнутри холодным золотом и тёплый на ощупь. Его первыми нашли в шахтах Меттенхейма.</p>
+<h2>Магия только через Люмерит</h2><p>Живые существа больше не проводят лей-линии сквозь себя. Чтобы колдовать, магу нужен Люмерит: он берёт ману из кристалла и плетёт ею заклинание. Без Люмерита даже опытный маг бессилен.</p>
+<p>Черпать ману из жилы умеют не все. Это <b>Дар жилы</b> — особый талант, который есть у немногих и который нужно развить. Поэтому магия больше не принадлежит каждому: магами становятся только те, кто научился обращаться с Люмеритом в новых условиях. В игре Дар жилы есть у класса Маг.</p>
 <h2>Промышленное применение</h2><p>Люмерит даёт огромный объём энергии. Из него производят топливо для автоматонов, больших машин и конструктов. Изобретения, раньше требовавшие постоянного подключения к заводу, стали автономными.</p>
-<h2>Цена контроля</h2><p>Для Талбот новая энергия открывает путь к развитию всего мира. Для Дорна — обеспечивает силу и военное превосходство. Борьба за Люмерит определяет будущее Меттенхейма.</p>
-<p class="note">Рецепты переработки, расход топлива и игровые параметры Люмерита будут добавлены вместе с обновлением ремесла.</p>
+<h2>Цена контроля</h2><p>Для Талбот новая энергия открывает путь к развитию всего мира. Для Дорна — обеспечивает силу и военное превосходство. Маги, заводы и Дома тянутся к одним и тем же жилам, и борьба за Люмерит определяет будущее Меттенхейма.</p>
+<p class="note">Как маг тратит и заряжает кристаллы — в главе <a href="#magic">Магия</a>. Кристаллы и переработка Люмерита — в <a href="#craft">Крафт-станции</a>.</p>
 </div></div></section>`;
 }
 function pageFaith() {
@@ -568,11 +583,12 @@ const kvRows = rows => `<div class="kv">${rows.map(([k, v]) => `<div class="wrow
 const SPELL_COST_HTML = () => kvRows(window.SPELL_COST || []);
 const RECHARGE_HTML = () => kvRows(window.RECHARGE || []);
 function pageMagic() {
-  return head({ eyebrow: 'Лей-линии и плетение', title: 'Магия', lead: 'Магия Лимна течёт по лей-линиям. В Меттенхейме маг плетёт её только через кристалл Люмерита — застывшую жилу.', bg: 'assets/codex/arcane-v2.webp', crumbs: 'Мир' }) + subnav(LORE, 'magic') + `
+  return head({ eyebrow: 'Лей-линии и плетение', title: 'Магия', lead: 'После гибели последнего Тихого древа магия ушла в камень. Колдовать можно только через Люмерит — и только тем, у кого есть Дар жилы.', bg: 'assets/codex/arcane-v2.webp', crumbs: 'Мир' }) + subnav(LORE, 'magic') + `
 <section class="content"><div class="wrap">
-<div class="prose" style="margin-bottom:34px"><p class="lead">Лей-линии — нити силы, пронизывающие мир. Те, кто умеют ими управлять, черпают энергию соседних миров и придают ей форму. Люмерит — те же лей-линии, застывшие в кристалл, поэтому с его открытием маги в Меттенхейме стали нужны заводам как никогда.</p>
+<div class="prose" style="margin-bottom:34px"><p class="lead">Лей-линии — нити силы, когда-то пронизывавшие всё живое. Когда было уничтожено последнее Тихое древо, они кристаллизовались и ушли под землю люмеритовыми жилами. Теперь маг берёт ману только из Люмерита.</p>
+<p>Черпать ману из кристалла умеют немногие: это Дар жилы, особый талант. Магами становятся лишь те, кто научился обращаться с Люмеритом. Поэтому маги в Меттенхейме редки и нужны заводам как никогда.</p>
 <p>У каждого мага четыре базовых плетения. Дальше он развивается по ветвям школ на древе развития.</p></div>
-<div class="sec-head"><div class="eyebrow">Кристаллы магии</div><h2>Сила из застывшей жилы</h2><p>Шахты Меттенхейма выпили лей-линии вокруг города. Тянуть силу из себя больше нельзя — тело не отвечает. Маг плетёт только через люмеритовый кристалл-фокус, и каждое заклинание тратит его заряды.</p></div>
+<div class="sec-head"><div class="eyebrow">Кристаллы магии</div><h2>Сила из застывшей жилы</h2><p>Тянуть силу из себя больше нельзя — лей-линии ушли из живых существ. Маг плетёт только через люмеритовый кристалл-фокус, и каждое заклинание тратит его заряды.</p></div>
 <div id="crystalMount"></div>
 <div class="grid2" style="margin-top:22px">
 <article class="panel"><div class="eyebrow">Цена заклинаний</div>${SPELL_COST_HTML()}</article>
@@ -631,13 +647,14 @@ function pageDiscord() {
 function pageStart() {
   const steps = [
     ['Познакомься с миром', 'Меттенхейм живёт между двумя заводами и двумя взглядами на будущее. Прочитай о городе, Люмерите и домах Талбот и Дорн.', 'city', 'Открыть город'],
-    ['Выбери народ и класс', 'Люди, полуэльфы, дворфы или гоблины. Пять классов, включая нового Инженера. Посмотри древо развития своего класса.', 'races', 'Изучить народы'],
+    ['Выбери народ и класс', 'Люди, полуэльфы, дворфы, гоблины или инферналы. Пять классов: Боец, Плут, Маг, Стрелок и Инженер. Посмотри древо развития своего класса. Часть мест ограничена — см. ниже.', 'races', 'Изучить народы'],
     ['Прочитай правила', 'Ознакомься с правилами сообщества и ролевой игры, прежде чем вступать в сцену.', 'rules', 'Правила сервера'],
     ['Собери анкету', 'Выбери сторону, происхождение и предысторию, напиши квенту. Войди в личный кабинет через Discord и отправь квенту мастерам — ответ придёт в кабинет и в личку.', 'anketa', 'Открыть анкету'],
-    ['Подключись', 'Подпишись на коллекцию модов, дождись загрузки и заходи на сервер. Если что-то не работает, загляни в FAQ.', 'modlist', 'Модлист']
+    ['Дождись решения мастеров', 'Мастер прочитает квенту и примет её, вернёт на доработку или отклонит. Решение придёт в кабинет и в личку Discord. После принятия бот откроет тебе личный канал персонажа, выдаст роли и сменит ник на «номер | имя».', 'cabinet', 'Личный кабинет'],
+    ['Подключись', 'Сервер работает на Conan Exiles Enhanced (Unreal Engine 5). Модлист собирается — ссылка появится в Discord и на сайте. Если что-то не работает, загляни в FAQ.', 'faq', 'Частые вопросы']
   ];
   return head({ eyebrow: 'Первые шаги', title: 'Как начать играть', lead: 'От знакомства с городом до первой ролевой сцены — шаг за шагом.', bg: 'assets/codex/archive.webp', crumbs: 'Начать' }) + subnav(START_NAV, 'start') + `
-<section class="content"><div class="wrap"><ol class="steps" style="list-style:none;padding:0;margin:0;max-width:820px">${steps.map(([t, d, r, b], i) => `<li class="panel step reveal" style="animation-delay:${i * 70}ms"><div class="num">${i + 1}</div><div><h3>${t}</h3><p>${d}</p><p style="margin-top:12px"><a class="btn small ghost" href="#${r}">${b}</a></p></div></li>`).join('')}</ol></div></section>`;
+<section class="content"><div class="wrap"><div class="panel start-slots"><div class="eyebrow">Ограниченные места</div><h3>Не все роли бесконечны</h3><div class="ss-grid"><div><b>7</b><span>Инферналы</span></div><div><b>7</b><span>Проклятые</span></div><div><b>15</b><span>Гоблины</span></div></div><p class="muted">Счётчики свободных мест — в анкете. Пока квента на проверке, место держится за тобой.</p></div><ol class="steps" style="list-style:none;padding:0;margin:0;max-width:820px">${steps.map(([t, d, r, b], i) => `<li class="panel step reveal" style="animation-delay:${i * 70}ms"><div class="num">${i + 1}</div><div><h3>${t}</h3><p>${d}</p><p style="margin-top:12px"><a class="btn small ghost" href="#${r}">${b}</a></p></div></li>`).join('')}</ol></div></section>`;
 }
 function pageFaq() {
   return head({ eyebrow: 'Помощь игрокам', title: 'Частые вопросы', lead: 'Собранные вопросы о сервере, персонажах, классах и ремесле.', bg: 'assets/codex/archive.webp', crumbs: 'Начать' }) + subnav(START_NAV, 'faq') + `
@@ -814,12 +831,31 @@ function pageArmor() { return head({ eyebrow: 'Мастерская · заго�
 
 /* ================= РОУТЕР ================= */
 function pageInferno() { return head({ eyebrow: 'Народы · инферналы', title: 'Инферно и Короли', lead: 'Мир под миром. Десять великих Домов, десять грехов — и голод, который инфернал приносит с собой в Меттенхейм.', bg: 'assets/codex/peoples.webp', crumbs: 'Народы' }) + subnav(PEOPLE_NAV, 'inferno') + `<section class="content"><div class="wrap">${window.Inferno.pageHTML()}</div></section>`; }
+function pageNews() { return head({ eyebrow: 'Город · на связи', title: 'Новости и события', lead: 'Анонсы из нашего Discord и календарь событий сервера. Записаться на событие можно одним нажатием.', bg: 'assets/codex/city-v2.webp', crumbs: 'Начало' }) + `<section class="content"><div class="wrap" id="newsMount"></div></section>`; }
+function pageHero() { return head({ eyebrow: 'Перепись Меттенхейма', title: 'Личное дело', lead: 'Открытая карточка жителя города. Квента и данные игрока остаются у мастеров.', bg: 'assets/codex/city-v2.webp', crumbs: 'Жители' }) + `<section class="content"><div class="wrap" id="heroMount"></div></section>`; }
+function pageGlossary() {
+  return head({ eyebrow: 'Справочник', title: 'Словарь терминов', lead: 'Короткие объяснения слов, которые встречаются в лоре и правилах Меттенхейма.', bg: 'assets/codex/archive.webp', crumbs: 'Начало' }) + `
+<section class="content"><div class="wrap" style="max-width:980px"><div class="panel gl-tools"><input type="search" id="glQ" placeholder="Найти термин…" aria-label="Поиск по словарю"><span class="muted" id="glN"></span></div>
+<div class="gl-list" id="glList">${M.glossary.map(([t, cat, d, link]) => `<article class="panel gl-item" data-gl="${esc((t + ' ' + d).toLowerCase())}"><div class="eyebrow">${cat}</div><h3>${t}</h3><p>${d}</p>${link ? `<a href="#${link}">Подробнее →</a>` : ''}</article>`).join('')}</div></div></section>`;
+}
+function mountGlossary() {
+  const inp = $('#glQ'), items = $$('[data-gl]'), n = $('#glN');
+  const f = () => { const v = inp.value.trim().toLowerCase(); let k = 0; items.forEach(i => { const ok = !v || i.dataset.gl.includes(v); i.hidden = !ok; k += ok; }); n.textContent = `${k} из ${items.length}`; };
+  inp.addEventListener('input', f); f();
+}
+function pageChronicle() {
+  return head({ eyebrow: 'Летопись игроков', title: 'Хроника сессии', lead: 'Что уже произошло в мире: сюжетные ветки, которые вели игроки и мастера. Читай, чтобы догнать историю.', bg: 'assets/codex/history.webp', crumbs: 'Мир' }) + subnav(LORE, 'chronicle') + `
+<section class="content"><div class="wrap">${M.chronicle.map(b => `<article class="panel chr-branch" id="chr-${b.id}"><div class="eyebrow">${b.tag}</div><h2>${b.title}</h2><p class="lead">${b.lead}</p>${b.parts.map(([h, t]) => `<h3>${h}</h3><p>${t}</p>`).join('')}${b.open ? `<p class="note">${b.open}</p>` : ''}</article>`).join('')}</div></section>`;
+}
 function pageChat() { return head({ eyebrow: 'Город · на связи', title: 'Общий чат', lead: 'Один чат на сайт и Discord: пиши отсюда — сообщение увидят на сервере, ответы с сервера появятся здесь.', bg: 'assets/codex/city-v2.webp', crumbs: 'Начало' }) + `<section class="content"><div class="wrap" id="chatMount"></div></section>`; }
 function pageResidents() { return head({ eyebrow: 'Город · перепись', title: 'Жители Меттенхейма', lead: 'Все персонажи, чьи квенты приняли мастера. Ищи соседей, союзников и врагов для своей истории.', bg: 'assets/codex/city-v2.webp', crumbs: 'Начало' }) + `<section class="content"><div class="wrap" id="rsMount"></div></section>`; }
 function pageCabinet(mode) { const adm = mode === 'admin'; return head({ eyebrow: adm ? 'Для мастеров' : 'Для игроков', title: adm ? 'Кабинет мастера' : 'Личный кабинет', lead: adm ? 'Очередь отправленных квент. Прочитай, оставь комментарий и вынеси решение — игрок увидит его у себя в кабинете.' : 'Твои персонажи и квенты в одном месте. Пиши черновик, отправляй на проверку и получай ответ мастеров прямо здесь.', bg: 'assets/codex/history.webp', crumbs: adm ? 'Кабинет мастера' : 'Кабинет' }) + `<section class="content"><div class="wrap" id="cabMount"></div></section>`; }
 const ROUTES = {
   home: [pageHome, mountHome], anketa: [pageHome, mountHome],
   chat: [pageChat, () => window.Cabinet.chat($('#chatMount'))],
+  news: [pageNews, () => window.Cabinet.news($('#newsMount'))],
+  hero: [pageHero, n => window.Cabinet.hero($('#heroMount'), n)],
+  glossary: [pageGlossary, mountGlossary], chronicle: [pageChronicle],
   residents: [pageResidents, () => window.Cabinet.residentsPage($('#rsMount'))],
   inferno: [pageInferno, () => window.Inferno.mountDiary($('#hungerMount'))],
   cabinet: [() => pageCabinet('player'), () => window.Cabinet.mount($('#cabMount'), 'player')], admin: [() => pageCabinet('admin'), () => window.Cabinet.mount($('#cabMount'), 'admin')],
@@ -831,7 +867,7 @@ const ROUTES = {
 };
 function resolve(raw) {
   let key = raw, arg = null;
-  const m = raw.match(/^(rules|people|class|tree)-(.+)$/);
+  const m = raw.match(/^(rules|people|class|tree|hero)-(.+)$/);
   if (m) { key = m[1] === 'class' ? 'classes' : m[1]; arg = m[2]; }
   if (key === 'rules' && arg === 'discord') { key = 'discord'; arg = null; }
   const chapter = key === 'people' ? 'people-' + arg : key;
@@ -870,7 +906,7 @@ function bookify(view, chapter) {
 }
 let lastRoute = null;
 /* тяжёлые арты (предметы ~5 МБ, иконки ~2 МБ) грузятся только для страниц, где они нужны */
-const LIGHT = new Set(['home', 'anketa', 'cabinet', 'admin', 'residents', 'chat', 'city', 'history', 'houses', 'lumerite', 'faith', 'world', 'rules', 'discord', 'start', 'faq', 'modlist', 'inferno', 'races']);
+const LIGHT = new Set(['home', 'anketa', 'cabinet', 'admin', 'residents', 'chat', 'news', 'hero', 'glossary', 'chronicle', 'city', 'history', 'houses', 'lumerite', 'faith', 'world', 'rules', 'discord', 'start', 'faq', 'modlist', 'inferno', 'races']);
 const ART_V = ((document.querySelector('script[src*="app.js"]') || {}).src || '').split('?')[1] || '';
 let artP = null;
 const loadArt = () => artP || (artP = Promise.all(['items-art.js', 'icons-art.js'].map(f => new Promise((res, rej) => {
@@ -881,7 +917,7 @@ function route() {
   const raw = (location.hash || '#home').slice(1) || 'home';
   const { key, arg, chapter } = resolve(raw);
   if (!LIGHT.has(key) && !window.ICON_ART_DATA) {
-    $('#view').innerHTML = '<div class="art-loading"><img src="assets/gear.webp" alt=""><p>Механизм прогревается…</p></div>';
+    $('#view').innerHTML = '<div class="art-loading"><img src="assets/gear-md.webp" alt=""><p>Механизм прогревается…</p></div>';
     loadArt().then(route, () => { $('#view').innerHTML = '<div class="art-loading"><p>Не удалось загрузить страницу. Проверь интернет и обнови.</p></div>'; });
     return;
   }
@@ -893,10 +929,11 @@ function route() {
   if (CHAPTERS.some(c => c.id === chapter) && key !== 'tree') bookify(view, chapter);
   r[1] && r[1](arg);
   if (chapter === 'people-infernals') { const m = $('.doc-main', view) || $('section.content .wrap', view); if (m) m.insertAdjacentHTML('afterbegin', `<div class="slot-box" data-slot="infernal"></div><p class="note" style="margin:0 0 22px">Короли, грехи и голод инферналов — в главе <a href="#inferno">Инферно и Короли</a>.</p>`); }
+  if (chapter === 'people-goblins') { const m = $('.doc-main', view) || $('section.content .wrap', view); if (m) m.insertAdjacentHTML('afterbegin', '<div class="slot-box" data-slot="goblin"></div>'); }
   if (chapter === 'curses') { const m = $('.doc-main', view); if (m) m.insertAdjacentHTML('afterbegin', '<div class="slot-box" data-slot="curse"></div>'); }
   window.Cabinet && window.Cabinet.fillSlots(view);
   if ((key === 'home' || key === 'anketa') && window.Cabinet) window.Cabinet.anketaStatus($('#bStatus'));
-  if ((key === 'home' || key === 'anketa') && window.Cabinet) window.Cabinet.community($('#commMount'));
+  if ((key === 'home' || key === 'anketa') && window.Cabinet) { window.Cabinet.community($('#commMount')); window.Cabinet.live($('#liveMount')); }
   const cb = $('#cabBtn'); if (cb) { if (key === 'cabinet' || key === 'admin') cb.setAttribute('aria-current', 'page'); else cb.removeAttribute('aria-current'); }
   document.body.classList.toggle('tree-mode', key === 'tree');
   if (key === 'tree') window.Tree.mount($('#treeMount'), arg || 'fighter');

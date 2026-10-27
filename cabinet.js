@@ -95,7 +95,7 @@ function setupNotice() {
 function loginCard(el, after) {
   const m = api().methods();
   el.innerHTML = `<div class="cab-login"><article class="panel cab-login-card">
-      <img class="cab-login-logo" src="assets/logo.webp" alt="">
+      <img class="cab-login-logo" src="assets/logo-md.webp" alt="">
       <div class="eyebrow">Хроники Меттенхейма</div><h2>Вход в кабинет</h2>
       <p class="muted">Один аккаунт на все персонажи. Первый вход сразу создаёт профиль — регистрироваться отдельно не нужно.</p>
       ${m.discord ? `<button type="button" class="btn cab-discord" id="cDiscord"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.6 1.3a18.3 18.3 0 0 0-5.5 0L8.6 3a19.7 19.7 0 0 0-4.9 1.5C.6 9.1-.3 13.7.1 18.2a19.9 19.9 0 0 0 6 3l1.3-2.1a12.9 12.9 0 0 1-2-1l.5-.4a14.2 14.2 0 0 0 12.2 0l.5.4c-.6.4-1.3.7-2 1l1.3 2.1a19.8 19.8 0 0 0 6-3c.5-5.2-.8-9.8-3.6-13.8ZM8.3 15.5c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4Zm7.4 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4Z"/></svg>Войти через Discord</button>` : ''}
@@ -327,7 +327,7 @@ async function adminView(el, sess, prof) {
     if (ids.length) (await api().profiles(ids)).forEach(p => { people[p.id] = p; });
   }
   function frame(inner) {
-    el.innerHTML = topBar(prof, true) + `<div class="cab-tabs" role="tablist">${TABS.map(([k, l]) => `<button type="button" role="tab" data-at="${k}" aria-selected="${k === tab}">${l}${counts[k] != null ? ` <i>${counts[k]}</i>` : ''}</button>`).join('')}${isAdmin ? `<button type="button" role="tab" data-at="players" aria-selected="${tab === 'players'}">Игроки и роли</button>` : ''}</div><div id="aBody">${inner}</div><p class="cab-toast" role="status" aria-live="polite"></p>`;
+    el.innerHTML = topBar(prof, true) + `<div class="cab-tabs" role="tablist">${TABS.map(([k, l]) => `<button type="button" role="tab" data-at="${k}" aria-selected="${k === tab}">${l}${counts[k] != null ? ` <i>${counts[k]}</i>` : ''}</button>`).join('')}<button type="button" role="tab" data-at="factions" aria-selected="${tab === 'factions'}">Счёт Домов</button>${isAdmin ? `<button type="button" role="tab" data-at="players" aria-selected="${tab === 'players'}">Игроки и роли</button>` : ''}</div><div id="aBody">${inner}</div><p class="cab-toast" role="status" aria-live="polite"></p>`;
     q('#cOut', el).onclick = async () => { await api().signOut(); location.hash = '#cabinet'; };
     qa('[data-at]', el).forEach(b => b.onclick = async () => { tab = b.dataset.at; open = null; play('click'); await show(); });
   }
@@ -380,7 +380,29 @@ async function adminView(el, sess, prof) {
       } catch (e) { toast(el, errText(e), true); }
     });
   }
+  async function factionsHTML() {
+    const c = await sb();
+    const [sc, lg] = await Promise.all([c.from('faction_score').select('*'), c.from('faction_log').select('*').order('created_at', { ascending: false }).limit(30)]);
+    if (sc.error) throw sc.error;
+    const P = Object.fromEntries((sc.data || []).map(r => [r.house, r.points]));
+    const ids = [...new Set((lg.data || []).map(r => r.author).filter(x => x && !people[x]))];
+    if (ids.length) (await api().profiles(ids)).forEach(p => { people[p.id] = p; });
+    const HN = { talbot: 'Дом Талбот', dorn: 'Дом Дорн' };
+    return `<div class="cab-head"><div><div class="eyebrow">Кабинет мастера</div><h2>Счёт Домов</h2><p class="muted">Очки фракции идут в общий пул Дома. Счёт сразу обновляется на главной странице.</p></div></div>
+      <div class="grid2">${['talbot', 'dorn'].map(h => `<form class="panel cab-form fx-form h-${h}" data-fx="${h}"><div class="eyebrow">${HN[h]}</div><div class="fx-big">${P[h] || 0}</div>
+        <div class="cab-row">${field('fxD-' + h, 'Сколько очков', `<input id="fxD-${h}" type="number" min="-1000" max="1000" step="1" value="10" required>`, 'Минус — чтобы снять очки')}${field('fxR-' + h, 'За что', `<input id="fxR-${h}" maxlength="300" placeholder="Ивент, задание, победа в споре…" required>`)}</div>
+        <button class="btn" type="submit">Начислить</button></form>`).join('')}</div>
+      <section class="panel cab-form" style="margin-top:16px"><div class="eyebrow">Последние начисления</div>${(lg.data || []).length ? `<ol class="cab-hist">${lg.data.map(r => `<li class="${r.delta > 0 ? 'v-approved' : 'v-rejected'}"><div><b>${HN[r.house]} ${r.delta > 0 ? '+' : ''}${r.delta}</b><small>${esc(who(r.author))} · ${fmtDate(r.created_at)}</small></div>${r.reason ? `<p>${esc(r.reason)}</p>` : ''}</li>`).join('')}</ol>` : '<p class="muted">Начислений пока не было.</p>'}</section>`;
+  }
+  function bindFactions() {
+    qa('[data-fx]', el).forEach(f => f.onsubmit = async ev => {
+      ev.preventDefault(); const h = f.dataset.fx, d = parseInt(q('#fxD-' + h, el).value, 10), r = q('#fxR-' + h, el).value.trim();
+      if (!d) { toast(el, 'Впиши число, отличное от нуля', true); return; }
+      try { const c = await sb(); must(await c.from('faction_log').insert({ house: h, delta: d, reason: r })); play('click'); toast(el, 'Счёт обновлён'); q('#aBody', el).innerHTML = await factionsHTML(); bindFactions(); } catch (e) { toast(el, errText(e), true); }
+    });
+  }
   async function show() {
+    if (tab === 'factions') { frame('<p class="muted">Загружаю…</p>'); try { q('#aBody', el).innerHTML = await factionsHTML(); bindFactions(); } catch (e) { toast(el, errText(e), true); } return; }
     if (tab === 'players') { frame('<p class="muted">Загружаю…</p>'); try { q('#aBody', el).innerHTML = await playersHTML(); } catch (e) { toast(el, errText(e), true); } bindPlayers(); return; }
     try { await load(); } catch (e) { frame(''); toast(el, errText(e), true); return; }
     frame(queueHTML()); bindQueue();
@@ -433,10 +455,10 @@ async function slotData() {
   try { slotCache = await api().slots(); slotAt = Date.now(); } catch (_) { slotCache = null; }
   return slotCache;
 }
-const SLOT_NAME = { infernal: ['инферналов', 'Инферналы'], curse: ['проклятых', 'Проклятые'] };
+const SLOT_NAME = { infernal: ['инферналов', 'Инферналы'], curse: ['проклятых', 'Проклятые'], goblin: ['гоблинов', 'Гоблины'] };
 function fillSlots(root) {
   const boxes = qa('.slot-box', root || document); if (!boxes.length) return;
-  const lim = (window.M && M.slots) || { infernal: 7, curse: 7 };
+  const lim = (window.M && M.slots) || { infernal: 7, curse: 7, goblin: 15 };
   const paint = d => boxes.forEach(b => {
     const k = b.dataset.slot, L = lim[k] || 7, nm = SLOT_NAME[k] || [k, k];
     if (!d || !d[k]) { b.innerHTML = `<div class="sb-num">${L}</div><div><b>${nm[1]} — ограниченный набор: ${L} мест</b><span>Мест на сервере столько, сколько персонажей может быть одновременно. Счётчик свободных мест появится, когда кабинет подключён.</span></div>`; b.classList.remove('full'); return; }
@@ -508,7 +530,7 @@ const charPic = r => /^https:\/\//.test(r.portrait_url || '') ? r.portrait_url :
 function residentRow(r) {
   const o = origin(r.p, r.o);
   const pic = charPic(r);
-  return `<li class="rs-row h-${r.house === 'dorn' ? 'dorn' : 'talbot'}">${pic ? `<img class="rs-pic" src="${esc(pic)}" alt="" loading="lazy">` : o.emblem ? `<img src="${esc(o.emblem)}" alt="">` : '<i></i>'}<div><b>${numOf(r.number)} · ${esc(r.name || 'Без имени')}</b><small>${esc([nameOf(peoples(), r.p), o.name, nameOf(classes(), r.c)].filter(Boolean).join(' · '))}</small></div></li>`;
+  return `<li class="rs-row h-${r.house === 'dorn' ? 'dorn' : 'talbot'}" onclick="location.hash='hero-${r.number}'" style="cursor:pointer">${pic ? `<img class="rs-pic" src="${esc(pic)}" alt="" loading="lazy">` : o.emblem ? `<img src="${esc(o.emblem)}" alt="">` : '<i></i>'}<div><b>${numOf(r.number)} · ${esc(r.name || 'Без имени')}</b><small>${esc([nameOf(peoples(), r.p), o.name, nameOf(classes(), r.c)].filter(Boolean).join(' · '))}</small></div></li>`;
 }
 async function community(el) {
   if (!el) return;
@@ -551,7 +573,7 @@ async function residentsPage(el) {
     const list = rs.filter(r => (!f.house || (r.house || 'talbot') === f.house) && (!f.p || r.p === f.p) && (!f.c || r.c === f.c) && (!qq || (r.name || '').toLowerCase().includes(qq) || String(r.number).includes(qq)));
     q('.rs-grid', el).innerHTML = list.length ? list.map(r => { const o = origin(r.p, r.o), fig = figureOf(r);
       const pic = charPic(r);
-      return `<article class="panel rs-tile h-${r.house === 'dorn' ? 'dorn' : 'talbot'}${pic ? ' has-pic' : ''}">${pic ? `<img class="rs-portrait" src="${esc(pic)}" alt="Портрет: ${esc(r.name || '')}" loading="lazy">` : fig ? `<img class="rs-fig" src="${fig}" alt="" loading="lazy">` : ''}<div class="rs-info"><span class="rs-num">${numOf(r.number)}</span><h3>${esc(r.name || 'Без имени')}</h3><p>${esc([nameOf(peoples(), r.p), o.name].filter(Boolean).join(' · '))}</p><p>${esc(nameOf(classes(), r.c))} · ${r.house === 'dorn' ? 'Дом Дорн' : 'Дом Талбот'}</p></div></article>`; }).join('') : '<p class="muted">Никого не нашлось.</p>';
+      return `<a class="panel rs-tile h-${r.house === 'dorn' ? 'dorn' : 'talbot'}${pic ? ' has-pic' : ''}" href="#hero-${r.number}">${pic ? `<img class="rs-portrait" src="${esc(pic)}" alt="Портрет: ${esc(r.name || '')}" loading="lazy">` : fig ? `<img class="rs-fig" src="${fig}" alt="" loading="lazy">` : ''}<div class="rs-info"><span class="rs-num">${numOf(r.number)}</span><h3>${esc(r.name || 'Без имени')}</h3><p>${esc([nameOf(peoples(), r.p), o.name].filter(Boolean).join(' · '))}</p><p>${esc(nameOf(classes(), r.c))} · ${r.house === 'dorn' ? 'Дом Дорн' : 'Дом Талбот'}</p></div></a>`; }).join('') : '<p class="muted">Никого не нашлось.</p>';
     q('.rs-count', el).textContent = `Жителей: ${list.length}${list.length !== rs.length ? ' из ' + rs.length : ''}`;
   };
   el.innerHTML = `<div class="rs-filters panel"><input type="search" id="rsQ" placeholder="Имя или номер" aria-label="Поиск по жителям">
@@ -662,7 +684,112 @@ async function chatPage(el) {
   };
 }
 
-window.Cabinet = { mount, api: SupabaseApi, fillSlots, anketaStatus, initHeader, community, residentsPage, chat: chatPage };
+/* ---------- живой сервер: новости, события, счёт Домов, страница героя ---------- */
+const liveOk = () => api().configured() && !window.MH_CABINET_API;
+let liveSyncAt = 0;
+const liveSync = () => { if (!liveOk() || Date.now() - liveSyncAt < 60000) return Promise.resolve(); liveSyncAt = Date.now(); return fetch(fnUrl('live=sync'), { headers: { Authorization: 'Bearer ' + CFG.anonKey, apikey: CFG.anonKey } }).catch(() => {}); };
+// Discord-разметка: заголовки, жирный, курсив, подчёркнутый, зачёркнутый, ссылки, списки, цитаты, эмодзи
+function dmd(t) {
+  const inline = x => chatText(x)
+    .replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+    .replace(/__([^_\n]+)__/g, '<u>$1</u>').replace(/~~([^~\n]+)~~/g, '<s>$1</s>')
+    .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1<i>$2</i>').replace(/`([^`\n]+)`/g, '<code>$1</code>')
+    .replace(/\|\|([^|\n]+)\|\|/g, '<span class="spoiler" tabindex="0">$1</span>');
+  const out = []; let list = null;
+  for (const line of String(t || '').split('\n')) {
+    const h = /^(#{1,3})\s+(.+)$/.exec(line), li = /^\s*[-*•]\s+(.+)$/.exec(line), qt = /^>\s?(.*)$/.exec(line), sm = /^-#\s+(.+)$/.exec(line);
+    if (li) { (list = list || []).push(`<li>${inline(li[1])}</li>`); continue; }
+    if (list) { out.push(`<ul>${list.join('')}</ul>`); list = null; }
+    if (sm) out.push(`<p class="nw-small">${inline(sm[1])}</p>`);
+    else if (h) out.push(`<h${h[1].length + 2}>${inline(h[2])}</h${h[1].length + 2}>`);
+    else if (qt) out.push(`<blockquote>${inline(qt[1])}</blockquote>`);
+    else if (line.trim()) out.push(`<p>${inline(line)}</p>`);
+  }
+  if (list) out.push(`<ul>${list.join('')}</ul>`);
+  return out.join('');
+}
+const newsDate = d => new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+function newsCard(n, big) {
+  const imgs = (n.images || []).slice(0, big ? 6 : 1);
+  return `<article class="panel nw-card${big ? ' big' : ''}">${imgs.length ? `<div class="nw-pics n${imgs.length}">${imgs.map(i => `<a href="${esc(i.url)}" target="_blank" rel="noopener"><img src="${esc(i.url)}" alt="" loading="lazy"></a>`).join('')}</div>` : ''}
+    <div class="nw-body"><div class="nw-meta">${n.avatar ? `<img src="${esc(n.avatar)}" alt="">` : ''}<b>${esc(n.author || 'Администрация')}</b><time>${newsDate(n.created_at)}</time></div>
+    <div class="nw-text${big ? '' : ' clamp'}">${dmd(n.body)}</div>${big ? '' : '<a class="nw-more" href="#news">Читать в новостях →</a>'}</div></article>`;
+}
+const evTime = e => { const s = new Date(e.starts_at); return s.toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric', month: 'long' }) + ', ' + s.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }); };
+function eventCard(e) {
+  const live = e.status === 2;
+  return `<article class="panel ev-card${live ? ' live' : ''}">${e.image ? `<img class="ev-img" src="${esc(e.image)}" alt="" loading="lazy">` : ''}
+    <div class="ev-body"><div class="ev-when">${live ? '<span class="ev-live">Идёт сейчас</span>' : evTime(e)}</div><h3>${esc(e.name)}</h3>
+    ${e.description ? `<div class="ev-desc">${dmd(e.description)}</div>` : ''}
+    <div class="ev-foot">${e.location ? `<span>📍 ${esc(e.location)}</span>` : ''}${e.interested ? `<span>⭐ ${e.interested} идут</span>` : ''}
+    <a class="btn small" href="https://discord.com/events/${GUILD_ID}/${esc(e.id)}" target="_blank" rel="noopener">Записаться</a></div></div></article>`;
+}
+async function liveBlock(el) {
+  if (!el) return;
+  if (!liveOk()) { el.innerHTML = ''; return; }
+  const c = await sb();
+  const draw = async () => {
+    const [nw, ev, fx] = await Promise.all([
+      c.from('news').select('*').order('created_at', { ascending: false }).limit(3),
+      c.from('events').select('*').order('starts_at', { ascending: true }).limit(4),
+      c.from('faction_score').select('*')
+    ]);
+    const F = Object.fromEntries(((fx.data) || []).map(r => [r.house, r.points]));
+    const t = F.talbot || 0, d = F.dorn || 0, sum = t + d, pt = sum ? Math.round(t / sum * 100) : 50;
+    const fxEl = q('#fxMount'); if (fxEl) fxEl.innerHTML = `<div class="panel fx-board"><div class="eyebrow">Счёт Домов · общий пул очков фракции</div>
+      <div class="fx-row"><div class="fx-h t"><small>Жёлтые</small><b>Дом Талбот</b><span class="fx-n">${t}</span></div><div class="fx-vs">${sum ? (t > d ? '◀ ведут Жёлтые' : d > t ? 'ведут Красные ▶' : 'ничья') : 'сезон начинается'}</div><div class="fx-h d"><small>Красные</small><b>Дом Дорн</b><span class="fx-n">${d}</span></div></div>
+      <div class="fx-bar" role="img" aria-label="Талбот ${t}, Дорн ${d}"><i class="t" style="width:${pt}%"></i><i class="d" style="width:${100 - pt}%"></i></div>
+      <p class="muted">Очки приносят ивенты, задания и победы в сюжете. Уровни пула открывают Дому бонусы — подробнее в главе <a href="#factions">Фракции</a>.</p></div>`;
+    const news = nw.data || [], evs = (ev.data || []).filter(e => e.status !== 3 && e.status !== 4);
+    el.innerHTML = `<div class="live-grid${evs.length ? '' : ' solo'}"><div><div class="live-head"><div class="eyebrow">Хроники Меттенхейма</div><h2>Новости и анонсы</h2><a class="btn small ghost" href="#news">Все новости</a></div>
+        ${news.length ? `<div class="nw-list">${news.map((n, i) => newsCard(n, false)).join('')}</div>` : '<article class="panel cab-empty"><p class="muted">Скоро здесь появятся новости из нашего Discord.</p></article>'}</div>
+      ${evs.length ? `<div><div class="live-head"><div class="eyebrow">Календарь</div><h2>Ближайшие события</h2></div><div class="ev-list">${evs.map(eventCard).join('')}</div></div>` : ''}</div>`;
+  };
+  await draw().catch(() => {});
+  liveSync().then(() => setTimeout(() => draw().catch(() => {}), 2500));
+  const ch = c.channel('mh-live').on('postgres_changes', { event: '*', schema: 'public', table: 'faction_score' }, () => draw().catch(() => {}))
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'news' }, () => draw().catch(() => {})).subscribe();
+  const stop = () => { try { c.removeChannel(ch); } catch (_) {} window.removeEventListener('hashchange', stop); };
+  window.addEventListener('hashchange', stop);
+}
+async function newsPage(el) {
+  if (!el) return;
+  if (!liveOk()) { el.innerHTML = `<article class="panel cab-empty"><h3>Новости — на основном сайте</h3>${CFG.siteUrl ? `<a class="btn" href="${esc(CFG.siteUrl)}#news" target="_blank" rel="noopener">Открыть</a>` : ''}</article>`; return; }
+  el.innerHTML = '<p class="muted">Загружаю новости…</p>';
+  const c = await sb();
+  const draw = async () => {
+    const [nw, ev] = await Promise.all([c.from('news').select('*').order('created_at', { ascending: false }).limit(40), c.from('events').select('*').order('starts_at', { ascending: true }).limit(20)]);
+    const evs = (ev.data || []).filter(e => e.status !== 3 && e.status !== 4);
+    el.innerHTML = `${evs.length ? `<div class="sec-head"><div class="eyebrow">Календарь</div><h2>События сервера</h2><p>Записаться можно прямо в Discord: кнопка откроет событие.</p></div><div class="ev-list wide">${evs.map(eventCard).join('')}</div>` : ''}
+      <div class="sec-head" style="margin-top:${evs.length ? 50 : 0}px"><div class="eyebrow">Из канала анонсов Discord</div><h2>Новости</h2></div>
+      ${(nw.data || []).length ? `<div class="nw-feed">${nw.data.map(n => newsCard(n, true)).join('')}</div>` : '<article class="panel cab-empty"><p class="muted">Новостей пока нет.</p></article>'}`;
+  };
+  await draw().catch(e => { el.innerHTML = `<p class="muted">${esc(errText(e))}</p>`; });
+  liveSyncAt = 0; liveSync().then(() => setTimeout(() => draw().catch(() => {}), 2500));
+}
+async function heroPage(el, n) {
+  if (!el) return;
+  if (!liveOk()) { el.innerHTML = `<article class="panel cab-empty"><h3>Карточки жителей — на основном сайте</h3></article>`; return; }
+  el.innerHTML = '<p class="muted">Открываю личное дело…</p>';
+  const c = await sb(); const r = await c.rpc('hero', { n: +n || 0 });
+  const h = (r.data || [])[0];
+  if (!h) { el.innerHTML = '<article class="panel cab-empty"><h3>Такого жителя нет</h3><p class="muted">Возможно, персонаж ещё не принят или ушёл в архив.</p><a class="btn" href="#residents">Все жители</a></article>'; return; }
+  const o = origin(h.p, h.o), fig = figureOf(h), pic = charPic(h);
+  const bg = (Mx().backgrounds || []).find(b => b.id === h.bg);
+  const king = h.p === 'infernals' ? ((Mx().kings || []).find(k => k.id === h.ik) || null) : null;
+  const curse = h.u === 'curse' ? (curses().find(x => x.id === h.cu) || null) : null;
+  const rows = [['Народ', [nameOf(peoples(), h.p), o.name].filter(Boolean).join(' · ')], ['Класс', nameOf(classes(), h.c)], ['Дом', h.house === 'dorn' ? 'Дом Дорн · Красные' : 'Дом Талбот · Жёлтые'],
+    ['Пол', h.g === 'male' ? 'Мужской' : h.g === 'female' ? 'Женский' : ''], ['Возраст', h.age], ['Предыстория', bg && bg.name], ['Особенность', king ? 'Инфернал · Дом ' + king.gen : curse ? 'Проклятие · ' + curse.name : h.u === 'construct' ? 'Конструкт' : ''],
+    ['Вера', h.faith], ['Ремесло', h.prof], ['Черты', h.traits], ['Цель', h.goal]].filter(x => x[1]);
+  document.title = `${h.name} · Хроники Меттенхейма`;
+  el.innerHTML = `<article class="panel hero-card h-${h.house === 'dorn' ? 'dorn' : 'talbot'}"><div class="hc-art">${pic ? `<img class="hc-portrait" src="${esc(pic)}" alt="Портрет: ${esc(h.name)}">` : fig ? `<img class="hc-fig" src="${fig}" alt="">` : ''}</div>
+    <div class="hc-info"><span class="rs-num">${numOf(h.number)} · житель Меттенхейма</span><h2>${esc(h.name)}</h2>${o.emblem ? `<img class="hc-emb" src="${esc(o.emblem)}" alt="">` : ''}
+    <div class="kv">${rows.map(([k, v]) => `<div class="wrow"><span>${k}</span><b>${esc(v)}</b></div>`).join('')}</div>
+    <p class="muted" style="margin-top:14px">В городе с ${fmtDate(h.approved_at)}.</p>
+    <div class="cab-acts" style="margin-top:12px">${h.channel ? `<a class="btn small" href="https://discord.com/channels/${GUILD_ID}/${esc(h.channel)}" target="_blank" rel="noopener">Канал персонажа в Discord</a>` : ''}<a class="btn small ghost" href="#residents">Все жители</a></div></div></article>`;
+}
+
+window.Cabinet = { mount, api: SupabaseApi, fillSlots, anketaStatus, initHeader, community, residentsPage, chat: chatPage, live: liveBlock, news: newsPage, hero: heroPage };
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initHeader); else setTimeout(initHeader, 0);
 // после входа через Discord / почту вернуть игрока туда, откуда он пришёл
 if (CFG.url && CFG.anonKey && /[?&](code|error_description)=/.test(location.search)) {
