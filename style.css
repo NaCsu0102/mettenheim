@@ -1920,3 +1920,7 @@ input[type="email"] { width: 100%; background: #0f0b08; border: 1px solid var(--
 /* Инферно: культура */
 .inf-lore { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
 .inf-lore h3 { margin: 6px 0 8px; font-size: 19px; } .inf-lore p { margin: 0; color: var(--smoke); font-size: 15px; line-height: 1.6; }
+/* Кнопка чата в шапке */
+.chat-btn { border-radius: 20px !important; width: auto !important; padding: 0 12px; gap: 6px; text-decoration: none; display: inline-flex; align-items: center; color: var(--parch); }
+.chat-btn svg { width: 18px; height: 18px; } .chat-btn span { font-size: 13px; letter-spacing: .04em; }
+@media (max-width: 1100px) { .chat-btn span { display: none; } .chat-btn { padding: 0; width: 40px !important; justify-content: center; } }
