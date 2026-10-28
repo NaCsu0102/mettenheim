@@ -370,7 +370,7 @@ async function throttle(key: string, ms: number) {
   return false;
 }
 async function syncNews(force = false) {
-  if (!force && await throttle('news_sync', 60000)) return { skip: true };
+  if (await throttle('news_sync', force ? 5000 : 60000)) return { skip: true };
   const a = await syncChannel(NEWS_CHANNEL, 'news'), b = await syncChannel(EVENT_CHANNEL, 'event');
   return { news: a, events: b };
 }
@@ -412,7 +412,7 @@ async function syncChannel(channel: string, kind: string) {
   return { added, updated };
 }
 async function syncEvents(force = false) {
-  if (!force && await throttle('events_sync', 120000)) return { skip: true };
+  if (await throttle('events_sync', force ? 5000 : 120000)) return { skip: true };
   const list: any[] = await discord('GET', `/guilds/${GUILD}/scheduled-events?with_user_count=true`);
   const ids: string[] = [];
   for (const e of list) {
@@ -489,7 +489,9 @@ Deno.serve(async (req) => {
   const qp = new URL(req.url).searchParams;
   // новости и события Discord для сайта и лаунчера
   if (qp.get('live') === 'sync') {
-    const [news, events] = await Promise.all([syncNews().catch((e) => ({ error: String(e) })), syncEvents().catch((e) => ({ error: String(e) }))]);
+    // force — от постоянного бота, когда в канале что-то изменилось: ждём не минуту, а 5 секунд
+    const f = qp.get('force') === '1';
+    const [news, events] = await Promise.all([syncNews(f).catch((e) => ({ error: String(e) })), syncEvents(f).catch((e) => ({ error: String(e) }))]);
     return new Response(JSON.stringify({ news, events }), { headers: CORS });
   }
   if (qp.get('discord')) {
