@@ -258,7 +258,7 @@ function pageHomeRaw() {
         <div class="ftitle"><span>◈</span><div><small>ФОТОГРАФИЯ</small><strong>Портрет персонажа</strong></div></div>
         <div class="portrait"><div class="pframe" id="pFrame"><img id="pImg" alt="Загруженный портрет" hidden><div class="pempty" id="pEmpty"><span>CM</span><b>ИЗОБРАЖЕНИЕ<br>ОТСУТСТВУЕТ</b></div></div>
           <div class="pbtns"><input id="pFile" type="file" accept="image/png,image/jpeg,image/webp" hidden><button type="button" class="btn small" id="pPick">Загрузить портрет</button><button type="button" class="btn small ghost" id="pDel" hidden>Удалить</button><p class="phint">Вертикальный кадр 3:4, лицо ближе к верху. PNG, JPG или WEBP.</p></div></div>
-        <label class="check"><input type="checkbox" id="fConsent" name="consent"> Согласие на обработку личных данных</label>
+        <label class="check"><input type="checkbox" id="fConsent" name="consent"> <span>Согласие на обработку личных данных · <a href="#privacy" target="_blank">политика</a></span></label>
         <label class="check"><input type="checkbox" id="fRules" name="rules"> Я прочитал(а) лор и правила</label>
 
         <div class="ftitle"><span>01</span><div><small>ИГРОК</small><strong>Кто стоит за персонажем</strong></div></div>
@@ -850,6 +850,10 @@ function pageChronicle() {
   return head({ eyebrow: 'Летопись игроков', title: 'Хроника сессии', lead: 'Что уже произошло в мире: сюжетные ветки, которые вели игроки и мастера. Читай, чтобы догнать историю.', bg: 'assets/codex/history.webp', crumbs: 'Мир' }) + subnav(LORE, 'chronicle') + `
 <section class="content"><div class="wrap">${M.chronicle.length ? '' : '<article class="panel cab-empty"><h3>Летопись собирается</h3><p class="muted">Скоро здесь появятся сюжетные ветки игроков и мастеров.</p></article>'}${M.chronicle.map(b => `<article class="panel chr-branch" id="chr-${b.id}"><div class="eyebrow">${b.tag}</div><h2>${b.title}</h2><p class="lead">${b.lead}</p>${b.parts.map(([h, t]) => `<h3>${h}</h3><p>${t}</p>`).join('')}${b.open ? `<p class="note">${b.open}</p>` : ''}</article>`).join('')}</div></section>`;
 }
+function pagePrivacy() {
+  return head({ eyebrow: 'Документы', title: 'Политика конфиденциальности', lead: `Какие данные собирает сайт «Хроники Меттенхейма», зачем и как ими управлять. Обновлено: ${M.privacyUpdated}.`, bg: 'assets/codex/archive.webp', crumbs: 'Документы' }) + `
+<section class="content"><div class="wrap" style="max-width:860px"><div class="prose pv">${M.privacy.map(([h, ps]) => `<h2>${h}</h2>${ps.length > 1 ? `<ul>${ps.map(x => `<li>${x}</li>`).join('')}</ul>` : `<p>${ps[0]}</p>`}`).join('')}</div></div></section>`;
+}
 function pageChat() { return head({ eyebrow: 'Город · на связи', title: 'Общий чат', lead: 'Один чат на сайт и Discord: пиши отсюда — сообщение увидят на сервере, ответы с сервера появятся здесь.', bg: 'assets/codex/city-v2.webp', crumbs: 'Начало' }) + `<section class="content"><div class="wrap" id="chatMount"></div></section>`; }
 function pageResidents() { return head({ eyebrow: 'Город · перепись', title: 'Жители Меттенхейма', lead: 'Все персонажи, чьи квенты приняли мастера. Ищи соседей, союзников и врагов для своей истории.', bg: 'assets/codex/city-v2.webp', crumbs: 'Начало' }) + `<section class="content"><div class="wrap" id="rsMount"></div></section>`; }
 function pageCabinet(mode) { const adm = mode === 'admin'; return head({ eyebrow: adm ? 'Для мастеров' : 'Для игроков', title: adm ? 'Кабинет мастера' : 'Личный кабинет', lead: adm ? 'Очередь отправленных квент. Прочитай, оставь комментарий и вынеси решение — игрок увидит его у себя в кабинете.' : 'Твои персонажи и квенты в одном месте. Пиши черновик, отправляй на проверку и получай ответ мастеров прямо здесь.', bg: 'assets/codex/history.webp', crumbs: adm ? 'Кабинет мастера' : 'Кабинет' }) + `<section class="content"><div class="wrap" id="cabMount"></div></section>`; }
@@ -858,7 +862,7 @@ const ROUTES = {
   chat: [pageChat, () => window.Cabinet.chat($('#chatMount'))],
   news: [pageNews, () => window.Cabinet.news($('#newsMount'))],
   hero: [pageHero, n => window.Cabinet.hero($('#heroMount'), n)],
-  glossary: [pageGlossary, mountGlossary], chronicle: [pageChronicle],
+  glossary: [pageGlossary, mountGlossary], chronicle: [pageChronicle], privacy: [pagePrivacy],
   residents: [pageResidents, () => window.Cabinet.residentsPage($('#rsMount'))],
   inferno: [pageInferno, () => window.Inferno.mountDiary($('#hungerMount'))],
   cabinet: [() => pageCabinet('player'), () => window.Cabinet.mount($('#cabMount'), 'player')], admin: [() => pageCabinet('admin'), () => window.Cabinet.mount($('#cabMount'), 'admin')],
@@ -909,7 +913,7 @@ function bookify(view, chapter) {
 }
 let lastRoute = null;
 /* тяжёлые арты (предметы ~5 МБ, иконки ~2 МБ) грузятся только для страниц, где они нужны */
-const LIGHT = new Set(['home', 'anketa', 'cabinet', 'admin', 'residents', 'chat', 'news', 'hero', 'glossary', 'chronicle', 'city', 'history', 'houses', 'lumerite', 'faith', 'world', 'rules', 'discord', 'start', 'faq', 'modlist', 'inferno', 'races']);
+const LIGHT = new Set(['home', 'anketa', 'cabinet', 'admin', 'residents', 'chat', 'news', 'hero', 'glossary', 'chronicle', 'privacy', 'city', 'history', 'houses', 'lumerite', 'faith', 'world', 'rules', 'discord', 'start', 'faq', 'modlist', 'inferno', 'races']);
 const ART_V = ((document.querySelector('script[src*="app.js"]') || {}).src || '').split('?')[1] || '';
 let artP = null;
 const loadArt = () => artP || (artP = Promise.all(['items-art.js', 'icons-art.js'].map(f => new Promise((res, rej) => {

@@ -101,6 +101,7 @@ function loginCard(el, after) {
       ${m.discord ? `<button type="button" class="btn cab-discord" id="cDiscord"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.6 1.3a18.3 18.3 0 0 0-5.5 0L8.6 3a19.7 19.7 0 0 0-4.9 1.5C.6 9.1-.3 13.7.1 18.2a19.9 19.9 0 0 0 6 3l1.3-2.1a12.9 12.9 0 0 1-2-1l.5-.4a14.2 14.2 0 0 0 12.2 0l.5.4c-.6.4-1.3.7-2 1l1.3 2.1a19.8 19.8 0 0 0 6-3c.5-5.2-.8-9.8-3.6-13.8ZM8.3 15.5c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4Zm7.4 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4Z"/></svg>Войти через Discord</button>` : ''}
       ${m.discord && m.email ? '<div class="cab-or"><span>или по почте</span></div>' : ''}
       ${m.email ? `<form id="cMail" class="cab-mail" novalidate>${field('cEmail', 'Почта', '<input id="cEmail" type="email" autocomplete="email" required placeholder="name@mail.ru">')}<button class="btn ghost" type="submit">Прислать ссылку для входа</button></form>` : ''}
+      <p class="muted" style="font-size:13px;margin-top:14px">Входя, ты соглашаешься с <a href="#privacy">политикой конфиденциальности</a>.</p>
       <p class="cab-toast" role="status" aria-live="polite"></p>
     </article></div>`;
   const remember = () => { try { sessionStorage.setItem(AFTER_KEY, after); } catch (_) {} };

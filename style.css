@@ -2180,3 +2180,7 @@ body.tree-mode .pipe-side { display: none; }
 .topbar::after { display: none !important; }
 .ev-sec { padding-top: 6px; }
 .ev-posts { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); margin-top: 14px; }
+.ft-links { display: inline-flex; gap: 18px; align-items: center; flex-wrap: wrap; }
+.footer a { color: var(--smoke); text-decoration: none; border-bottom: 1px solid transparent; } .footer a:hover { color: var(--house-hi); border-color: currentColor; }
+.pv h2 { font-size: 24px; margin: 30px 0 10px; } .pv ul { padding-left: 20px; } .pv li { margin-bottom: 8px; line-height: 1.65; } .pv b { color: var(--parch); }
+.check a { color: var(--house-hi); }
