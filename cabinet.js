@@ -554,7 +554,7 @@ async function community(el) {
   }
   const list = rsEl && q('.rs-list', rsEl);
   if (!list) return;
-  if (!rs) list.innerHTML = '<li class="muted">Список появится на основном сайте.</li>';
+  if (!rs) rsEl.innerHTML = '';
   else if (!rs.length) list.innerHTML = '<li class="muted">Пока никто не принят. <a href="#anketa">Подай квенту первым</a>.</li>';
   else list.innerHTML = rs.slice(-5).reverse().map(residentRow).join('');
 }
@@ -596,7 +596,8 @@ function chatText(t) {
     .replace(/\n/g, '<br>');
 }
 const chatTime = d => { const t = new Date(d), now = new Date(); const hm = t.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }); return t.toDateString() === now.toDateString() ? hm : t.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }) + ', ' + hm; };
-async function chatPage(el) {
+// opts.dock — чат в плавающем облачке: живёт между страницами; opts.active() — открыто ли облачко; opts.onNew(msg) — новое сообщение
+async function chatPage(el, opts = {}) {
   if (!el) return;
   if (!api().configured() || window.MH_CABINET_API || !liveSite()) {
     el.innerHTML = `<article class="panel cab-empty"><h3>Чат работает на основном сайте</h3><p class="muted">Он связан с каналом Discord и базой кабинета.</p>${CFG.siteUrl ? `<a class="btn" href="${esc(CFG.siteUrl)}#chat" target="_blank" rel="noopener">Открыть чат</a>` : ''}</article>`;
@@ -639,13 +640,13 @@ async function chatPage(el) {
   // мгновенно: новые строки из базы
   const rt = c.channel('mh-chat').on('postgres_changes', { event: '*', schema: 'public', table: 'chat_messages' }, p => {
     if (p.eventType === 'DELETE') { msgs.delete(p.old.id); draw(); return; }
-    if (p.new && p.new.id) { const mine = atBottom(); msgs.set(p.new.id, p.new); draw(mine); if (p.new.source === 'discord') play('click'); }
+    if (p.new && p.new.id) { const mine = atBottom(); msgs.set(p.new.id, p.new); draw(mine); if (p.new.source === 'discord') play('click'); if (p.eventType === 'INSERT' && opts.onNew) opts.onNew(p.new); }
   }).subscribe();
-  // забираем новое из Discord, пока страница открыта
-  const sync = () => { if (document.hidden) return; fetch(fnUrl('chat=sync'), { headers: { Authorization: 'Bearer ' + CFG.anonKey, apikey: CFG.anonKey } }).catch(() => {}); };
+  // забираем новое из Discord, пока страница открыта (в облачке — пока оно развёрнуто)
+  const sync = () => { if (document.hidden || (opts.active && !opts.active())) return; fetch(fnUrl('chat=sync'), { headers: { Authorization: 'Bearer ' + CFG.anonKey, apikey: CFG.anonKey } }).catch(() => {}); };
   sync(); const timer = setInterval(sync, 4000);
   const stop = () => { clearInterval(timer); try { c.removeChannel(rt); } catch (_) {} window.removeEventListener('hashchange', stop); };
-  window.addEventListener('hashchange', stop);
+  if (!opts.dock) window.addEventListener('hashchange', stop);
 
   if (staff) log.addEventListener('click', async ev => {
     const b = ev.target.closest('[data-del]'); if (!b) return;
@@ -720,9 +721,11 @@ function eventCard(e) {
     <div class="ev-foot">${e.location ? `<span>📍 ${esc(e.location)}</span>` : ''}${e.interested ? `<span>⭐ ${e.interested} идут</span>` : ''}
     <a class="btn small" href="https://discord.com/events/${GUILD_ID}/${esc(e.id)}" target="_blank" rel="noopener">Записаться</a></div></div></article>`;
 }
+// Пустые блоки главной не показываем: секция появляется, когда в ней есть что показать
+const hideSec = (node, hide) => { const s = node && node.closest('section'); if (s) s.hidden = hide; };
 async function liveBlock(el) {
   if (!el) return;
-  if (!liveOk()) { el.innerHTML = ''; return; }
+  if (!liveOk()) { el.innerHTML = ''; [el, q('#fxMount'), q('#evMount')].forEach(x => hideSec(x, true)); return; }
   const c = await sb();
   const draw = async () => {
     const [nw, ep, ev, fx] = await Promise.all([
@@ -733,22 +736,28 @@ async function liveBlock(el) {
     ]);
     const F = Object.fromEntries(((fx.data) || []).map(r => [r.house, r.points]));
     const t = F.talbot || 0, d = F.dorn || 0, sum = t + d, pt = sum ? Math.round(t / sum * 100) : 50;
-    const fxEl = q('#fxMount'); if (fxEl) fxEl.innerHTML = `<div class="panel fx-board"><div class="eyebrow">Счёт Домов · общий пул очков фракции</div>
-      <div class="fx-h t"><small>Жёлтые</small><b>Дом Талбот</b><span class="fx-n">${t}</span></div>
-      <div class="fx-gauge" role="img" aria-label="Перевес: ${sum ? (t > d ? 'Талбот' : d > t ? 'Дорн' : 'равенство') : 'пока равенство'}"><div class="fx-needle" style="--fx-a:${((50 - pt) / 50 * -110).toFixed(1)}deg"></div><b>Перевес</b></div>
-      <div class="fx-h d"><small>Красные</small><b>Дом Дорн</b><span class="fx-n">${d}</span></div>
-      <div class="fx-vs">${sum ? (t > d ? '◀ ведут Жёлтые' : d > t ? 'ведут Красные ▶' : 'ничья') : 'сезон начинается'}</div>
-      <div class="fx-tube"><div class="fx-bar" role="img" aria-label="Талбот ${t}, Дорн ${d}"><i class="t" style="width:${pt}%"></i><i class="d" style="width:${100 - pt}%"></i></div></div>
+    // Счётчик-одометр: барабаны цифр, ведущие нули приглушены
+    const odo = n => { const s = String(Math.max(0, n | 0)).padStart(4, '0'), f = s.search(/[1-9]/); return s.split('').map((c, i) => `<i${f < 0 ? (i < s.length - 1 ? ' class="z"' : '') : i < f ? ' class="z"' : ''}>${c}</i>`).join(''); };
+    const lead = t > d ? 't' : d > t ? 'd' : '', diff = Math.abs(t - d), HS = (window.M && M.houses) || {};
+    const fxEl = q('#fxMount'); if (fxEl) fxEl.innerHTML = `<div class="panel fx-board fx2 ${lead ? 'lead-' + lead : 'even'}"><div class="eyebrow">Счёт Домов · общий пул очков фракции</div>
+      <div class="fx-h t">${HS.talbot ? `<img class="fx-flag" src="${HS.talbot.flag}" alt="">` : ''}<small>Жёлтые</small><b>Дом Талбот</b><span class="fx-n fx-odo" aria-label="${t} очков">${odo(t)}</span></div>
+      <div class="fx-gauge" role="img" aria-label="Перевес: ${sum ? (t > d ? 'Талбот' : d > t ? 'Дорн' : 'равенство') : 'пока равенство'}"><span class="fx-steam" aria-hidden="true"></span><div class="fx-needle" style="--fx-a:${((50 - pt) / 50 * -110).toFixed(1)}deg"></div><b>Перевес</b></div>
+      <div class="fx-h d">${HS.dorn ? `<img class="fx-flag" src="${HS.dorn.flag}" alt="">` : ''}<small>Красные</small><b>Дом Дорн</b><span class="fx-n fx-odo" aria-label="${d} очков">${odo(d)}</span></div>
+      <div class="fx-vs"><span class="fx-plate">${sum ? (lead === 't' ? `◀ Жёлтые впереди на ${diff}` : lead === 'd' ? `Красные впереди на ${diff} ▶` : 'Равновесие') : 'Сезон открыт — первые очки решат перевес'}</span></div>
+      <div class="fx-tube"><div class="fx-bar" role="img" aria-label="Талбот ${t}, Дорн ${d}"><i class="t" style="width:${pt}%"></i><i class="d" style="width:${100 - pt}%"></i></div><i class="fx-mid" aria-hidden="true"></i></div>
       <p class="muted">Очки приносят ивенты, задания и победы в сюжете. Уровни пула открывают Дому бонусы — подробнее в главе <a href="#factions">Фракции</a>.</p></div>`;
+    hideSec(fxEl, false);
     const news = (nw.data || []).filter(n => n.body || (n.images || []).length), evs = (ev.data || []).filter(e => e.status !== 3 && e.status !== 4);
     const posts = (ep.data || []).filter(n => n.body || (n.images || []).length);
     const evEl = q('#evMount');
     if (evEl) evEl.innerHTML = `<div class="live-head"><div class="eyebrow">Ивенты и мероприятия</div><h2>События</h2><a class="btn small ghost" href="#news">Все события</a></div>
       ${evs.length ? `<div class="ev-list wide">${evs.map(eventCard).join('')}</div>` : ''}
       ${posts.length ? `<div class="nw-list ev-posts">${posts.map(n => newsCard(n, false)).join('')}</div>` : ''}
-      ${!evs.length && !posts.length ? '<article class="panel cab-empty"><p class="muted">Здесь появятся события из нашего Discord — с картинками и кнопкой «Записаться».</p></article>' : ''}`;
-    el.innerHTML = `<div class="live-grid solo"><div><div class="live-head"><div class="eyebrow">Хроники Меттенхейма</div><h2>Новости и анонсы</h2><a class="btn small ghost" href="#news">Все новости</a></div>
-        ${news.length ? `<div class="nw-list">${news.map(n => newsCard(n, false)).join('')}</div>` : '<article class="panel cab-empty"><p class="muted">Скоро здесь появятся новости из нашего Discord.</p></article>'}</div></div>`;
+`;
+    hideSec(evEl, !evs.length && !posts.length);
+    el.innerHTML = news.length ? `<div class="live-grid solo"><div><div class="live-head"><div class="eyebrow">Хроники Меттенхейма</div><h2>Новости и анонсы</h2><a class="btn small ghost" href="#news">Все новости</a></div>
+        <div class="nw-list">${news.map(n => newsCard(n, false)).join('')}</div></div></div>` : '';
+    hideSec(el, !news.length);
   };
   await draw().catch(() => {});
   liveSync().then(() => setTimeout(() => draw().catch(() => {}), 2500));
@@ -795,6 +804,40 @@ async function heroPage(el, n) {
     <p class="muted" style="margin-top:14px">В городе с ${fmtDate(h.approved_at)}.</p>
     <div class="cab-acts" style="margin-top:12px">${h.channel ? `<a class="btn small" href="https://discord.com/channels/${GUILD_ID}/${esc(h.channel)}" target="_blank" rel="noopener">Канал персонажа в Discord</a>` : ''}<a class="btn small ghost" href="#residents">Все жители</a></div></div></article>`;
 }
+
+/* ---------- Общий чат в облачке справа: открыть, свернуть, счётчик новых ---------- */
+function chatDock() {
+  if (document.querySelector('.chd-fab')) return;
+  const KEY = 'mh-chat-dock';
+  const fab = document.createElement('button');
+  fab.type = 'button'; fab.className = 'chd-fab'; fab.setAttribute('aria-label', 'Общий чат'); fab.setAttribute('aria-expanded', 'false'); fab.title = 'Общий чат — сайт и Discord';
+  fab.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9.5h8M8 12.5h5"/></svg><span class="chd-badge" hidden></span>';
+  const panel = document.createElement('section');
+  panel.className = 'chd-panel'; panel.hidden = true; panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-label', 'Общий чат');
+  panel.innerHTML = `<header class="chd-head"><b>Общий чат<small>Сайт и Discord — одна лента</small></b><a href="#chat" title="Открыть на всю страницу">⤢</a><button type="button" class="chd-x" aria-label="Свернуть чат">Скрыть</button></header><div class="chd-body"></div>`;
+  document.body.append(panel, fab);
+  const badge = q('.chd-badge', fab), body = q('.chd-body', panel);
+  let mounted = false, unread = 0;
+  const isOpen = () => !panel.hidden;
+  const setBadge = () => { badge.hidden = !unread; badge.textContent = unread > 99 ? '99+' : unread; };
+  const open = v => {
+    panel.hidden = !v; fab.setAttribute('aria-expanded', String(v));
+    try { localStorage.setItem(KEY, v ? '1' : '0'); } catch (_) {}
+    if (v) { unread = 0; setBadge(); if (!mounted) { mounted = true; chatPage(body, { dock: true, active: isOpen, onNew: m => { if (!isOpen() && m.source === 'discord') { unread++; setBadge(); } } }); } }
+  };
+  fab.onclick = () => open(!isOpen());
+  q('.chd-x', panel).onclick = () => open(false);
+  q('a', panel).onclick = () => open(false);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && isOpen()) open(false); });
+  // кнопка «Чат» в шапке открывает облачко вместо отдельной страницы
+  const hb = document.getElementById('chatBtn');
+  if (hb) hb.addEventListener('click', e => { if (e.ctrlKey || e.metaKey || e.shiftKey) return; e.preventDefault(); open(!isOpen()); });
+  // на странице чата облачко не нужно — там чат во весь экран
+  const onRoute = () => { const full = location.hash.replace('#', '').split('?')[0] === 'chat'; fab.hidden = full; if (full) open(false); };
+  window.addEventListener('hashchange', onRoute); onRoute();
+  try { if (localStorage.getItem(KEY) === '1' && !fab.hidden) open(true); } catch (_) {}
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', chatDock); else chatDock();
 
 window.Cabinet = { mount, api: SupabaseApi, fillSlots, anketaStatus, initHeader, community, residentsPage, chat: chatPage, live: liveBlock, news: newsPage, hero: heroPage };
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initHeader); else setTimeout(initHeader, 0);

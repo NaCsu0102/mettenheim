@@ -104,7 +104,7 @@ setVars();
 const BOOK = [
   ['Начало', [['start', 'Как начать играть'], ['faq', 'Частые вопросы'], ['modlist', 'Модлист'], ['news', 'Новости и события'], ['residents', 'Жители города'], ['chat', 'Общий чат'], ['glossary', 'Словарь терминов']]],
   ['Правила', [['rules', 'Правила сервера'], ['discord', 'Правила Discord']]],
-  ['Мир', [['city', 'Меттенхейм'], ['history', 'История города'], ['houses', 'Дома Талбот и Дорн'], ['lumerite', 'Люмерит'], ['faith', 'Вера'], ['magic', 'Магия'], ['world', 'История мира'], ['chronicle', 'Хроника сессии'], ['deck', 'Проклятая колода']]],
+  ['Мир', [['city', 'Меттенхейм'], ['history', 'История города'], ['houses', 'Дома Талбот и Дорн'], ['lumerite', 'Люмерит'], ['faith', 'Вера'], ['magic', 'Магия'], ['world', 'История мира'], ['chronicle', 'Хроника сессии'], ['cursed', 'Проклятые'], ['deck', 'Безделицы']]],
   ['Народы', [['races', 'Народы и отношения'], ...M.peoples.map(p => ['people-' + p.id, p.name]), ['inferno', 'Инферно и Короли']]],
   ['Классы и системы', [['classes', 'Классы'], ['system', 'Ролевая система'], ['eloquence', 'Красноречие'], ['healing', 'Лекари и травмы'], ['curses', 'Развитие Проклятых'], ['factions', 'Фракции'], ['inventions', 'Изобретения Инженера']]],
   ['Древо талантов', [['tree', 'Древо талантов']]],
@@ -174,12 +174,12 @@ searchBtn.addEventListener('click', openSearch);
 addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'л')) { e.preventDefault(); if (!$('.pal')) openSearch(); } });
 
 /* ================= ОБЩИЕ КУСКИ ================= */
-const CH_BG = { start: 'bg-start', faq: 'bg-faq', modlist: 'bg-modlist', rules: 'bg-rules', discord: 'bg-discord', city: 'bg-city', history: 'bg-history', houses: 'bg-houses', lumerite: 'bg-lumerite', faith: 'bg-faith', magic: 'bg-magic', world: 'bg-world', deck: 'bg-deck', races: 'bg-peoples', 'people-humans': 'bg-humans', 'people-elves': 'bg-elves', 'people-dwarves': 'bg-dwarves', 'people-goblins': 'bg-goblins', 'people-infernals': 'bg-peoples', classes: 'bg-classes', system: 'bg-rules', eloquence: 'bg-houses', forge: 'bg-forge', armor: 'bg-armor', craft: 'bg-forge', recycle: 'bg-armor', alchemy: 'bg-magic', cooking: 'bg-forge', healing: 'bg-faith', body: 'bg-forge', curses: 'bg-deck', factions: 'bg-houses', inventions: 'bg-forge', gathering: 'bg-armor', blueprints: 'bg-forge', inferno: 'bg-peoples' };
+const CH_BG = { start: 'bg-start', faq: 'bg-faq', modlist: 'bg-modlist', rules: 'bg-rules', discord: 'bg-discord', city: 'bg-city', history: 'bg-history', houses: 'bg-houses', lumerite: 'bg-lumerite', faith: 'bg-faith', magic: 'bg-magic', world: 'bg-world', cursed: 'bg-deck', deck: 'bg-deck', races: 'bg-peoples', 'people-humans': 'bg-humans', 'people-elves': 'bg-elves', 'people-dwarves': 'bg-dwarves', 'people-goblins': 'bg-goblins', 'people-infernals': 'bg-peoples', classes: 'bg-classes', system: 'bg-rules', eloquence: 'bg-houses', forge: 'bg-forge', armor: 'bg-armor', craft: 'bg-forge', recycle: 'bg-armor', alchemy: 'bg-magic', cooking: 'bg-forge', healing: 'bg-faith', body: 'bg-forge', curses: 'bg-deck', factions: 'bg-houses', inventions: 'bg-forge', gathering: 'bg-armor', blueprints: 'bg-forge', inferno: 'bg-peoples' };
 const head = ({ eyebrow, title, lead, bg, crumbs }) => (bg = CH_BG[currentRoute] ? 'assets/art/' + CH_BG[currentRoute] + '.webp' : bg, `
 <section class="page-head"><div class="bg" style="background-image:url('${bg || 'assets/city-bg.webp'}')"></div>
 <div class="wrap reveal">${crumbs ? `<div class="crumbs"><a href="#home">Главная</a> / ${crumbs}</div>` : ''}<div class="eyebrow">${eyebrow || 'Хроники Меттенхейма'}</div><h1>${title}</h1>${lead ? `<p>${lead}</p>` : ''}</div><div class="ph-pipe" aria-hidden="true"></div></section>`);
 const subnav = (items, cur) => `<nav class="subnav" aria-label="Подразделы"><div class="wrap">${items.map(([r, t]) => `<a href="#${r}" ${r === cur ? 'aria-current="page"' : ''}>${t}</a>`).join('')}</div></nav>`;
-const LORE = [['city', 'Меттенхейм'], ['history', 'История города'], ['houses', 'Дома'], ['lumerite', 'Люмерит'], ['faith', 'Вера'], ['magic', 'Магия'], ['world', 'История мира'], ['chronicle', 'Хроника'], ['deck', 'Проклятая колода']];
+const LORE = [['city', 'Меттенхейм'], ['history', 'История города'], ['houses', 'Дома'], ['lumerite', 'Люмерит'], ['faith', 'Вера'], ['magic', 'Магия'], ['world', 'История мира'], ['chronicle', 'Хроника'], ['cursed', 'Проклятые'], ['deck', 'Безделицы']];
 const PEOPLE_NAV = [['races', 'Все народы'], ...M.peoples.map(p => ['people-' + p.id, p.name]), ['inferno', 'Инферно']];
 const CLS_NAV = [['classes', 'Классы'], ['tree', 'Древо талантов'], ['system', 'Ролевая система'], ['eloquence', 'Красноречие'], ['healing', 'Лекари'], ['curses', 'Проклятые'], ['factions', 'Фракции'], ['inventions', 'Изобретения'], ['forge', 'Оружейная'], ['armor', 'Бронник'], ['craft', 'Крафт-станция'], ['gathering', 'Добыча'], ['blueprints', 'Чертежи'], ['recycle', 'Переработчик'], ['alchemy', 'Алхимия'], ['cooking', 'Кулинария'], ['body', 'Протезы']];
 const START_NAV = [['start', 'Как начать'], ['faq', 'FAQ'], ['modlist', 'Модлист'], ['rules', 'Правила']];
@@ -293,7 +293,7 @@ function pageHomeRaw() {
         <div class="ftitle"><span>05</span><div><small>ХАРАКТЕР</small><strong>То, что делает его живым</strong></div></div>
         <div class="fgrid">
           <div class="field full"><span class="ctrl-label">Образованность</span><input type="hidden" id="fEdu" name="edu"><div class="chips" id="bEdu" role="group" aria-label="Образованность"></div><p class="muted edu-note" id="bEduNote"></p></div>
-          <div class="field full"><label for="fFaith">Вера</label><select id="fFaith" name="faith"><option>Троединство · Тарн</option><option>Троединство · Солл</option><option>Троединство · Морн</option><option>Вера в Прогресс</option><option>Старая вера (тайно)</option><option>Вера в Камень (дворфы)</option><option>Вера в Инфернальных Королей (инферналы)</option><option>Нет веры</option><option>Другое</option></select></div>
+          <div class="field full"><label for="fFaith">Вера</label><select id="fFaith" name="faith"><option>Троединство · Тарн</option><option>Троединство · Солл</option><option>Троединство · Морн</option><option>Вера в Прогресс</option><option>Старая вера (тайно)</option><option>Культист</option><option>Вера в Камень (дворфы)</option><option>Вера в Инфернальных Королей (инферналы)</option><option>Нет веры</option><option>Другое</option></select></div>
           <div class="field full"><label for="fTraits">Особенности</label><textarea id="fTraits" name="traits" style="min-height:90px"></textarea></div>
           <div class="field full"><label for="fFears">Слабости и страхи</label><textarea id="fFears" name="fears" style="min-height:90px"></textarea></div>
           <div class="field full"><label for="fGoal">Цель и мотивации</label><textarea id="fGoal" name="goal" style="min-height:90px"></textarea></div>
@@ -533,30 +533,35 @@ function pageLumerite() {
 <p class="note">Как маг тратит и заряжает кристаллы — в главе <a href="#magic">Магия</a>. Кристаллы и переработка Люмерита — в <a href="#craft">Крафт-станции</a>.</p>
 </div></div></section>`;
 }
+const cultCard = (c, kind) => `<article class="panel cult cult-${c.tone}"><div class="eyebrow">${c.title}</div><h3 style="margin:6px 0 2px">${c.name}</h3><div class="muted" style="font-size:13px;margin-bottom:10px">${kind} · ${c.house}</div><p>${c.text}</p><h4>Обряды</h4>${ul(c.rites)}<h4>Как это играется</h4>${ul(c.play)}<p class="muted" style="font-size:13.5px">${c.gift}</p><blockquote class="cult-q">«${c.quote}»</blockquote></article>`;
 function pageFaith() {
-  const T = M.trinity;
-  return head({ eyebrow: 'Столпы, шестерня и запретные боги', title: 'Вера', lead: 'Три веры живут в Меттенхейме. Одну принесли люди, вторую родил сам город, а третью запретил Совет. Дворфы и инферналы хранят свои.', bg: 'assets/codex/faith.webp', crumbs: 'Мир' }) + subnav(LORE, 'faith') + `
+  const T = M.trinity, P = M.progress;
+  return head({ eyebrow: 'Столпы, шестерня и запретные боги', title: 'Вера', lead: 'В Меттенхейме молятся Столпам, тайно чтят Старых богов и платят культам Юга и Востока. А сам город родил антиверу: богов нет, всё решает ум. Дворфы и инферналы хранят своё.', bg: 'assets/codex/faith.webp', crumbs: 'Мир' }) + subnav(LORE, 'faith') + `
 <section class="content"><div class="wrap">
 <div class="sec-head"><div class="eyebrow">Новая вера людей</div><h2>Троединство</h2><p>Вера в Тарна, Солла и Морна. Столпы — не совсем обычные боги, а стиль жизни и путь, которому следуют. Удел Порядка наследуется, Труд принимает любого, а Безмолвие выбирается сознательно.</p></div>
-<div class="faith-grid">${T.map(t => `<article class="panel pillar"><img class="medal" src="assets/art/faith-${({ Тарн: 'tarn', Солл: 'varn', Морн: 'morn' })[t.name]}.webp" alt=""><div class="role">${t.role}</div><h3>${t.name}</h3><p>${t.text}</p><h4>Удел</h4>${ul(t.who)}<h4>Сильные стороны</h4>${ul(t.plus)}<h4>Цена</h4>${ul(t.minus)}</article>`).join('')}</div>
+<div class="faith-grid">${T.map(t => `<article class="panel pillar"><img class="medal" src="assets/art/faith-${({ Тарн: 'tarn', Солл: 'varn', Морн: 'morn' })[t.name]}.webp" alt=""><div class="role">${t.role}</div><h3>${t.name}</h3><p>${t.text}</p><h4>Удел</h4>${ul(t.who)}<h4>Как это играется</h4>${ul(t.play)}<h4>Цена</h4>${ul(t.minus)}</article>`).join('')}</div>
+<p class="note" style="margin-top:18px">Вера не даёт бонусов к кубам. Она подсказывает, как персонаж думает, куда идёт за помощью и какие сцены ему по душе — а мастер учитывает это в ивентах.</p>
 
 <div class="faith-banner"><img src="assets/art/head-progress.webp" alt=""><img class="medal" src="assets/art/faith-progress.webp" alt=""></div>
-<div class="sec-head" style="margin-top:30px"><div class="eyebrow">Вера Меттенхейма</div><h2>Вера в Прогресс</h2><p>Родилась в цехах, а не в храмах. Её последователей называют прогрессистами, а в Ржавых кварталах — «шестерёночниками».</p></div>
+<div class="sec-head" style="margin-top:30px"><div class="eyebrow">Антивера Меттенхейма</div><h2>Вера в Прогресс</h2><p>${P.lead}</p></div>
 <div class="grid2">
-<article class="panel prose"><h3 style="margin-top:0">Во что они верят</h3><p>Боги ушли из Лимна, а мир остался. Значит, его можно понять, разобрать и собрать лучше. Каждое изобретение — молитва, каждый отремонтированный механизм — доброе дело, а застой — единственный настоящий грех.</p>
-<ul><li>Мир — механизм, и у него есть чертёж</li><li>Руки и разум важнее крови и рода</li><li>Знание, которое никто не применил, мертво</li><li>Ошибка мастера прощается, ржавчина — нет</li><li>Люмерит — свет, добытый руками, а не подаренный небом</li></ul></article>
-<article class="panel prose"><h3 style="margin-top:0">Обряды</h3><ul>
-<li><b>Первый оборот.</b> Новый механизм освящают при запуске, а его имя вносят в Книгу Оборотов цеха.</li>
-<li><b>Минута гудка.</b> Когда гудит заводская сирена в конце смены, прогрессисты замолкают в память погибших в цехах.</li>
-<li><b>Клеймо мастера.</b> Ученик получает личное клеймо, когда его первая работа проходит проверку чужими руками.</li>
-<li><b>Символ</b> — шестерня с искрой Люмерита в центре. Её носят на цепочке, гравируют на инструментах и протезах.</li></ul>
-<p>Жрецов нет. Есть Хранители Чертежей — архивариусы цехов — и механики-проповедники, которые читают на заводах лекции вместо проповедей.</p></article>
+<article class="panel prose"><h3 style="margin-top:0">Мир без создателя</h3>${P.myth.map(x => `<p>${x}</p>`).join('')}</article>
+<article class="panel prose"><h3 style="margin-top:0">Заповеди Оборота</h3><ul>${P.tenets.map(([n, d]) => `<li><b>${n}.</b> ${d}</li>`).join('')}</ul></article>
 </div>
 <div class="grid2" style="margin-top:18px">
-<article class="panel"><div class="eyebrow">Жёлтые</div><h3 style="margin:6px 0 8px">Открытый оборот</h3><p class="muted">Течение, близкое Дому Талбот: чертёж принадлежит всем, а прогресс, спрятанный в сейфе, перестаёт быть прогрессом.</p></article>
-<article class="panel"><div class="eyebrow">Красные</div><h3 style="margin:6px 0 8px">Закрытый оборот</h3><p class="muted">Течение, близкое Дому Дорн: знание — это оружие, и отдать его чужим значит предать город, который его создал.</p></article>
+<article class="panel prose"><h3 style="margin-top:0">Традиции, а не обряды</h3><p>Молитв у прогрессистов нет, но у цехов есть свои обычаи:</p><ul>${P.rites.map(([n, d]) => `<li><b>${n}.</b> ${d}</li>`).join('')}<li><b>Символ</b> — ${P.symbol.charAt(0).toLowerCase() + P.symbol.slice(1)}</li></ul></article>
+<article class="panel prose"><h3 style="margin-top:0">Без жрецов</h3><p>Храмов и жрецов у Прогресса нет — есть цех и его лестница:</p><ul>${P.ranks.map(([n, d]) => `<li><b>${n}.</b> ${d}</li>`).join('')}</ul></article>
 </div>
-<p class="note" style="margin-top:18px">С Троединством Прогресс уживается: рабочие Тарна легко принимают шестерню рядом со своим столпом, последователи Солла терпят её как полезную городскую привычку. Со Старой верой прогрессисты непримиримы.</p>
+<article class="panel pillar" style="margin-top:18px"><div class="role">Путь шестерни</div><h3>Прогрессист</h3><h4>Удел</h4>${ul(P.who)}<h4>Как это играется</h4>${ul(P.play)}<h4>Цена</h4>${ul(P.minus)}</article>
+<div class="grid3" style="margin-top:18px">${P.currents.map(([e, n, d]) => `<article class="panel"><div class="eyebrow">${e}</div><h3 style="margin:6px 0 8px">${n}</h3><p class="muted">${d}</p></article>`).join('')}</div>
+<p class="note" style="margin-top:18px">${P.note}</p>
+
+<div class="sec-head" style="margin-top:70px"><div class="eyebrow">Вера Юга</div><h2>Культы Юга</h2><p>Юг живёт верой в предначертанность. У каждого великого Дома свой покровитель — древнее существо, которому служат жрецы и храмовые армии. Знать и духовенство здесь почти неотличимы.</p></div>
+<div class="grid3">${M.southCults.map(c => cultCard(c, 'Покровитель')).join('')}</div>
+
+<div class="sec-head" style="margin-top:56px"><div class="eyebrow">Вера Востока</div><h2>Культы Востока</h2><p>На Востоке богам не молятся — им платят. Каждый великий Дом держит свой обряд силы: железо, зверя или духов леса. Простые восточники в культы не посвящены, но знают их знаки и боятся их.</p></div>
+<div class="grid3">${M.eastCults.map(c => cultCard(c, 'Обряд')).join('')}</div>
+<p class="note" style="margin-top:18px">Дары культов — часть веры, а не механика: игромеханически их нет, но персонаж в них верит и ведёт себя соответственно. В анкете такая вера отмечается как «Культист», а культ указывается в квенте. Для Троединства культы — тьма за песками и лесами, для Прогресса — суеверие.</p>
 
 <div class="sec-head" style="margin-top:70px"><div class="eyebrow">Хранители Природы</div><h2>Старая вера</h2><p>Вера в Первородных богов Лимна, существовавших задолго до людей и королевств. Староверы верят в равновесие и круговорот мира: смерть — не конец, а вмешательство в естественный ход вещей рождает уродства и катастрофы.</p></div>
 <article class="panel banned"><span class="stamp">ЗАПРЕЩЕНА</span>
@@ -612,25 +617,26 @@ function pageWorld() {
 </div></section>`;
 }
 function pageDeck() {
-  return head({ eyebrow: 'Архив необъяснимого', title: 'Проклятая колода', lead: 'Карты Аурица и Варна. Судьба, которой нельзя доверять.', bg: 'assets/codex/deck.webp', crumbs: 'Мир' }) + subnav(LORE, 'deck') + `
+  const T = M.trinkets, all = [...T.quiet.items, ...T.rotten.items];
+  return head({ eyebrow: 'Архив необъяснимого', title: 'Безделицы', lead: 'Проклятые вещицы с особой силой. Каждая срабатывает один раз — и каждая берёт что-то взамен.', bg: 'assets/codex/deck.webp', crumbs: 'Мир' }) + subnav(LORE, 'deck') + `
 <section class="content"><div class="wrap">
-<div class="prose" style="margin-bottom:30px"><p>Никто точно не знает, откуда появились колоды Аурица и Варна. Те, кто держал в руках карты Аурица, либо умирали, либо сходили с ума. Сам Ауриц говорит, что астральные карты, если долго их слушать, начинают шептать в ответ.</p></div>
-<div class="panel deck-draw"><button class="card3d" id="deckCard" data-nosnd aria-label="Вытянуть карту"><div class="in"><div class="face"><img src="assets/card-back.webp" alt=""></div><div class="face front"><div><span id="deckNum">?</span><b id="deckName">—</b></div></div></div></button>
-<div><div class="eyebrow">Бросок 1d50</div><h3 style="font-size:30px;margin:6px 0 10px">Найденная карта</h3><p class="muted" id="deckText">Нажми на колоду: механизм бросит 1d50 и откроет найденную карту вместе с описанием. Карты Аурица нельзя передать или продать, карты Варна можно дарить.</p><p style="margin-top:14px"><button class="btn" id="deckDraw" data-nosnd>Вытянуть карту</button></p></div></div>
-${Object.entries(M.decks).map(([k, d]) => `<div class="sec-head" style="margin-top:56px"><div class="eyebrow">${d.note}</div><h2>${d.name}</h2></div>${d.groups.map(([g, cards]) => `<h3 style="font-size:20px;color:var(--house-hi);margin:22px 0 10px">${g}</h3><div class="cards-list">${cards.map(([n, t]) => `<div class="cardrow" data-card="${esc(n)}"><b>${n}</b><p>${t}</p></div>`).join('')}</div>`).join('')}`).join('')}
+<div class="prose" style="margin-bottom:30px"><p>Гниль оседает не только в людях. Иногда она впитывается в вещь — пуговицу, ключ, огарок свечи — и та начинает делать то, чего вещи делать не должны. Скупщики Ржавых кварталов зовут их безделицами: с виду мусор, в кармане — чудо на один раз. Никто не знает заранее, во что это чудо обойдётся.</p></div>
+<div class="panel deck-draw"><button class="card3d" id="deckCard" data-nosnd aria-label="Найти безделицу"><div class="in"><div class="face"><img src="assets/card-back.webp" alt=""></div><div class="face front"><div><span id="deckNum">?</span><b id="deckName">—</b></div></div></div></button>
+<div><div class="eyebrow">Бросок 1d${all.length}</div><h3 style="font-size:30px;margin:6px 0 10px">Найденная безделица</h3><p class="muted" id="deckText">Нажми, чтобы бросить 1d${all.length}: механизм покажет, какая безделица попалась, что она делает и чем за это придётся заплатить.</p><p style="margin-top:14px"><button class="btn" id="deckDraw" data-nosnd>Найти безделицу</button></p></div></div>
+<div class="panel" style="margin-top:24px"><span class="ctrl-label">Как работают безделицы</span>${ul(T.rules)}</div>
+${[T.quiet, T.rotten].map((g, gi) => `<div class="sec-head" style="margin-top:56px"><div class="eyebrow">${g.note}</div><h2>${g.name}</h2></div><div class="trinkets">${g.items.map(([n, what, fx, cost], i) => `<article class="panel trinket${gi ? ' rotten' : ''}" data-card="${esc(n)}"><div class="tr-n">${gi * T.quiet.items.length + i + 1}</div><h3>${n}</h3><p class="tr-what">${what}</p><p class="tr-fx">${fx}</p><p class="tr-cost"><span>Подвох:</span> ${cost}</p></article>`).join('')}</div>`).join('')}
 </div></section>`;
 }
 function mountDeck() {
+  const T = M.trinkets, all = [...T.quiet.items, ...T.rotten.items];
   const card = $('#deckCard'); const draw = () => {
-    const n = 1 + Math.floor(Math.random() * 50), name = M.deckOrder[n - 1];
+    const n = 1 + Math.floor(Math.random() * all.length), [name, , fx, cost] = all[n - 1], rotten = n > T.quiet.items.length;
     play('card'); card.classList.remove('flip'); void card.offsetWidth;
     setTimeout(() => {
       $('#deckNum').textContent = n; $('#deckName').textContent = name; card.classList.add('flip');
-      const row = $$('[data-card]').find(r => r.dataset.card === name);
-      $$('.cardrow.hit').forEach(r => r.classList.remove('hit'));
-      const deck = Object.values(M.decks).find(d => d.groups.some(([, c]) => c.some(([x]) => x === name)));
-      $('#deckText').innerHTML = row ? `<b style="color:var(--parch)">${esc(deck.name)}.</b> ${esc($('p', row).textContent)}` : '';
-      if (row) row.classList.add('hit');
+      $$('.trinket.hit').forEach(r => r.classList.remove('hit'));
+      const row = $$('[data-card]').find(r => r.dataset.card === name); if (row) row.classList.add('hit');
+      $('#deckText').innerHTML = `<b style="color:var(--parch)">${rotten ? 'Гнилая безделица' : 'Тихая безделица'}.</b> ${esc(fx)} <span style="color:#d98a7a">Подвох: ${esc(cost)}</span>`;
     }, 250);
   };
   card.addEventListener('click', draw); $('#deckDraw').addEventListener('click', draw);
@@ -705,6 +711,16 @@ ${p.origins.length > 1 ? `<div class="origin-tabs" id="oTabs" role="tablist">${p
 <p style="margin-top:40px;display:flex;gap:10px;flex-wrap:wrap"><a class="btn" href="#anketa">Создать персонажа</a><a class="btn ghost" href="#people-${next.id}">Следующий народ: ${next.name} →</a></p>
 </div></section>`;
 }
+// Подробный лор культуры: одежда, аристократия, дома с девизами, особенностями, хроникой и культом
+function loreHTML(L) {
+  return `<div class="lore-block">
+  <div class="grid2">${L.clothes.map(([t, intro, items]) => `<article class="panel"><span class="ctrl-label">${t}</span><p class="muted" style="font-size:14.5px;margin:4px 0 8px">${intro}</p>${ul(items)}</article>`).join('')}</div>
+  <div class="sec-head" style="margin-top:44px"><div class="eyebrow">Аристократия</div><h2>Великие дома</h2><p>${L.nobility}</p></div>
+  <div class="lore-houses">${L.houses.map(h => `<article class="panel lore-house"><h3>${h.name}</h3><div class="lore-motto">«${h.motto}»</div><p>${h.text}</p>
+    <span class="ctrl-label">Особенности</span>${ul(h.features)}
+    ${h.chronicle ? `<span class="ctrl-label">Хроника дома</span><ol class="lore-chron">${h.chronicle.map(([y, n, d]) => `<li><b>${y} — ${n}.</b> ${d}</li>`).join('')}</ol>` : ''}
+    ${h.cult ? `<a class="lore-cult" href="#faith">Культ дома: <b>${h.cult}</b> — в главе «Вера» →</a>` : ''}</article>`).join('')}</div></div>`;
+}
 function mountPeople(id) {
   const p = M.peoples.find(x => x.id === id) || M.peoples[0];
   let g = 'male', c = 'fighter';
@@ -718,11 +734,11 @@ function mountPeople(id) {
         ${o.stats ? `<div><span class="ctrl-label">Расовые бонусы</span><div class="stat-list">${o.stats.map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join('')}</div></div>` : ''}
         <div class="panel"><span class="ctrl-label">Облик</span>${ul(o.look).replace('<ul>', '<ul style="margin:0;padding-left:18px;color:var(--smoke)">')}</div>
         <div><span class="ctrl-label">Таланты народа · черта, порыв и наследие</span><div class="talents">${o.talents.map(([k, n, d], ti) => `<div class="panel talent${ICO(`talent-${RACE_KEY[p.id + '-' + o.id]}-${ti + 1}`) ? ' has-ic' : ''}">${icoImg(`talent-${RACE_KEY[p.id + '-' + o.id]}-${ti + 1}`, 'tal-ic')}<div class="eyebrow">${k}</div><h4 style="font-family:var(--f-display);font-weight:400;font-size:21px;margin:4px 0">${n}</h4><p class="muted" style="font-size:15px">${d}</p></div>`).join('')}</div></div>
-        ${o.houses ? `<div><span class="ctrl-label">${o.houses.length > 1 ? 'Великие дома' : 'Особенность'}</span><div class="${o.houses.length === 4 ? 'grid2' : 'grid3'}">${o.houses.map(([n, d]) => `<div class="panel"><h4 style="font-family:var(--f-display);font-weight:400;font-size:19px;margin-bottom:4px">${n}</h4><p class="muted" style="font-size:14px">${d}</p></div>`).join('')}</div></div>` : ''}
+        ${o.houses && !o.lore ? `<div><span class="ctrl-label">${o.houses.length > 1 ? 'Великие дома' : 'Особенность'}</span><div class="${o.houses.length === 4 ? 'grid2' : 'grid3'}">${o.houses.map(([n, d]) => `<div class="panel"><h4 style="font-family:var(--f-display);font-weight:400;font-size:19px;margin-bottom:4px">${n}</h4><p class="muted" style="font-size:14px">${d}</p></div>`).join('')}</div></div>` : ''}
       </div>
       <div><div class="people-stage"><img id="pFig" src="${charImg(o.folder, g, c)}" alt="${o.name}"></div>
         <div class="gallery" style="margin-top:8px">${pics.map(([gg, cc]) => `<button data-pic="${gg}-${cc}" aria-pressed="${gg === g && cc === c}" aria-label="${gg === 'male' ? 'Мужчина' : 'Женщина'}, ${M.classes.find(x => x.id === cc).name}"><img src="${charImg(o.folder, gg, cc)}" alt="" loading="lazy"></button>`).join('')}</div></div>
-    </div>`;
+    </div>${o.lore ? loreHTML(o.lore) : ''}`;
     $$('[data-pic]').forEach(b => b.addEventListener('click', () => { [g, c] = b.dataset.pic.split('-'); $('#pFig').src = charImg(o.folder, g, c); $$('[data-pic]').forEach(x => x.setAttribute('aria-pressed', String(x === b))); play('card'); }));
   };
   $$('[data-ot]').forEach(b => b.addEventListener('click', () => { $$('[data-ot]').forEach(x => x.setAttribute('aria-pressed', String(x === b))); show(b.dataset.ot); }));
@@ -787,7 +803,7 @@ const STATS = [
     ['Запугивание', 'Напугать, надавить, заставить отступить.']]],
   ['Воля', 'Сила духа.', [
     ['Собранность', 'Держать бой под ударами и в стрессе — против людей и против чудовищ. Порог 13, если атака врага 16+, помеха на следующую Атаку и Защиту при провале.'],
-    ['Самообладание', 'Сопротивление страху, внушению, ментальной магии, голосу проклятия и Порче.', 1],
+    ['Самообладание', 'Сопротивление страху, внушению, ментальной магии, голосу проклятия и Гнили.', 1],
     ['Внимательность', 'Заметить важное, найти скрытое, распознать ложь и дурные намерения.']]]
 ];
 const DICE_RULES = [
@@ -798,6 +814,25 @@ const DICE_RULES = [
   ['Кап +10', 'Бонус к любому кубу из всех источников вместе — раса, древо, предметы, еда, зелья, протезы — не выше +10. Лишнее сгорает.'],
   ['Ресурсы', 'ОЗ 10, ОВ 10, ОД 4 тайла у всех на старте. Растут от брони, древа и проклятий.']
 ];
+/* ---------- Броня и урон ---------- */
+const ARMOR_RULES = [
+  ['КБ', 'Класс брони снижает урон от физических атак: оружия, снарядов, ударов и взрывов. КБ вычитается один раз из всего урона атаки — вместе с добавочными 1d4 и 1d6.'],
+  ['Минимум 1', 'Попадание всегда наносит минимум 1 урона, какой бы ни была броня.'],
+  ['Мимо брони', 'КБ не снижает урон от заклинаний, Люмерита и статусов — Горения, Кровотечения, Отравления, Обморожения.'],
+  ['Защита от магии', 'От заклинаний защищает Маг. защита, от статусов — спасброски: Стойкость, Иммунитет и другие по описанию эффекта. Магический барьер и Мистический заслон поглощают магический урон.'],
+  ['Смешанный урон', 'Если в атаке есть и сталь, и магия, урон делится: основной урон оружия идёт под КБ, добавка от Люмерита или магии — мимо КБ.']
+];
+const DMG_SPLIT = [
+  ['Физика — КБ работает', ['Удары холодным оружием', 'Пули, болты, стрелы, картечь', 'Осколки гранат и шрапнель', 'Приёмы оружием: Сокрушение, Рывок, Заряд в упор', 'Добавочные 1d4 и 1d6 от приёмов']],
+  ['Магия и статусы — мимо КБ', ['Заклинания школ: Искра, Кипящая кровь и другие', 'Разряд Люмерита инженера', '+1 ЕУ от Люмеритовой жилы и люмеритовых пуль', 'Отголосок печати инферналов', 'Урон от Горения, Кровотечения, Отравления, Обморожения']]
+];
+const DMG_EXAMPLES = [
+  ['Двуручный меч по латнику', '4 ЕУ − КБ 2 = 2 урона.'],
+  ['Сокрушение по латнику', '4 ЕУ + 1d6 (выпало 3) − КБ 2 = 5 урона.'],
+  ['Кинжал по латнику', '1 ЕУ − КБ 2 = 0 → минимум 1 урона.'],
+  ['Меч с Люмеритовой жилой', '2 ЕУ стали − КБ 2 = 0 → 1 урона, плюс 1 ЕУ Люмерита мимо КБ — итого 2.'],
+  ['Искра по латнику', '2 ЕУ магией — КБ не учитывается, 2 урона и Горение, если цель не прошла Стойкость.']
+];
 function statsHTML() {
   return `<div class="st-grid">${STATS.map(([a, d, list]) => `<article class="panel st-card"><div class="eyebrow">Атрибут</div><h3>${a}</h3><p class="muted" style="font-size:14px;margin:0 0 10px">${d}</p>${list.map(([n, t, isNew]) => `<div class="st-row"><b>${n}${isNew ? ' <em class="st-new">новый</em>' : ''}</b><span>${t}</span></div>`).join('')}</article>`).join('')}
     <article class="panel st-card st-luck"><div class="eyebrow">Главный атрибут</div><h3>Удача</h3><p class="muted" style="font-size:14px">Без навыков. Бросается отдельно, когда исход решает случай, а не умение. Её почти ничто не поднимает: Удача — редкая награда.</p></article></div>`;
@@ -807,6 +842,11 @@ function pageSystem() {
 <section class="content"><div class="wrap">
 <div class="sec-head"><div class="eyebrow">Как бросаем</div><h2>Кубы и проверки</h2><p>Основной кубик один — d20 с плюсами. Сверху — только 1d4 и 1d6 урона, а для случая — Удача и рулетка 1d100.</p></div>
 <div class="cards-list">${DICE_RULES.map(([n, d]) => `<div class="cardrow"><b>${n}</b><p>${d}</p></div>`).join('')}</div>
+<div class="sec-head" style="margin-top:60px"><div class="eyebrow">Броня и урон</div><h2>Сталь и магия</h2><p>Броня держит сталь, но не магию. Танка в латах вскрывают заклинания, яды и огонь.</p></div>
+<div class="cards-list">${ARMOR_RULES.map(([n, d]) => `<div class="cardrow"><b>${n}</b><p>${d}</p></div>`).join('')}</div>
+<div class="grid2" style="margin-top:24px">${DMG_SPLIT.map(([t, list]) => `<article class="panel"><h3 style="font-size:22px;margin:0 0 10px">${t}</h3>${list.map(x => `<p class="muted" style="margin:0;padding:8px 0;border-top:1px solid rgba(214,162,63,.15)">${x}</p>`).join('')}</article>`).join('')}</div>
+<h3 style="font-size:20px;color:var(--house-hi);margin:28px 0 10px">Примеры расчёта</h3>
+<div class="cards-list">${DMG_EXAMPLES.map(([n, d]) => `<div class="cardrow"><b>${n}</b><p>${d}</p></div>`).join('')}</div>
 <div class="sec-head" style="margin-top:60px"><div class="eyebrow">Характеристики</div><h2>Атрибуты и навыки</h2><p>Каждый навык — это куб: бонус, который прибавляется к d20. Бонус к атрибуту целиком (+1 к Телу) добавляется ко всем его навыкам.</p></div>
 ${statsHTML()}
 <div class="sec-head" style="margin-top:60px"><div class="eyebrow">Структура хода</div><h2>Действия в ходу</h2><p>Каждый игрок в бою получает несколько типов действий. Некоторые способности требуют основное или дополнительное действие.</p></div>
@@ -821,6 +861,32 @@ ${diceHTML()}
 }
 function pageForge() { return head({ eyebrow: 'Мастерская · заготовка', title: 'Оружейная', lead: 'Выбери оружие, поставь особые улучшения в слоты и подбери боеприпас. Урон считается в ЕУ, дистанция — в тайлах, способности оружие получает только от улучшений.', bg: 'assets/codex/workshop-v2.webp', crumbs: 'Мастерская' }) + subnav(CLS_NAV, 'forge') + `<section class="content"><div class="wrap" id="forgeMount"></div></section>`; }
 function pageBody() { return head({ eyebrow: 'Мастерская · протезист', title: 'Протезы и конструкты', lead: 'Меттенхейм чинит людей так же, как машины. Живым ставят протезы и импланты — от простой руки до нейроускорителя, — пока тело выдерживает нагрузку. Конструкты меняют детали целиком: ядро, каркас, оптику, руки.', bg: 'assets/codex/workshop-v2.webp', crumbs: 'Мастерская' }) + subnav(CLS_NAV, 'body') + `<section class="content"><div class="wrap" id="bodyMount"></div></section>`; }
+// Проклятые в мире: суть, как приходит проклятие, отношение города и облик по ступеням
+function pageCursed() {
+  const L = M.curseLore;
+  return head({ eyebrow: 'Мир · Гниль', title: 'Проклятые', lead: 'Не дар и не раса. Сырая магия мира, которая прижилась в человеке — и медленно его переделывает.', bg: 'assets/codex/deck.webp', crumbs: 'Мир' }) + subnav(LORE, 'cursed') + `
+<section class="content"><div class="wrap">
+<div class="prose" style="margin-bottom:30px">${L.intro.map(t => `<p class="lead" style="font-size:18px">${t}</p>`).join('')}</div>
+<div class="grid2">
+<article class="panel"><span class="ctrl-label">Как приходит проклятие</span>${ul(L.ways)}</article>
+<article class="panel"><span class="ctrl-label">Внешние признаки</span><p class="muted" style="font-size:15px">${L.signs}</p></article>
+</div>
+<div class="sec-head" style="margin-top:56px"><div class="eyebrow">Меттенхейм и Гниль</div><h2>Как живут проклятые в городе</h2></div>
+<div class="grid2">${L.city.map(([n, d]) => `<article class="panel"><h3 style="margin:0 0 6px;font-size:20px">${n}</h3><p class="muted" style="font-size:15px;margin:0">${d}</p></article>`).join('')}</div>
+<div class="sec-head" style="margin-top:56px"><div class="eyebrow">Четыре пути Гнили</div><h2>Виды проклятий</h2><p>У каждого проклятия своя суть и своя цена. Облик меняется по ступеням: чем дальше зашло проклятие, тем труднее его прятать.</p></div>
+<div class="cursed-list">${M.curses.map(c => { const t = L.types[c.id]; if (!t) return ''; return `<article class="panel cursed-card cursed-${c.id}">
+  <header class="cursed-head"><img src="${c.emblem}" alt=""><div><div class="eyebrow">Проклятие</div><h3>${c.name}</h3><p class="muted">${c.text}</p></div></header>
+  <div class="cursed-body"><div><span class="ctrl-label">Суть</span><p>${t.essence}</p>
+    <span class="ctrl-label">Как его получают</span><p class="muted">${t.gets}</p>
+    <span class="ctrl-label">В городе</span><p class="muted">${t.city}</p>
+    <span class="ctrl-label">Слабости</span><p class="muted">${t.weak}</p></div>
+  <div><span class="ctrl-label">Облик по ступеням</span><ol class="cursed-look">${t.look.map((x, i) => `<li><b>${'I II III IV V'.split(' ')[i]}</b><span>${x}</span></li>`).join('')}</ol>
+    <blockquote class="cult-q">«${t.quote}»</blockquote>
+    <a class="btn small ghost" href="#curses" style="margin-top:14px">Развитие: ступени и цена →</a></div></div></article>`; }).join('')}</div>
+<div class="panel" style="margin-top:30px"><span class="ctrl-label">Правила для игрока</span>${ul(L.rules)}</div>
+<p style="margin-top:24px;display:flex;gap:10px;flex-wrap:wrap"><a class="btn" href="#curses">Развитие проклятых</a><a class="btn ghost" href="#anketa">Создать персонажа</a></p>
+</div></section>`;
+}
 function pageCurses() { return head({ eyebrow: 'Системы · уникальность', title: 'Развитие Проклятых', lead: 'Проклятие растёт, когда им пользуются. Пять ступеней: каждая даёт силу и берёт свою цену. Сдержать рост можно, повернуть назад — нет.', bg: 'assets/codex/deck.webp', crumbs: 'Классы и системы' }) + subnav(CLS_NAV, 'curses') + `<section class="content"><div class="wrap" id="curseMount"></div></section>`; }
 function pageInventions() { return head({ eyebrow: 'Системы · инженер', title: 'Изобретения', lead: 'Помощник, боевая турель и автоматон в кейсе — три чертежа Инженера. Что они умеют и когда открываются.', bg: 'assets/codex/workshop-v2.webp', crumbs: 'Классы и системы' }) + subnav(CLS_NAV, 'inventions') + `<section class="content"><div class="wrap"><div class="sec-head"><div class="eyebrow">Чертежи инженера</div><h2>Три вида механизмов</h2><p>Чем дальше Инженер идёт по древу, тем больше слотов и сложнее чертежи. Ниже — что умеет каждый механизм.</p></div><div id="invMount"></div></div></section>`; }
 function pageFactions() { return head({ eyebrow: 'Системы · Дома', title: 'Фракции', lead: 'Игроки приносят Дому очки фракции, и всё идёт в общий пул. Уровни пула открывают то, чем Дом силён: у Талботов — протезы, у Дорна — материалы для оружия.', bg: 'assets/codex/housing.webp', crumbs: 'Классы и системы' }) + subnav(CLS_NAV, 'factions') + `<section class="content"><div class="wrap" id="factionMount"></div></section>`; }
@@ -870,7 +936,7 @@ const ROUTES = {
   lumerite: [pageLumerite], faith: [pageFaith], magic: [pageMagic, () => window.Crystal.mount($('#crystalMount'))], world: [pageWorld], deck: [pageDeck, mountDeck],
   rules: [pageRules], discord: [pageDiscord], start: [pageStart], faq: [pageFaq], modlist: [pageModlist],
   races: [pageRaces, mountRaces], classes: [pageClasses, mountClasses], system: [pageSystem, () => mountDice($('[data-dice]').parentElement)], eloquence: [pageEloquence, () => window.Eloquence.mount($('#eloqMount'))], healing: [pageHealing, () => window.Healing.mount($('#healMount'))],
-  tree: [pageTree], forge: [pageForge, () => window.Forge.mount($('#forgeMount'))], armor: [pageArmor, () => window.Armor.mount($('#armorMount'))], craft: [pageCraft, () => window.Craft.mount($('#craftMount'))], gathering: [pageGathering, () => window.Gathering.mount($('#gatherMount'))], blueprints: [pageBlueprints, () => window.Blueprints.mount($('#bpMount'))], recycle: [pageRecycle, () => window.Recycler.mount($('#recycleMount'))], alchemy: [pageAlchemy, () => window.Alchemy.mount($('#alchMount'))], cooking: [pageCooking, () => window.Cooking.mount($('#cookMount'))], body: [pageBody, () => window.BodyLab.mount($('#bodyMount'))], curses: [pageCurses, () => window.CurseLab.mount($('#curseMount'))], factions: [pageFactions, () => window.Factions.mount($('#factionMount'))], inventions: [pageInventions, () => window.Inventor.mount($('#invMount'))]
+  tree: [pageTree], forge: [pageForge, () => window.Forge.mount($('#forgeMount'))], armor: [pageArmor, () => window.Armor.mount($('#armorMount'))], craft: [pageCraft, () => window.Craft.mount($('#craftMount'))], gathering: [pageGathering, () => window.Gathering.mount($('#gatherMount'))], blueprints: [pageBlueprints, () => window.Blueprints.mount($('#bpMount'))], recycle: [pageRecycle, () => window.Recycler.mount($('#recycleMount'))], alchemy: [pageAlchemy, () => window.Alchemy.mount($('#alchMount'))], cooking: [pageCooking, () => window.Cooking.mount($('#cookMount'))], body: [pageBody, () => window.BodyLab.mount($('#bodyMount'))], curses: [pageCurses, () => window.CurseLab.mount($('#curseMount'))], cursed: [pageCursed], factions: [pageFactions, () => window.Factions.mount($('#factionMount'))], inventions: [pageInventions, () => window.Inventor.mount($('#invMount'))]
 };
 function resolve(raw) {
   let key = raw, arg = null;

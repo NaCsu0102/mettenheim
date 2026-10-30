@@ -2111,6 +2111,56 @@ body.tree-mode .pipe-side { display: none; }
 .engine-plate > span:not(.eng-dot):not(.eng-ue) { color: #1f1408; font-weight: 600; text-shadow: 0 1px 0 rgba(255,230,170,.35); }
 .fx-gauge b { font-size: 9px; letter-spacing: .1em; bottom: 27%; }
 
+/* ===== Счёт Домов v2: флаги, одометр, пар, табличка ===== */
+.fx2 { position: relative; overflow: hidden; isolation: isolate; }
+.fx2 .fx-h { position: relative; padding: 8px 0; }
+.fx2 .fx-flag { position: absolute; top: 50%; width: 130px; height: 190px; object-fit: cover; opacity: .18; transform: translateY(-50%); pointer-events: none; z-index: -1; -webkit-mask: linear-gradient(180deg, #000 50%, transparent); mask: linear-gradient(180deg, #000 50%, transparent); }
+.fx2 .fx-h.t .fx-flag { right: -10px; } .fx2 .fx-h.d .fx-flag { left: -10px; }
+.fx2 .fx-odo { display: inline-flex; gap: 4px; margin-top: 8px; font: 700 clamp(24px, 3.4vw, 38px)/1 var(--f-mono, ui-monospace, monospace); }
+.fx2 .fx-h.t .fx-odo { justify-content: flex-end; }
+.fx-odo i { font-style: normal; position: relative; display: grid; place-items: center; width: 1.05em; height: 1.45em; border: 1px solid #6b5132; border-radius: 3px; background: linear-gradient(180deg, #080605 0%, #2a1f16 20%, #17110c 50%, #2a1f16 80%, #080605 100%); box-shadow: inset 0 1px 0 rgba(255,220,150,.14), 0 3px 8px rgba(0,0,0,.6); }
+.fx-odo i::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: rgba(0,0,0,.6); }
+.fx-odo i.z { opacity: .35; }
+.fx2.lead-t .fx-h.t .fx-odo i:not(.z) { box-shadow: inset 0 1px 0 rgba(255,220,150,.14), 0 0 16px rgba(240,201,106,.45); }
+.fx2.lead-d .fx-h.d .fx-odo i:not(.z) { box-shadow: inset 0 1px 0 rgba(255,220,150,.14), 0 0 16px rgba(238,106,82,.45); }
+.fx-plate { display: inline-block; padding: 7px 18px; border: 1px solid #6b5132; background: linear-gradient(180deg, #2c2117, #140f0b); color: #ecdcbc; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; box-shadow: inset 0 1px 0 rgba(255,220,150,.12), 0 4px 10px rgba(0,0,0,.45); }
+.fx2.lead-t .fx-plate { border-color: #b8893f; color: #f0c96a; } .fx2.lead-d .fx-plate { border-color: #a5432f; color: #ee6a52; }
+.fx-steam { position: absolute; left: 50%; top: -4%; width: 44px; height: 44px; margin-left: -22px; pointer-events: none; z-index: 2; }
+.fx-steam::before, .fx-steam::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle, rgba(232,222,204,.4), transparent 70%); opacity: 0; animation: fxSteam 3.4s ease-out infinite; }
+.fx-steam::after { animation-delay: 1.7s; }
+@keyframes fxSteam { 0% { transform: translateY(0) scale(.4); opacity: 0; } 20% { opacity: .85; } 100% { transform: translateY(-50px) scale(1.7); opacity: 0; } }
+.fx2 .fx-bar::after { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 25%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.28), transparent); animation: fxShine 4.5s linear infinite; }
+@keyframes fxShine { from { transform: translateX(-120%); } to { transform: translateX(520%); } }
+/* Стрелка манометра: вращается вокруг центра циферблата, ось-заклёпка сверху */
+.fx2 .fx-needle { inset: auto; left: 50%; bottom: 50%; top: auto; width: 8px; height: 34%; margin-left: -4px; aspect-ratio: auto; background: linear-gradient(180deg, #c23b2c 0 30%, #2a1d12 30% 100%); clip-path: polygon(50% 0, 100% 78%, 100% 100%, 0 100%, 0 78%); transform-origin: 50% 100%; transform: rotate(var(--fx-a, 0deg)); transition: transform 1.2s cubic-bezier(.3, 1.4, .5, 1); z-index: 2; filter: drop-shadow(0 2px 2px rgba(0,0,0,.5)); }
+.fx2 .fx-gauge::after { content: ""; position: absolute; left: 50%; top: 50%; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; z-index: 3; background: radial-gradient(circle at 35% 30%, #f8dc92, #b8863a 55%, #4a3416); box-shadow: 0 2px 4px rgba(0,0,0,.7), inset 0 -1px 1px rgba(0,0,0,.4); }
+.fx-mid { position: absolute; left: 50%; top: 22%; bottom: 22%; width: 2px; margin-left: -1px; background: #ecdcbc; opacity: .55; z-index: 2; }
+@media (max-width: 640px) { .fx2 .fx-flag { width: 90px; height: 130px; } .fx2 .fx-h.t .fx-odo { justify-content: flex-start; } }
+@media (prefers-reduced-motion: reduce) { .fx-steam::before, .fx-steam::after, .fx2 .fx-bar::after { animation: none; } }
+
+/* ===== Общий чат: плавающее облачко справа ===== */
+.chd-fab { position: fixed; right: 22px; bottom: 22px; z-index: 80; width: 60px; height: 60px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: #1a120b; border: 2px solid #f2cc72; background: radial-gradient(circle at 35% 30%, #f6d98c, #c8963c 60%, #7a5420); box-shadow: 0 10px 26px rgba(0,0,0,.6), inset 0 2px 0 rgba(255,240,200,.5); transition: transform .2s; }
+.chd-fab:hover { transform: translateY(-2px) scale(1.04); }
+.chd-fab svg { width: 28px; height: 28px; }
+.chd-fab[aria-expanded="true"] { transform: scale(.9); opacity: .85; }
+.chd-badge { position: absolute; top: -4px; right: -4px; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; background: #c23b2c; color: #fff; font: 700 12px/22px var(--f-mono, monospace); border: 2px solid #120d0a; }
+.chd-panel { position: fixed; right: 22px; bottom: 96px; z-index: 81; width: min(380px, calc(100vw - 32px)); height: min(560px, calc(100svh - 140px)); display: flex; flex-direction: column; background: #140f0b; border: 1px solid #6b5132; border-radius: 18px 18px 4px 18px; box-shadow: 0 24px 60px rgba(0,0,0,.7), 0 0 0 1px rgba(242,204,114,.08); overflow: hidden; transform-origin: bottom right; animation: chdIn .22s ease-out; }
+.chd-panel::after { content: ""; position: absolute; right: 18px; bottom: -9px; width: 16px; height: 16px; background: #140f0b; border-right: 1px solid #6b5132; border-bottom: 1px solid #6b5132; transform: rotate(45deg); }
+@keyframes chdIn { from { opacity: 0; transform: translateY(12px) scale(.96); } to { opacity: 1; transform: none; } }
+.chd-head { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid #3a2c1f; background: linear-gradient(180deg, #241a12, #16100c); }
+.chd-head b { flex: 1; color: #ecdcbc; font-size: 15px; } .chd-head b small { display: block; font-weight: 400; font-size: 11px; color: var(--smoke, #9c8c74); }
+.chd-head a, .chd-head button { background: none; border: 1px solid #4a3b2d; color: #c9b58f; border-radius: 8px; padding: 4px 9px; font: inherit; font-size: 12px; cursor: pointer; text-decoration: none; }
+.chd-head a:hover, .chd-head button:hover { border-color: #f2cc72; color: #f2cc72; }
+.chd-body { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.chd-body > * { flex: 1; min-height: 0; }
+.chd-body .ch-wrap { display: flex; flex-direction: column; height: 100%; padding: 0; border: 0; background: none; box-shadow: none; }
+.chd-body .ch-head { display: none; }
+.chd-body .ch-log { flex: 1; min-height: 0; max-height: none; height: auto; overflow-y: auto; padding: 10px 12px; }
+.chd-body .ch-foot { padding: 10px 12px; border-top: 1px solid #3a2c1f; }
+.chd-body .cab-empty { margin: 14px; flex: 0 0 auto; }
+@media (max-width: 560px) { .chd-fab { right: 14px; bottom: 14px; width: 54px; height: 54px; } .chd-panel { right: 8px; left: 8px; width: auto; bottom: 80px; height: min(70svh, 560px); } }
+@media (prefers-reduced-motion: reduce) { .chd-panel { animation: none; } }
+
 /* ===== Трубы v2: толстые латунные, поверх страницы ===== */
 .pr-pipe { height: 30px; background: url("assets/pipes/pipe-t.webp") repeat-x left center / auto 30px; filter: drop-shadow(0 6px 8px rgba(0,0,0,.7)); }
 .pipe-run { height: 64px; z-index: 6; }
@@ -2179,11 +2229,89 @@ body.tree-mode .pipe-side { display: none; }
 .pipe-run:not(.hero-run) .pr-joint { width: 49px; height: 35px; }
 .topbar::after { display: none !important; }
 .ev-sec { padding-top: 6px; }
+
+/* ===== Трубы v3: кольцевая труба, муфты, колена, колба и стрелка с осью ===== */
+/* pipe-ring: тело трубы ≈ 8% высоты картинки по центру — масштаб подобран так, чтобы труба = высоте полосы */
+.pr-pipe { background: url("assets/pipes/pipe-ring.webp") repeat-x left center / auto 360px; }
+.pipe-run:not(.hero-run) .pr-pipe { background-size: auto 216px; }
+.pr-joint { background-image: url("assets/pipes/coupling.webp"); width: 80px; height: 80px; }
+.pipe-run:not(.hero-run) .pr-joint { width: 48px; height: 48px; }
+@media (max-width: 760px) { .pr-pipe { background-size: auto 265px; } .pr-joint { width: 59px; height: 59px; } }
+.footer::before { left: 60px; right: 60px; background: url("assets/pipes/pipe-ring.webp") repeat-x left center / auto 216px; }
+.ft-elbow { position: absolute; top: -17px; width: 48px; height: 48px; background: url("assets/pipes/elbow.webp") center / contain no-repeat; filter: drop-shadow(0 4px 6px rgba(0,0,0,.7)); pointer-events: none; }
+/* культы Юга: у каждой карточки свой отсвет */
+.cult h4 { margin: 14px 0 6px; font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--house-hi); }
+.cult p { font-size: 14.5px; }
+.cult-sun { background: linear-gradient(180deg, rgba(232,150,40,.16), transparent 45%), linear-gradient(180deg, var(--iron), #17120e); border-color: rgba(232,150,40,.5); }
+.cult-sand { background: linear-gradient(180deg, rgba(200,160,90,.14), transparent 45%), linear-gradient(180deg, var(--iron), #17120e); border-color: rgba(200,160,90,.45); }
+.cult-blood { background: linear-gradient(180deg, rgba(200,40,80,.18), transparent 45%), linear-gradient(180deg, var(--iron), #17120e); border-color: rgba(200,40,80,.5); }
+.cult-iron { background: linear-gradient(180deg, rgba(150,30,40,.18), transparent 45%), linear-gradient(180deg, var(--iron), #17120e); border-color: rgba(150,40,50,.5); }
+.cult-wolf { background: linear-gradient(180deg, rgba(160,150,140,.14), transparent 45%), linear-gradient(180deg, var(--iron), #17120e); border-color: rgba(170,160,150,.4); }
+.cult-forest { background: linear-gradient(180deg, rgba(70,120,80,.18), transparent 45%), linear-gradient(180deg, var(--iron), #17120e); border-color: rgba(90,140,95,.45); }
+/* безделицы */
+.trinkets { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+.trinket { position: relative; padding: 20px 20px 18px; transition: box-shadow .3s, border-color .3s; }
+.trinket .tr-n { position: absolute; top: 14px; right: 18px; font: 700 13px/1 var(--f-mono, monospace); color: var(--smoke); }
+.trinket h3 { margin: 0 24px 4px 0; font-size: 19px; }
+.trinket .tr-what { margin: 0 0 10px; font-size: 13.5px; font-style: italic; color: var(--smoke); }
+.trinket .tr-fx { margin: 0 0 10px; font-size: 14.5px; color: var(--parch); }
+.trinket .tr-cost { margin: 0; font-size: 13.5px; color: #d9a08f; } .trinket .tr-cost span { font-weight: 700; color: #e07a66; }
+.trinket.rotten { background: linear-gradient(160deg, rgba(110,40,120,.16), transparent 50%), linear-gradient(180deg, var(--iron), #17120e); border-color: rgba(150,70,160,.4); }
+.trinket.hit { border-color: var(--house-hi); box-shadow: 0 0 0 1px var(--house-hi), 0 0 28px color-mix(in srgb, var(--house) 40%, transparent); }
+/* проклятые в мире */
+.cursed-list { display: grid; gap: 18px; }
+.cursed-card { padding: 26px; }
+.cursed-head { display: flex; gap: 18px; align-items: center; margin-bottom: 18px; }
+.cursed-head img { width: 84px; height: 84px; object-fit: contain; flex: none; filter: drop-shadow(0 4px 12px rgba(0,0,0,.6)); }
+.cursed-head h3 { margin: 2px 0 4px; font-size: 28px; } .cursed-head p { margin: 0; font-size: 14.5px; }
+.cursed-body { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; }
+.cursed-body p { font-size: 15px; margin: 4px 0 12px; }
+.cursed-look { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 6px; }
+.cursed-look li { display: grid; grid-template-columns: 34px 1fr; gap: 10px; align-items: baseline; padding: 7px 10px; background: rgba(0,0,0,.22); border-left: 2px solid var(--cu, #8a3b3b); font-size: 14.5px; color: var(--parch); }
+.cursed-look b { font-family: var(--f-mono, monospace); color: var(--cu, #c45a5a); }
+.cursed-doppler { --cu: #9b7fd1; background: linear-gradient(135deg, rgba(155,127,209,.12), transparent 40%), linear-gradient(180deg, var(--iron), #17120e); }
+.cursed-beast { --cu: #c9893f; background: linear-gradient(135deg, rgba(201,137,63,.13), transparent 40%), linear-gradient(180deg, var(--iron), #17120e); }
+.cursed-vrakhir { --cu: #c23b48; background: linear-gradient(135deg, rgba(194,59,72,.14), transparent 40%), linear-gradient(180deg, var(--iron), #17120e); }
+.cursed-possessed { --cu: #5fb3a7; background: linear-gradient(135deg, rgba(95,179,167,.12), transparent 40%), linear-gradient(180deg, var(--iron), #17120e); }
+@media (max-width: 760px) { .cursed-body { grid-template-columns: 1fr; } .cursed-head img { width: 60px; height: 60px; } }
+/* подробный лор культур на странице народа */
+.lore-block { margin-top: 44px; }
+.lore-block ul { margin: 0; padding-left: 18px; color: var(--smoke); font-size: 14.5px; line-height: 1.6; }
+.lore-houses { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.lore-house h3 { margin: 0; font-size: 24px; }
+.lore-motto { margin: 4px 0 10px; font-style: italic; color: var(--house-hi); }
+.lore-house > p { font-size: 15px; color: var(--parch); }
+.lore-house .ctrl-label { display: block; margin-top: 12px; }
+.lore-chron { margin: 4px 0 0; padding-left: 0; list-style: none; display: grid; gap: 6px; font-size: 14px; color: var(--smoke); }
+.lore-chron li { padding-left: 10px; border-left: 2px solid var(--rivet); } .lore-chron b { color: var(--parch); font-weight: 600; }
+.lore-cult { display: inline-block; margin-top: 14px; font-size: 14px; color: var(--house-hi); }
+.cult-q { margin: 14px 0 0; padding: 10px 14px; border-left: 2px solid var(--house); background: rgba(0,0,0,.25); font-style: italic; color: #ecdcbc; font-size: 14px; }
+/* общий логотип Cronicles в подвале */
+.ft-brand { display: grid; justify-items: center; gap: 6px; padding: 34px 16px 6px; }
+.ft-brand img { width: min(260px, 60vw); height: auto; filter: drop-shadow(0 6px 18px rgba(120,60,190,.35)) drop-shadow(0 2px 4px rgba(0,0,0,.7)); }
+.ft-brand small { font-size: 11px; letter-spacing: .28em; text-transform: uppercase; color: var(--smoke, #9c8c74); }
+.ft-elbow.r { right: 18px; } .ft-elbow.l { left: 18px; transform: scaleX(-1); }
+/* колба счёта Домов */
+.fx-tube { height: auto; aspect-ratio: 2000 / 230; }
+.fx-tube::after { background: url("assets/pipes/tube2.webp") center / 100% auto no-repeat; }
+.fx-tube .fx-bar { left: 11%; right: 11%; top: 25%; bottom: 21%; height: auto; border-radius: 8px; opacity: .8; }
+.fx-mid { top: 25%; bottom: 21%; }
+.fx-gauge { width: 190px; }
+/* панель счёта: жёлтый отсвет со стороны Талботов, алый — со стороны Дорнов */
+.fx2 { background: linear-gradient(90deg, rgba(240,201,106,.17) 0%, rgba(240,201,106,.06) 28%, transparent 44%, transparent 56%, rgba(205,40,40,.07) 72%, rgba(205,40,40,.2) 100%), linear-gradient(180deg, var(--iron), #17120e); border-left-color: rgba(240,201,106,.45); border-right-color: rgba(214,58,48,.5); }
+/* лёгкое дрожание стрелки от давления: rotate складывается с основным поворотом вокруг той же оси */
+.fx2 .fx-needle { animation: fxJit 2.6s ease-in-out infinite; }
+@keyframes fxJit { 0%, 100% { rotate: 0deg; } 16% { rotate: 1.4deg; } 22% { rotate: -.5deg; } 44% { rotate: .4deg; } 60% { rotate: -1.2deg; } 68% { rotate: .3deg; } }
+@media (prefers-reduced-motion: reduce) { .fx2 .fx-needle { animation: none; } }
+/* стрелка манометра: вращается вокруг своей оси, сверху латунная кнопка */
+.fx2 .fx-needle { clip-path: none; background: url("assets/pipes/needle2.png") center / contain no-repeat; left: 50%; top: 50%; bottom: auto; width: 44%; height: auto; aspect-ratio: 1; margin: -38.8% 0 0 -22%; transform-origin: 50% 88.2%; filter: drop-shadow(0 3px 3px rgba(0,0,0,.55)); }
+.fx2 .fx-gauge::after { width: 15%; height: 15%; margin: -7.5% 0 0 -7.5%; border-radius: 0; box-shadow: none; background: url("assets/pipes/hub.webp") center / contain no-repeat; filter: drop-shadow(0 2px 3px rgba(0,0,0,.7)); }
 .ev-posts { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); margin-top: 14px; }
 .ft-links { display: inline-flex; gap: 18px; align-items: center; flex-wrap: wrap; }
 .footer a { color: var(--smoke); text-decoration: none; border-bottom: 1px solid transparent; } .footer a:hover { color: var(--house-hi); border-color: currentColor; }
 .pv h2 { font-size: 24px; margin: 30px 0 10px; } .pv ul { padding-left: 20px; } .pv li { margin-bottom: 8px; line-height: 1.65; } .pv b { color: var(--parch); }
 .check a { color: var(--house-hi); }
+
 /* кнопки Домов на заставке — компактнее */
 .hbtn { font-size: 10.5px; letter-spacing: .12em; padding: 8px 12px 7px; clip-path: polygon(7px 0, 100% 0, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%, 0 7px); }
 .hlink { font-size: 10px; letter-spacing: .1em; padding: 8px 0; }

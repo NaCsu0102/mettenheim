@@ -46,6 +46,8 @@ const CLS_ICON = id => `assets/art/class-${id}.webp`;
 const NODE_COST = { minor: 40, fork: 50, ability: 60, school: 60, upgrade: 90, bridge: 30, root: 0 };
 const NODE_BONUS = { minor: 1, fork: 1, ability: 1, school: 1, upgrade: 2, bridge: 0, root: 0 };
 const STAT_CAP = 10;
+// Второе призвание: максимум 2 класса. Условия открытия, разовый взнос и наценка на узлы второго класса.
+const MC_REQ = 600, MC_FEE = 200, MC_MULT = 1.5;
 const RADII = { start: 270, b0: 440, b1: 580, b2: 720, b3: 860, bridge: 990 };
 
 /* ======================= ТАЛАНТЫ =======================
@@ -235,9 +237,13 @@ const TREE_RULES = [
   ['Красноречие', 'В древе не качается. Красноречие растёт только от одежды и украшений.'],
   ['Вершины', 'Не больше двух вершин на персонажа.'],
   ['Школы магии', 'Не больше двух школ на персонажа, даже если дойти до третьей по кольцу.'],
-  ['Другой класс', 'Ветвь проходится до конца. Изучив её вершину, ты открываешь начало любой ветви любого класса — так качается второй класс. Если сбросить все вершины, чужие ветви снимаются.'],
-  ['Кольцо', 'От вершины можно выйти на кольцо перекрёстков и пройти по нему к вершинам других ветвей — так можно добраться до любого класса.'],
-  ['Сброс', 'Раз в сессию можно забыть узлы и вернуть половину потраченного опыта.']
+  ['Второе призвание', 'Классов не больше двух: основной и один второй. Третий класс недоступен никак — ни по ветвям, ни по кольцу.'],
+  ['Условия', 'Второй класс открывается, когда у тебя есть вершина своего класса и в древо своего класса вложено не меньше 600 опыта. Нужен наставник второго класса и отыгранное обучение — подтверждает мастер.'],
+  ['Посвящение', 'Первый узел второго класса стоит дополнительно 200 опыта — разовый взнос за вход в чужое ремесло. Бонусов он не даёт.'],
+  ['Наценка', 'Все узлы второго класса в полтора раза дороже: приём 90, малый узел 60, развилка 75, вершина 135.'],
+  ['Что даёт второй класс', 'Ресурс второго класса с максимумом 2 вместо 3 и одну его базовую способность на выбор. Ограничения брони и оружия второго класса сохраняются. Лимит в две вершины — общий на оба класса.'],
+  ['Кольцо', 'От вершины можно выйти на кольцо перекрёстков и пройти по нему к вершинам других ветвей — но только своих двух классов.'],
+  ['Сброс', 'Раз в сессию можно забыть узлы и вернуть половину потраченного опыта. Если вершин своего класса не осталось или вложено меньше 600 опыта, второй класс снимается целиком. Взнос за Посвящение не возвращается.']
 ];
 
 function buildWorld() {
@@ -316,10 +322,24 @@ const Tree = {
     </div>`;
     const world = q('#tWorld', el), box = q('#tBox', el), css = getComputedStyle(document.documentElement);
     const countType = t => [...got].filter(id => byId[id].type === t).length;
-    const block = id => { const n = byId[id]; if (n.type === 'upgrade' && countType('upgrade') >= 2) return 'Уже взяты 2 вершины — больше нельзя'; if (n.type === 'school' && countType('school') >= 2) return 'Уже открыты 2 школы магии — больше нельзя'; return ''; };
-    // Вершина любой ветви открывает начало ЛЮБОЙ ветви любого класса — так качается другой класс
+    // Второй класс: открывается вершиной своего класса и MC_REQ опыта в нём; третий класс недоступен
     const STARTS = nodes.filter(n => /-0$/.test(n.id) && n.cls).map(n => n.id);
-    const unlocked = set => [...set].some(id => byId[id] && byId[id].type === 'upgrade');
+    const foreign = n => !!(n && n.cls && n.cls !== cid);
+    const second = set => { for (const id of set) if (foreign(byId[id])) return byId[id].cls; return null; };
+    const ownSpent = set => [...set].reduce((a, id) => { const n = byId[id]; return a + (n && n.cls === cid && n.type !== 'root' ? NODE_COST[n.type] : 0); }, 0);
+    const unlocked = set => [...set].some(id => byId[id] && byId[id].type === 'upgrade' && byId[id].cls === cid) && ownSpent(set) >= MC_REQ;
+    const cost = n => foreign(n) ? Math.round(NODE_COST[n.type] * MC_MULT) : NODE_COST[n.type];
+    const fee = n => foreign(n) && !second(got) ? MC_FEE : 0;
+    const block = id => {
+      const n = byId[id];
+      if (foreign(n)) {
+        const s2 = second(got);
+        if (s2 && s2 !== n.cls) return 'Максимум 2 класса — третий недоступен';
+        if (!unlocked(got)) return `Второй класс: нужна вершина своего класса и ${MC_REQ} опыта в нём`;
+      }
+      if (n.type === 'upgrade' && countType('upgrade') >= 2) return 'Уже взяты 2 вершины — больше нельзя'; if (n.type === 'school' && countType('school') >= 2) return 'Уже открыты 2 школы магии — больше нельзя'; return '';
+    };
+    const rootOpenFor = id => unlocked(got) && (!second(got) || second(got) === id);
     const reach = x => got.has(x);
     const canTake = id => byId[id].type !== 'root' && !got.has(id) && ((nb[id] || []).some(reach) || (STARTS.includes(id) && unlocked(got))) && got.size - 1 < TREE_POINTS && !block(id);
     function connected(set) {
@@ -327,6 +347,8 @@ const Tree = {
       const walk = () => { while (st.length) { const c = st.pop(); for (const x of out[c] || []) if (set.has(x) && !seen.has(x)) { seen.add(x); st.push(x); } } };
       walk();
       for (let guard = 0; guard < 5 && unlocked(seen); guard++) { const add = STARTS.filter(x => set.has(x) && !seen.has(x)); if (!add.length) break; add.forEach(x => { seen.add(x); st.push(x); }); walk(); }
+      // Условия второго класса больше не выполнены — он снимается целиком
+      if (!unlocked(seen)) [...seen].forEach(x => { if (foreign(byId[x])) seen.delete(x); });
       return seen;
     }
 
@@ -337,7 +359,7 @@ const Tree = {
       s += `<circle r="180" fill="none" stroke="#3a2e23" stroke-width="2"/><image href="assets/gear-md.webp" x="-150" y="-150" width="300" height="300" opacity=".35"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="80s" repeatCount="indefinite"/></image>`;
       s += `<text y="6" text-anchor="middle" fill="#a7967c" font-family="Montserrat, Arial, sans-serif" font-weight="700" font-size="28" letter-spacing="3" stroke="#120e0b" stroke-width="5" paint-order="stroke">МЕТТЕНХЕЙМ</text>`;
       for (const [a, b] of links) {
-        const A = byId[a], B = byId[b], rootOpen = x => byId[x].type === 'root' && unlocked(got), on = (got.has(a) || (rootOpen(a) && got.has(b))) && (got.has(b) || (rootOpen(b) && got.has(a))), can = ((got.has(a) || rootOpen(a)) && canTake(b)) || ((got.has(b) || rootOpen(b)) && canTake(a));
+        const A = byId[a], B = byId[b], rootOpen = x => byId[x].type === 'root' && rootOpenFor(x), on = (got.has(a) || (rootOpen(a) && got.has(b))) && (got.has(b) || (rootOpen(b) && got.has(a))), can = ((got.has(a) || rootOpen(a)) && canTake(b)) || ((got.has(b) || rootOpen(b)) && canTake(a));
         const mine = (A.cls === cid || B.cls === cid);
         if (isJump.has(a + '|' + b)) {
           const mx = (A.x + B.x) / 2 * 1.06, my = (A.y + B.y) / 2 * 1.06, d = `M${A.x} ${A.y} Q${mx} ${my} ${B.x} ${B.y}`;
@@ -349,7 +371,7 @@ const Tree = {
         if (on) s += `<line x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}" stroke="${hi}" stroke-width="1.5" opacity=".7"/>`;
       }
       for (const n of nodes) {
-        const r = R[n.type], on = got.has(n.id), can = canTake(n.id) || (n.type === 'root' && n.id !== cid && unlocked(got)), dim = n.cls && n.cls !== cid && !on && !can;
+        const r = R[n.type], on = got.has(n.id), can = canTake(n.id) || (n.type === 'root' && n.id !== cid && rootOpenFor(n.id)), dim = n.cls && n.cls !== cid && !on && !can;
         const ring = on ? hi : can ? '#c9a15b' : '#4a3b2d';
         s += `<g class="tnode" data-id="${n.id}" tabindex="0" role="button" aria-label="${esc(nodeName(n))}" style="cursor:pointer" opacity="${dim ? .5 : 1}">`;
         if (on) s += `<circle cx="${n.x}" cy="${n.y}" r="${r + 9}" fill="${house}" opacity=".35" filter="url(#tglow)"/>`;
@@ -393,19 +415,19 @@ const Tree = {
       for (const id of got) { const n = byId[id]; for (const [st, v] of Object.entries(n.bonus || {})) t[st] = (t[st] || 0) + v; }
       return t;
     }
-    const spent = () => [...got].reduce((a, id) => a + NODE_COST[byId[id].type], 0);
+    const spent = () => [...got].reduce((a, id) => a + cost(byId[id]), 0) + (second(got) ? MC_FEE : 0);
     const bonusText = n => { const b = Object.entries(n.bonus || {}); return b.length ? b.map(([st, v]) => `+${v} ${st}`).join(', ') : n.type === 'bridge' ? 'проход по кольцу' : ''; };
     function panel() {
       const n = byId[sel], on = got.has(n.id), can = canTake(n.id);
-      const why = n.type === 'root' ? (n.id === cid ? 'Твой старт' : unlocked(got) ? 'Класс открыт — бери любую его ветвь' : 'Откроется после вершины любой ветви') : on ? 'Изучено · нажми ещё раз, чтобы сбросить' : can ? 'Можно изучить · нажми ещё раз' : STARTS.includes(n.id) && !unlocked(got) && n.cls !== cid ? 'Чужой класс: сначала дойди до вершины своей ветви' : block(n.id) || (got.size - 1 >= TREE_POINTS ? 'Узлы закончились' : 'Нужен изученный соседний узел');
+      const why = n.type === 'root' ? (n.id === cid ? 'Твой старт' : second(got) && second(got) !== n.id ? 'Максимум 2 класса — третий недоступен' : unlocked(got) ? 'Второй класс открыт — бери любую его ветвь' : `Второй класс: нужна вершина своего класса и ${MC_REQ} опыта в нём (сейчас ${ownSpent(got)})`) : on ? 'Изучено · нажми ещё раз, чтобы сбросить' : can ? 'Можно изучить · нажми ещё раз' : block(n.id) || (got.size - 1 >= TREE_POINTS ? 'Узлы закончились' : 'Нужен изученный соседний узел');
       const S = stats(), nb0 = Object.entries(n.bonus || {}), overSt = nb0.filter(([k, v]) => (S[k] || 0) + v > STAT_CAP).map(([k]) => k), st = overSt.join(', ');
       const over = !on && overSt.length;
       const myCls = M.classes.find(c => c.id === cid);
-      const next = nodes.filter(x => canTake(x.id)).sort((a, b) => NODE_COST[a.type] - NODE_COST[b.type]);
+      const next = nodes.filter(x => canTake(x.id)).sort((a, b) => cost(a) + fee(a) - cost(b) - fee(b));
       const statRows = Object.entries(S).sort((a, b) => b[1] - a[1]);
       q('#tPanel', el).innerHTML = `
         <section class="tp-node">${ICON(skillId(n)) ? `<img class="tp-icon tp-skill" src="${ICON(skillId(n))}" alt="">` : n.branch && BRANCH_ICON[n.branch] ? `<img class="tp-icon" src="assets/art/${BRANCH_ICON[n.branch]}.webp" alt="">` : ''}<div class="eyebrow">${TYPE[n.type]}${n.branch ? ' · ' + esc(n.branch) : ''}</div><h3>${esc(nodeName(n))}</h3>
-          <div class="tp-tags"><span class="tag ${on || n.id === cid ? 'house' : 'stub'}">${why}</span>${n.type !== 'root' ? `<span class="tag">${NODE_COST[n.type]} опыта</span>` : ''}${bonusText(n) ? `<span class="tag house">${bonusText(n)}</span>` : ''}</div>
+          <div class="tp-tags"><span class="tag ${on || n.id === cid ? 'house' : 'stub'}">${why}</span>${n.type !== 'root' ? `<span class="tag">${cost(n)} опыта${foreign(n) ? ' · второй класс ×1,5' : ''}</span>` : ''}${!on && n.type !== 'root' && fee(n) ? `<span class="tag">+${MC_FEE} Посвящение</span>` : ''}${bonusText(n) ? `<span class="tag house">${bonusText(n)}</span>` : ''}</div>
           ${over ? `<p class="note" style="font-size:13px">${st} упрётся в кап +${STAT_CAP}: часть бонуса сгорит.</p>` : ''}
           <p class="muted">${esc(n.desc)}</p>
           ${n.opts ? `<div class="tp-fork">${n.opts.map(([on2, od], i) => `<button type="button" data-fork="${i}" aria-pressed="${forks[n.id] === i}"${!on && !can ? ' disabled' : ''}>${iconImg(skillId(n, i), 'tp-fork-ic')}<b>${'АБ'[i]} · ${esc(on2)}</b><span>${esc(od)}</span></button>`).join('')}</div>` : ''}
@@ -417,7 +439,7 @@ const Tree = {
           <div class="ctrl-label">Как это тебя улучшает</div>
           ${statRows.length ? `<div class="gauges">${statRows.map(([k, val]) => `<div class="gauge"><div class="row"><span>${k}</span><span><b class="${val > STAT_CAP ? 'down' : ''}">+${Math.min(val, STAT_CAP)}</b>${val > STAT_CAP ? ` <em class="down">сгорает ${val - STAT_CAP}</em>` : ''}</span></div><div class="bar"><i style="width:${Math.min(val, STAT_CAP) / STAT_CAP * 100}%"></i></div></div>`).join('')}</div>` : '<p class="muted" style="font-size:14px">Пока ничего не изучено. Начни с узлов рядом со стартом.</p>'}
           <div class="ctrl-label" style="margin-top:14px">Куда можно пойти</div>
-          ${next.length ? `<div class="tp-next">${next.slice(0, 8).map(x => `<button data-goto="${x.id}"><span>${esc(x.branch ? x.branch + ' · ' : '')}${esc(x.type === 'bridge' ? 'перекрёсток' : nodeName(x).replace(/^.*?: /, ''))}</span><small>${NODE_COST[x.type]} оп.${bonusText(x) && x.type !== 'bridge' ? ' · ' + bonusText(x) : ''}</small></button>`).join('')}</div>` : `<p class="muted" style="font-size:14px">${got.size - 1 >= TREE_POINTS ? 'Очки закончились.' : 'Нет доступных узлов.'}</p>`}
+          ${next.length ? `<div class="tp-next">${next.slice(0, 8).map(x => `<button data-goto="${x.id}"><span>${esc(x.branch ? x.branch + ' · ' : '')}${esc(x.type === 'bridge' ? 'перекрёсток' : nodeName(x).replace(/^.*?: /, ''))}</span><small>${cost(x) + fee(x)} оп.${bonusText(x) && x.type !== 'bridge' ? ' · ' + bonusText(x) : ''}</small></button>`).join('')}</div>` : `<p class="muted" style="font-size:14px">${got.size - 1 >= TREE_POINTS ? 'Очки закончились.' : 'Нет доступных узлов.'}</p>`}
         </section>
         <p class="muted" style="font-size:11px">Заготовка: цены, бонусы и названия будут уточнены после утверждения системы.</p>`;
       const t = q('#tTake', el), d = q('#tDrop', el), w = q('#tSwitch', el);
