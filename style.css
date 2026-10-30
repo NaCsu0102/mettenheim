@@ -2184,3 +2184,17 @@ body.tree-mode .pipe-side { display: none; }
 .footer a { color: var(--smoke); text-decoration: none; border-bottom: 1px solid transparent; } .footer a:hover { color: var(--house-hi); border-color: currentColor; }
 .pv h2 { font-size: 24px; margin: 30px 0 10px; } .pv ul { padding-left: 20px; } .pv li { margin-bottom: 8px; line-height: 1.65; } .pv b { color: var(--parch); }
 .check a { color: var(--house-hi); }
+/* кнопки Домов на заставке — компактнее */
+.hbtn { font-size: 10.5px; letter-spacing: .12em; padding: 8px 12px 7px; clip-path: polygon(7px 0, 100% 0, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%, 0 7px); }
+.hlink { font-size: 10px; letter-spacing: .1em; padding: 8px 0; }
+.hc-btns { gap: 10px; margin-top: 8px; }
+@media (min-width: 761px) { .side .caption { padding: 14px 18px 12px; } .side .caption h2 { font-size: clamp(22px, 2.1vw, 32px); } }
+@media (max-width: 760px) { .hbtn { font-size: 9.5px; padding: 7px 8px 6px; letter-spacing: .04em; } .hlink { font-size: 9px; } }
+/* кнопки Домов — спокойные: контур вместо заливки, заливка только при наведении */
+.side.talbot .hbtn, .side.dorn .hbtn { background: rgba(10,8,6,.35); box-shadow: none; clip-path: none; border: 1px solid; transition: background .25s, color .25s, border-color .25s; }
+.side.talbot .hbtn { color: #e6c27a; border-color: rgba(214,162,63,.55); }
+.side.dorn .hbtn { color: #e98a78; border-color: rgba(194,82,63,.6); }
+.side.talbot .hbtn:hover, .side.talbot .hbtn:focus-visible { background: rgba(214,162,63,.18); color: #f6dc9c; border-color: #d6a23f; filter: none; }
+.side.dorn .hbtn:hover, .side.dorn .hbtn:focus-visible { background: rgba(194,82,63,.18); color: #f4ab9c; border-color: #c2523f; filter: none; }
+.side .hbtn[aria-pressed="true"] { background: transparent; }
+.hlink { color: var(--smoke); border-bottom-color: rgba(232,214,180,.25); }
