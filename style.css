@@ -2326,3 +2326,16 @@ body.tree-mode .pipe-side { display: none; }
 .side.dorn .hbtn:hover, .side.dorn .hbtn:focus-visible { background: rgba(194,82,63,.18); color: #f4ab9c; border-color: #c2523f; filter: none; }
 .side .hbtn[aria-pressed="true"] { background: transparent; }
 .hlink { color: var(--smoke); border-bottom-color: rgba(232,214,180,.25); }
+
+/* Гербы домов и арты проклятых */
+.lore-house.has-crest { position: relative; padding-top: 22px; }
+.lore-crest { display: block; width: 120px; height: 120px; object-fit: contain; margin: 0 auto 12px; filter: drop-shadow(0 8px 16px rgba(0,0,0,.6)); transition: transform .4s var(--ease, ease); }
+.lore-house:hover .lore-crest { transform: scale(1.06) rotate(-2deg); }
+.lore-house.has-crest h3, .lore-house.has-crest .lore-motto { text-align: center; }
+.house-card { position: relative; }
+.hc-crest { position: absolute; top: 12px; right: 12px; width: 92px !important; height: 92px !important; object-fit: contain !important; aspect-ratio: auto !important; border: 0 !important; background: none !important; filter: drop-shadow(0 6px 14px rgba(0,0,0,.7)); z-index: 2; }
+.cursed-art { display: block; width: calc(100% + 52px); max-width: none; margin: -26px -26px 20px; aspect-ratio: 16/8; object-fit: cover; object-position: center 30%; border-bottom: 1px solid var(--rivet); }
+.cursed-card { overflow: hidden; }
+@media (max-width: 640px) { .hc-crest { width: 64px !important; height: 64px !important; } .lore-crest { width: 96px; height: 96px; } }
+.house-card:has(.hc-crest) > div { padding-right: 104px; }
+@media (max-width: 640px) { .house-card:has(.hc-crest) > div { padding-right: 0; } .house-card:has(.hc-crest) h3 { padding-right: 70px; } }

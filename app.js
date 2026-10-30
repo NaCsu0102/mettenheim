@@ -227,7 +227,7 @@ function pageHomeRaw() {
 
 <section class="section tight sides-sec"><div class="wrap">
   <div class="sec-head"><div class="eyebrow">Выбери свою сторону</div><h2>Два завода, два будущих</h2><p>Принадлежность к Дому отражает взгляды и интересы персонажа. Жёлтые и Красные — не светлая и тёмная сторона, а два ответа на вопрос, кому должен служить прогресс.</p></div>
-  <div class="houses">${['talbot', 'dorn'].map(k => `<article class="panel house-card ${k === house ? 'lit' : ''}" data-hcard="${k}"><img src="${H[k].img}" alt=""><div><div class="eyebrow ${k[0]}">${H[k].side}</div><h3>${H[k].name}</h3><p>${H[k].head}</p>${ul(H[k].points)}<p style="margin-top:14px"><button class="btn small" data-pick="${k}" aria-pressed="false">Выбрать ${k === 'talbot' ? 'Жёлтых' : 'Красных'}</button></p></div></article>`).join('')}</div>
+  <div class="houses">${['talbot', 'dorn'].map(k => `<article class="panel house-card ${k === house ? 'lit' : ''}" data-hcard="${k}"><img src="${H[k].img}" alt="">${H[k].crest ? `<img class="hc-crest" src="${H[k].crest}" alt="Герб: ${H[k].name}" loading="lazy">` : ''}<div><div class="eyebrow ${k[0]}">${H[k].side}</div><h3>${H[k].name}</h3><p>${H[k].head}</p>${ul(H[k].points)}<p style="margin-top:14px"><button class="btn small" data-pick="${k}" aria-pressed="false">Выбрать ${k === 'talbot' ? 'Жёлтых' : 'Красных'}</button></p></div></article>`).join('')}</div>
 </div></section>
 
 <section class="section tight live-sec"><div class="wrap" id="liveMount"></div></section>
@@ -514,7 +514,7 @@ function pageHouses() {
   const H = M.houses;
   return head({ eyebrow: 'Жёлтые и Красные', title: 'Дома Талбот и Дорн', lead: 'Два предприятия. Два взгляда на то, кому должен служить прогресс.', bg: 'assets/house-talbot-banner.webp', crumbs: 'Мир' }) + subnav(LORE, 'houses') + `
 <section class="content"><div class="wrap">
-<div class="houses">${['talbot', 'dorn'].map(k => `<article class="panel house-card ${k === house ? 'lit' : ''}" data-hcard="${k}"><img src="${H[k].img}" alt=""><div><div class="eyebrow ${k[0]}">${H[k].side}</div><h3>${H[k].name}</h3><p>${H[k].head}</p>${ul(H[k].points)}<p style="margin-top:14px"><button class="btn small" data-pick="${k}" aria-pressed="false">Выбрать сторону</button></p></div></article>`).join('')}</div>
+<div class="houses">${['talbot', 'dorn'].map(k => `<article class="panel house-card ${k === house ? 'lit' : ''}" data-hcard="${k}"><img src="${H[k].img}" alt="">${H[k].crest ? `<img class="hc-crest" src="${H[k].crest}" alt="Герб: ${H[k].name}" loading="lazy">` : ''}<div><div class="eyebrow ${k[0]}">${H[k].side}</div><h3>${H[k].name}</h3><p>${H[k].head}</p>${ul(H[k].points)}<p style="margin-top:14px"><button class="btn small" data-pick="${k}" aria-pressed="false">Выбрать сторону</button></p></div></article>`).join('')}</div>
 <div class="prose" style="margin-top:40px">
 <h2>Развод и раздел заводов</h2><p>Прежде оба крупных завода принадлежали Виктору. После развода Табита получила производство деталей и протезов, Виктор сохранил крупнейший завод машин, танкеров и оружия. Противоположные взгляды владельцев стали основой городского раскола.</p>
 <h2>Борьба за Люмерит</h2><p>Контроль над месторождениями даёт энергию заводам. Оба дома нуждаются в Люмерите, но расходятся в том, для чего строить машины и на каких условиях делиться разработками с другими землями.</p>
@@ -716,7 +716,7 @@ function loreHTML(L) {
   return `<div class="lore-block">
   <div class="grid2">${L.clothes.map(([t, intro, items]) => `<article class="panel"><span class="ctrl-label">${t}</span><p class="muted" style="font-size:14.5px;margin:4px 0 8px">${intro}</p>${ul(items)}</article>`).join('')}</div>
   <div class="sec-head" style="margin-top:44px"><div class="eyebrow">Аристократия</div><h2>Великие дома</h2><p>${L.nobility}</p></div>
-  <div class="lore-houses">${L.houses.map(h => `<article class="panel lore-house"><h3>${h.name}</h3><div class="lore-motto">«${h.motto}»</div><p>${h.text}</p>
+  <div class="lore-houses">${L.houses.map(h => `<article class="panel lore-house${h.crest ? ' has-crest' : ''}">${h.crest ? `<img class="lore-crest" src="${h.crest}" alt="Герб: ${h.name}" loading="lazy">` : ''}<h3>${h.name}</h3><div class="lore-motto">«${h.motto}»</div><p>${h.text}</p>
     <span class="ctrl-label">Особенности</span>${ul(h.features)}
     ${h.chronicle ? `<span class="ctrl-label">Хроника дома</span><ol class="lore-chron">${h.chronicle.map(([y, n, d]) => `<li><b>${y} — ${n}.</b> ${d}</li>`).join('')}</ol>` : ''}
     ${h.cult ? `<a class="lore-cult" href="#faith">Культ дома: <b>${h.cult}</b> — в главе «Вера» →</a>` : ''}</article>`).join('')}</div></div>`;
@@ -874,7 +874,7 @@ function pageCursed() {
 <div class="sec-head" style="margin-top:56px"><div class="eyebrow">Меттенхейм и Гниль</div><h2>Как живут проклятые в городе</h2></div>
 <div class="grid2">${L.city.map(([n, d]) => `<article class="panel"><h3 style="margin:0 0 6px;font-size:20px">${n}</h3><p class="muted" style="font-size:15px;margin:0">${d}</p></article>`).join('')}</div>
 <div class="sec-head" style="margin-top:56px"><div class="eyebrow">Четыре пути Гнили</div><h2>Виды проклятий</h2><p>У каждого проклятия своя суть и своя цена. Облик меняется по ступеням: чем дальше зашло проклятие, тем труднее его прятать.</p></div>
-<div class="cursed-list">${M.curses.map(c => { const t = L.types[c.id]; if (!t) return ''; return `<article class="panel cursed-card cursed-${c.id}">
+<div class="cursed-list">${M.curses.map(c => { const t = L.types[c.id]; if (!t) return ''; return `<article class="panel cursed-card cursed-${c.id}">${(M.curseArt || {})[c.id] ? `<img class="cursed-art" src="${M.curseArt[c.id]}" alt="${c.name}" loading="lazy">` : ''}
   <header class="cursed-head"><img src="${c.emblem}" alt=""><div><div class="eyebrow">Проклятие</div><h3>${c.name}</h3><p class="muted">${c.text}</p></div></header>
   <div class="cursed-body"><div><span class="ctrl-label">Суть</span><p>${t.essence}</p>
     <span class="ctrl-label">Как его получают</span><p class="muted">${t.gets}</p>
