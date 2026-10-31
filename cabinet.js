@@ -165,7 +165,7 @@ async function playerView(el, sess, prof) {
   let chars = [], open = null, tab = 'chars';
   async function reload() { chars = await api().myChars(uid); }
   function frame(inner) {
-    el.innerHTML = topBar(prof, false) + `<div class="cab-tabs" role="tablist"><button type="button" role="tab" data-tab="chars" aria-selected="${tab === 'chars'}">Мои персонажи <i>${chars.length}</i></button><button type="button" role="tab" data-tab="profile" aria-selected="${tab === 'profile'}">Профиль</button></div><div id="cBody">${inner}</div><p class="cab-toast" role="status" aria-live="polite"></p>`;
+    el.innerHTML = topBar(prof, false) + `<div class="cab-tabs" role="tablist"><button type="button" role="tab" data-tab="chars" aria-selected="${tab === 'chars'}">Мои персонажи <i>${chars.length}</i></button><button type="button" role="tab" data-tab="logs" aria-selected="${tab === 'logs'}">Дневники</button><button type="button" role="tab" data-tab="profile" aria-selected="${tab === 'profile'}">Профиль</button></div><div id="cBody">${inner}</div><p class="cab-toast" role="status" aria-live="polite"></p>`;
     q('#cOut', el).onclick = async () => { await api().signOut(); paintHeader(null); location.hash = '#cabinet'; mount(el, 'player'); };
     qa('[data-tab]', el).forEach(b => b.onclick = () => { tab = b.dataset.tab; open = null; play('click'); render(); });
   }
@@ -174,6 +174,18 @@ async function playerView(el, sess, prof) {
     return `<div class="cab-head"><div><div class="eyebrow">Персонажи</div><h2>Мои квенты</h2></div><div class="cab-acts"><button type="button" class="btn" id="cNew">Новый персонаж</button>${draft && (draft.name || draft.quenta) ? `<button type="button" class="btn ghost" id="cFromA">Взять из анкеты: ${esc(draft.name || 'без имени')}</button>` : ''}</div></div>
       ${chars.length ? `<div class="cab-grid">${chars.map(c => `<button type="button" class="panel cab-card" data-open="${c.id}"><div class="cab-card-top">${pill(c.status)}<small>${fmtDate(c.updated_at)}</small></div><h3>${esc(c.name || 'Без имени')}</h3><p>${esc(describe(c.data || {})) || 'Народ и класс не выбраны'}</p></button>`).join('')}</div>`
         : `<article class="panel cab-empty"><h3>Пока ни одного персонажа</h3><p class="muted">Создай нового или перенеси анкету, которую собрал на главной странице. Квенту можно писать частями — черновик сохраняется на сервере.</p></article>`}`;
+  }
+  let logT = 'hunger';
+  const LOGS = [['hunger', 'Дневник голода', 'Инферналам: Голод, Эссенция, питание и траты.'], ['crystal', 'Кристалл мага', 'Магам: заряды кристалла, траты и подзарядка.']];
+  function logsHTML() {
+    return `<div class="cab-head"><div><div class="eyebrow">Отчётность персонажа</div><h2>Дневники</h2><p class="muted">Здесь ведётся то, что меняется по ходу игры. Записи хранятся в этом браузере.</p></div></div>
+      <div class="cab-subtabs">${LOGS.map(([k, n, d]) => `<button type="button" data-log="${k}" aria-pressed="${k === logT}"><b>${n}</b><small>${d}</small></button>`).join('')}</div><div id="logMount"></div>`;
+  }
+  function mountLogs() {
+    qa('[data-log]', el).forEach(b => b.onclick = () => { logT = b.dataset.log; play('click'); render(); });
+    const m = q('#logMount', el);
+    const go = () => { if (logT === 'hunger' && window.Inferno) window.Inferno.mountDiary(m); else if (logT === 'crystal' && window.Crystal) window.Crystal.mount(m); };
+    if (logT === 'crystal' && !window.ICON_ART_DATA && window.MH && MH.loadArt) { m.innerHTML = '<p class="muted">Загружаю…</p>'; MH.loadArt().then(go, go); } else go();
   }
   function profileHTML() {
     return `<section class="panel cab-form cab-avabox"><div class="eyebrow">Портрет игрока</div>
@@ -285,6 +297,7 @@ async function playerView(el, sess, prof) {
     }
   }
   function render() {
+    if (tab === 'logs') { frame(logsHTML()); mountLogs(); return; }
     frame(tab === 'profile' ? profileHTML() : listHTML());
     if (tab === 'profile') {
       const setAva = async blob => { try { const url = blob ? await api().uploadAva(uid, blob) : (await api().removeAva(uid), null); prof = await api().saveProfile(uid, { portrait: url }); paintHeader(headSess, prof); render(); toast(el, blob ? 'Портрет сохранён' : 'Вернули аватарку Discord'); } catch (e) { toast(el, errText(e), true); } };

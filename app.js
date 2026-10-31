@@ -597,7 +597,7 @@ function pageMagic() {
 <p>Черпать ману из кристалла умеют немногие: это Дар жилы, особый талант. Магами становятся лишь те, кто научился обращаться с Люмеритом. Поэтому маги в Меттенхейме редки и нужны заводам как никогда.</p>
 <p>У каждого мага четыре базовых плетения. Дальше он развивается по ветвям школ на древе развития.</p></div>
 <div class="sec-head"><div class="eyebrow">Кристаллы магии</div><h2>Сила из застывшей жилы</h2><p>Тянуть силу из себя больше нельзя — лей-линии ушли из живых существ. Маг плетёт только через люмеритовый кристалл-фокус, и каждое заклинание тратит его заряды.</p></div>
-<div id="crystalMount"></div>
+<p class="note">Учёт зарядов своего кристалла — в <a href="#cabinet">личном кабинете</a>, вкладка «Дневники».</p>
 <div class="grid2" style="margin-top:22px">
 <article class="panel"><div class="eyebrow">Цена заклинаний</div>${SPELL_COST_HTML()}</article>
 <article class="panel"><div class="eyebrow">Как зарядить</div>${RECHARGE_HTML()}</article></div>
@@ -930,10 +930,10 @@ const ROUTES = {
   hero: [pageHero, n => window.Cabinet.hero($('#heroMount'), n)],
   glossary: [pageGlossary, mountGlossary], chronicle: [pageChronicle], privacy: [pagePrivacy],
   residents: [pageResidents, () => window.Cabinet.residentsPage($('#rsMount'))],
-  inferno: [pageInferno, () => window.Inferno.mountDiary($('#hungerMount'))],
+  inferno: [pageInferno],
   cabinet: [() => pageCabinet('player'), () => window.Cabinet.mount($('#cabMount'), 'player')], admin: [() => pageCabinet('admin'), () => window.Cabinet.mount($('#cabMount'), 'admin')],
   city: [pageCity], history: [pageHistory, mountChrono], houses: [pageHouses, () => { $$('[data-pick]').forEach(b => b.addEventListener('click', () => { if (b.dataset.pick !== house) applyHouse(b.dataset.pick, true); })); setVars(); MH.onHouse(hcards); }],
-  lumerite: [pageLumerite], faith: [pageFaith], magic: [pageMagic, () => window.Crystal.mount($('#crystalMount'))], world: [pageWorld], deck: [pageDeck, mountDeck],
+  lumerite: [pageLumerite], faith: [pageFaith], magic: [pageMagic], world: [pageWorld], deck: [pageDeck, mountDeck],
   rules: [pageRules], discord: [pageDiscord], start: [pageStart], faq: [pageFaq], modlist: [pageModlist],
   races: [pageRaces, mountRaces], classes: [pageClasses, mountClasses], system: [pageSystem, () => mountDice($('[data-dice]').parentElement)], eloquence: [pageEloquence, () => window.Eloquence.mount($('#eloqMount'))], healing: [pageHealing, () => window.Healing.mount($('#healMount'))],
   tree: [pageTree], forge: [pageForge, () => window.Forge.mount($('#forgeMount'))], armor: [pageArmor, () => window.Armor.mount($('#armorMount'))], craft: [pageCraft, () => window.Craft.mount($('#craftMount'))], gathering: [pageGathering, () => window.Gathering.mount($('#gatherMount'))], blueprints: [pageBlueprints, () => window.Blueprints.mount($('#bpMount'))], recycle: [pageRecycle, () => window.Recycler.mount($('#recycleMount'))], alchemy: [pageAlchemy, () => window.Alchemy.mount($('#alchMount'))], cooking: [pageCooking, () => window.Cooking.mount($('#cookMount'))], body: [pageBody, () => window.BodyLab.mount($('#bodyMount'))], curses: [pageCurses, () => window.CurseLab.mount($('#curseMount'))], cursed: [pageCursed], factions: [pageFactions, () => window.Factions.mount($('#factionMount'))], inventions: [pageInventions, () => window.Inventor.mount($('#invMount'))]

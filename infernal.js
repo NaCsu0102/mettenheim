@@ -120,8 +120,7 @@ function pageHTML() {
   <div class="grid2"><div><h4>Сделка может</h4><ul>${DEALS.can.map(x => `<li>${x}</li>`).join('')}</ul></div><div><h4>Сделка не может</h4><ul>${DEALS.cannot.map(x => `<li>${x}</li>`).join('')}</ul></div></div>
   <p class="muted">Сделка с персонажем другого игрока — только с его согласия вне игры. Создание нового инфернала через сделку — по решению мастера.</p></article>
 
-<div class="sec-head" style="margin-top:56px"><div class="eyebrow">Для игрока</div><h2>Дневник голода</h2><p>Выбери Дом и связь с Королём, отмечай питание и траты. Дневник хранится в этом браузере.</p></div>
-<div id="hungerMount"></div>`;
+<article class="panel cab-empty" style="margin-top:40px"><h3>Дневник голода — в личном кабинете</h3><p class="muted">Отмечай питание, сделки и траты Эссенции в кабинете, вкладка «Дневники».</p><a class="btn" href="#cabinet">Открыть кабинет</a></article>`;
 }
 
 /* ---------- дневник голода ---------- */
