@@ -57,7 +57,7 @@ const chaosName = c => c === 'ice' ? 'Ледяной хаос' : 'Огненны
 
 function kingCard(k) {
   return `<article class="panel king k-${k.chaos}" id="king-${k.id}">
-    <div class="king-top"><span class="king-sin">${esc(k.sin)}</span></div>
+    <div class="king-top"><span class="king-sin">${esc(k.sin)}</span><img class="king-seal" src="assets/seals/${k.id}.webp" alt="Печать: ${esc(k.name)}" loading="lazy"></div>
     <h3>${esc(k.name)}</h3><div class="king-title">${esc(k.title)}</div>
     <p>${esc(k.text)}</p>
     <div class="king-row"><b>Питается</b><span>${esc(k.feed)}</span></div>

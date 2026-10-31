@@ -2339,3 +2339,9 @@ body.tree-mode .pipe-side { display: none; }
 @media (max-width: 640px) { .hc-crest { width: 64px !important; height: 64px !important; } .lore-crest { width: 96px; height: 96px; } }
 .house-card:has(.hc-crest) > div { padding-right: 104px; }
 @media (max-width: 640px) { .house-card:has(.hc-crest) > div { padding-right: 0; } .house-card:has(.hc-crest) h3 { padding-right: 70px; } }
+/* печати Королей */
+.king { position: relative; }
+.king-seal { width: 84px; height: 84px; object-fit: contain; flex: none; margin: -6px -6px -18px 0; filter: drop-shadow(0 6px 12px rgba(0,0,0,.6)); transition: transform .6s var(--ease, ease); }
+.king:hover .king-seal { transform: rotate(-12deg) scale(1.06); }
+.king.k-fire .king-seal { filter: drop-shadow(0 0 14px rgba(230,90,40,.35)) drop-shadow(0 6px 12px rgba(0,0,0,.6)); }
+.king.k-ice .king-seal { filter: drop-shadow(0 0 14px rgba(110,180,230,.35)) drop-shadow(0 6px 12px rgba(0,0,0,.6)); }
