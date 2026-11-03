@@ -596,15 +596,15 @@ function pageMagic() {
 <div class="prose" style="margin-bottom:34px"><p class="lead">Лей-линии — нити силы, когда-то пронизывавшие всё живое. Когда было уничтожено последнее Тихое древо, они кристаллизовались и ушли под землю люмеритовыми жилами. Теперь маг берёт ману только из Люмерита.</p>
 <p>Черпать ману из кристалла умеют немногие: это Дар жилы, особый талант. Магами становятся лишь те, кто научился обращаться с Люмеритом. Поэтому маги в Меттенхейме редки и нужны заводам как никогда.</p>
 <p>У каждого мага четыре базовых плетения. Дальше он развивается по ветвям школ на древе развития.</p></div>
-<div class="sec-head"><div class="eyebrow">Кристаллы магии</div><h2>Сила из застывшей жилы</h2><p>Тянуть силу из себя больше нельзя — лей-линии ушли из живых существ. Маг плетёт только через люмеритовый кристалл-фокус, и каждое заклинание тратит его заряды.</p></div>
-<p class="note">Учёт зарядов своего кристалла — в <a href="#cabinet">личном кабинете</a>, вкладка «Дневники».</p>
+<div class="sec-head"><div class="eyebrow">Кристаллы магии</div><h2>Сила из застывшей жилы</h2><p>Маг колдует через осколки очищенного Люмерита: пока хватает осколков, заклинание не трогает его собственную жизнь. Заклинания вплетают в осколки заранее, а в бою поглощают заготовку.</p></div>
+<p class="note">Учёт резервуара и осколков — в <a href="#cabinet">личном кабинете</a>, вкладка «Дневники».</p>
 <div class="grid2" style="margin-top:22px">
 <article class="panel"><div class="eyebrow">Цена заклинаний</div>${SPELL_COST_HTML()}</article>
-<article class="panel"><div class="eyebrow">Как зарядить</div>${RECHARGE_HTML()}</article></div>
+<article class="panel"><div class="eyebrow">Как восстановиться</div>${RECHARGE_HTML()}</article></div>
 <div class="cards-list" style="margin-top:18px">${(window.CRYSTAL_RULES || []).map(([n, d]) => `<div class="cardrow"><b>${n}</b><p>${d}</p></div>`).join('')}</div>
-<p class="note" style="margin-top:16px">Кристаллы делают на люмеритовой станции: Осколок — из сырого Люмерита и стекла, Огранённый и Сердце жилы — из очищенного Люмерита и камней. Рецепты в Крафт-станции.</p>
-<div class="sec-head" style="margin-top:60px"><div class="eyebrow">Школы</div><h2>Четыре школы</h2></div>
-<div class="grid2">${M.schools.map((s, i) => `<article class="panel school-card"><img src="assets/art/school-${['elements', 'matter', 'shadow', 'blood'][i]}.webp" alt=""><div class="eyebrow">Ветвь древа мага</div><h3 style="margin:6px 0 10px;font-size:28px">${s.name}</h3><p class="muted">${s.text}</p></article>`).join('')}</div>
+<p class="note" style="margin-top:16px">Осколки очищенного Люмерита, огранённые осколки и Сердце жилы делают на люмеритовой станции. Рецепты в Крафт-станции.</p>
+<div class="sec-head" style="margin-top:60px"><div class="eyebrow">Школы</div><h2>Пять школ</h2></div>
+<div class="grid2">${M.schools.map((s, i) => `<article class="panel school-card"><img src="assets/art/school-${['elements', 'matter', 'shadow', 'blood', 'healing'][i]}.webp" alt=""><div class="eyebrow">Ветвь древа мага</div><h3 style="margin:6px 0 10px;font-size:28px">${s.name}</h3><p class="muted">${s.text}</p></article>`).join('')}</div>
 <p style="margin-top:22px"><a class="btn" href="#tree-mage">Открыть древо мага</a></p>
 </div></section>`;
 }
@@ -750,12 +750,12 @@ const icoImg = (id, cls) => ICO(id) ? `<img class="${cls}" src="${ICO(id)}" alt=
 const RACE_KEY = { 'humans-west': 'human-west', 'humans-east': 'human-east', 'humans-south': 'human-south', 'humans-mett': 'human-mettenheimer', 'elves-high': 'elf-high', 'elves-wood': 'elf-wood', 'elves-dark': 'elf-drow', 'dwarves-dwarf': 'dwarf', 'goblins-urban': 'goblin-urban', 'goblins-tribal': 'goblin-tribal', 'infernals-fire': 'infernal-fire', 'infernals-ice': 'infernal-ice' };
 const KIND_ICON = { 'ОСН': 'act-main', 'ДОП': 'act-bonus', 'РЕАКЦИЯ': 'act-reaction', 'ПАС': 'act-passive' };
 const RES_ICON = { fighter: 'res-temper', rogue: 'res-cunning', mage: 'res-charge', shooter: 'res-focus', engineer: 'res-parts' };
-const STATUS_ICON = { 'Отравление': 'st-poison', 'Кровотечение': 'st-bleed', 'Горение': 'st-burn', 'Обморожение': 'st-frost', 'Без сознания': 'st-unconscious', 'Связан': 'st-bound', 'Оглушение': 'st-stun', 'Очарование': 'st-charm', 'Истощение': 'st-exhaust', 'Усталость': 'st-exhaust', 'Страх': 'st-fear' };
+const STATUS_ICON = { 'Отравление': 'st-poison', 'Кровотечение': 'st-bleed', 'Горение': 'st-burn', 'Обморожение': 'st-frost', 'Без сознания': 'st-unconscious', 'Связан': 'st-bound', 'Оглушение': 'st-stun', 'Очарование': 'st-charm', 'Истощение': 'st-exhaust', 'Сильное истощение': 'st-exhaust', 'Усталость': 'st-exhaust', 'Страх': 'st-fear' };
 const TURN_ICON = ['act-main', 'act-bonus', 'act-move'];
 
 /* ================= КЛАССЫ / СИСТЕМЫ ================= */
 function pageClasses(id) {
-  return head({ eyebrow: 'Пять путей', title: 'Классы', lead: 'У каждого класса свои способности и стартовая точка на общем древе развития. Маг развивается по четырём школам.', bg: 'assets/codex/arcane-v2.webp', crumbs: 'Классы' }) + subnav(CLS_NAV, 'classes') + `
+  return head({ eyebrow: 'Пять путей', title: 'Классы', lead: 'У каждого класса свои способности и стартовая точка на общем древе развития. Маг развивается по пяти школам.', bg: 'assets/codex/arcane-v2.webp', crumbs: 'Классы' }) + subnav(CLS_NAV, 'classes') + `
 <section class="content"><div class="wrap"><div class="class-tabs" role="tablist">${M.classes.map(c => `<button class="class-tab" role="tab" data-cls="${c.id}" aria-selected="${c.id === (id || 'fighter')}"><img src="${c.emblem}" alt="">${c.name}${c.isNew ? ' <span class="tag house">новый</span>' : ''}</button>`).join('')}</div><div id="clsView"></div></div></section>`;
 }
 function mountClasses(id) {

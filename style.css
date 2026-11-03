@@ -2366,3 +2366,9 @@ body.tree-mode .pipe-side { display: none; }
 .tp-drop[open] summary::after { transform: rotate(180deg); }
 .tp-drop summary em { font-style: normal; color: var(--house-hi); letter-spacing: 0; }
 .tp-drop summary:hover { color: var(--parch); }
+.tp-cls { display: grid; grid-template-columns: 120px 1fr; gap: 12px; align-items: end; margin: 4px 0 2px; }
+.tp-cls img { width: 120px; height: 180px; object-fit: cover; object-position: top; border: 1px solid var(--rivet); background: radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--house) 25%, transparent), #0f0b08 70%); }
+.tp-cls-f { display: grid; gap: 8px; font-size: 13px; color: var(--parch); }
+.tp-cls-f small { display: block; font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--smoke); }
+.tp-cls-t { font-size: 14px; line-height: 1.55; color: var(--parch); margin: 0; }
+@media (max-width: 700px) { .tp-cls { grid-template-columns: 84px 1fr; } .tp-cls img { width: 84px; height: 126px; } }

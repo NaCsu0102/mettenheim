@@ -176,7 +176,7 @@ async function playerView(el, sess, prof) {
         : `<article class="panel cab-empty"><h3>Пока ни одного персонажа</h3><p class="muted">Создай нового или перенеси анкету, которую собрал на главной странице. Квенту можно писать частями — черновик сохраняется на сервере.</p></article>`}`;
   }
   let logT = 'hunger';
-  const LOGS = [['hunger', 'Дневник голода', 'Инферналам: Голод, Эссенция, питание и траты.'], ['crystal', 'Кристалл мага', 'Магам: заряды кристалла, траты и подзарядка.']];
+  const LOGS = [['hunger', 'Дневник голода', 'Инферналам: Голод, Эссенция, питание и траты.'], ['crystal', 'Резервуар мага', 'Магам: резервуар, осколки и истощение.']];
   function logsHTML() {
     return `<div class="cab-head"><div><div class="eyebrow">Отчётность персонажа</div><h2>Дневники</h2><p class="muted">Здесь ведётся то, что меняется по ходу игры. Записи хранятся в этом браузере.</p></div></div>
       <div class="cab-subtabs">${LOGS.map(([k, n, d]) => `<button type="button" data-log="${k}" aria-pressed="${k === logT}"><b>${n}</b><small>${d}</small></button>`).join('')}</div><div id="logMount"></div>`;
