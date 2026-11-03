@@ -422,7 +422,7 @@ const Tree = {
         if (n.id.endsWith('-0') && n.branch) {
           const ang = Math.atan2(n.y, n.x), lx = n.x + Math.cos(ang) * 0, ly = n.y;
           s += `<text x="${lx}" y="${ly - r - 18}" text-anchor="middle" fill="${on ? hi : '#b3a084'}" font-family="Montserrat, Arial, sans-serif" font-weight="600" font-size="24" stroke="#120e0b" stroke-width="6" paint-order="stroke">${esc(n.branch.replace('Школа ', '').replace('Базовое плетение', 'Плетение'))}</text>`;
-          if (BRANCH_STAT[n.branch] && got.has(n.cls)) s += `<text x="${lx}" y="${ly - r - 44}" text-anchor="middle" fill="${hi}" font-family="Montserrat, Arial, sans-serif" font-weight="700" font-size="16" letter-spacing="0" stroke="#120e0b" stroke-width="6" paint-order="stroke" opacity="${on ? 1 : .85}">▲ ${esc(BRANCH_STAT[n.branch])}</text>`;
+          if (BRANCH_STAT[n.branch] && (got.has(n.cls) || window.MH_ALL_STATS)) s += `<text x="${lx}" y="${ly + r + 24}" text-anchor="middle" fill="${hi}" font-family="Montserrat, Arial, sans-serif" font-weight="700" font-size="16" letter-spacing="0" stroke="#120e0b" stroke-width="6" paint-order="stroke" opacity="${on ? 1 : .85}">▲ ${esc(BRANCH_STAT[n.branch])}</text>`;
         }
         if (sel === n.id) s += `<circle cx="${n.x}" cy="${n.y}" r="${r + 14}" fill="none" stroke="${hi}" stroke-width="1.5" stroke-dasharray="4 5"><animateTransform attributeName="transform" type="rotate" from="0 ${n.x} ${n.y}" to="360 ${n.x} ${n.y}" dur="9s" repeatCount="indefinite"/></circle>`;
         s += '</g>';
