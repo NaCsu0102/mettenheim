@@ -2380,3 +2380,5 @@ body.tree-mode .pipe-side { display: none; }
 .tcc-cubes { display: flex; flex-wrap: wrap; gap: 6px; } .tcc-cubes span { font-size: 12px; padding: 4px 8px; border: 1px solid var(--rivet); color: var(--smoke); }
 .tcc-x { position: absolute; right: 10px; top: 8px; background: none; border: 0; color: var(--smoke); font-size: 22px; cursor: pointer; z-index: 1; } .tcc-x:hover { color: var(--parch); }
 @media (max-width: 900px) { .tree-clscard { display: none !important; } }
+.cry-max { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--smoke); }
+.cry-max button { width: 22px; height: 22px; border: 1px solid var(--rivet); background: #0f0b08; color: var(--parch); cursor: pointer; line-height: 1; }
