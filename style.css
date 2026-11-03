@@ -2349,3 +2349,20 @@ body.tree-mode .pipe-side { display: none; }
 .cab-subtabs button { text-align: left; background: var(--iron); border: 1px solid var(--rivet); color: var(--smoke); padding: 10px 14px; cursor: pointer; display: grid; gap: 2px; font: inherit; }
 .cab-subtabs button b { color: var(--parch); font-size: 15px; } .cab-subtabs button small { font-size: 12px; }
 .cab-subtabs button[aria-pressed="true"] { border-color: var(--house); box-shadow: inset 0 0 0 1px var(--house); }
+.tp-top { margin: 4px 0 14px; padding: 12px 14px; border: 1px solid var(--house); background: color-mix(in srgb, var(--house) 10%, transparent); }
+.tp-top .ctrl-label { margin: 0 0 8px; } .tp-top p { margin: 0; font-size: 14px; color: var(--smoke); } .tp-top p b { color: var(--parch); }
+.tp-top-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.tp-top-row span { display: inline-flex; align-items: baseline; gap: 6px; padding: 6px 10px; background: #0f0b08; border: 1px solid var(--rivet); font-size: 13px; color: var(--parch); }
+.tp-top-row b { font-size: 20px; color: var(--house-hi); }
+.tp-top { margin: 4px 0 14px; padding: 12px 14px; border: 1px solid var(--house); background: color-mix(in srgb, var(--house) 10%, transparent); }
+.tp-top .ctrl-label { margin: 0 0 8px; } .tp-top p { margin: 0; font-size: 14px; color: var(--smoke); } .tp-top p b { color: var(--parch); }
+.tp-top-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.tp-top-row span { display: inline-flex; align-items: baseline; gap: 6px; padding: 6px 10px; background: #0f0b08; border: 1px solid var(--rivet); font-size: 13px; color: var(--parch); }
+.tp-top-row b { font-size: 20px; color: var(--house-hi); }
+.tp-drop { margin-top: 14px; border-top: 1px solid var(--rivet); }
+.tp-drop summary { cursor: pointer; list-style: none; padding: 12px 0; font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: var(--smoke); display: flex; align-items: center; gap: 8px; }
+.tp-drop summary::-webkit-details-marker { display: none; }
+.tp-drop summary::after { content: '▾'; margin-left: auto; font-size: 14px; transition: transform .2s; }
+.tp-drop[open] summary::after { transform: rotate(180deg); }
+.tp-drop summary em { font-style: normal; color: var(--house-hi); letter-spacing: 0; }
+.tp-drop summary:hover { color: var(--parch); }

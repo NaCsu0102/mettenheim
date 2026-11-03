@@ -369,6 +369,8 @@ const Tree = {
     }
     const remember = id => { if (isRoot(byId[id]) && id !== cid) { const o = (MH.store.get('tree3o:' + cid, []) || []).filter(x => x !== id && got.has(x)); o.push(id); MH.store.set('tree3o:' + cid, o); } };
 
+    const j0 = n => /-0$/.test(n.id) ? Object.keys(n.bonus || {}).slice(0, 1).map(k => `<text x="${n.x}" y="${n.y - 30}" text-anchor="middle" fill="#e6c27a" font-family="Montserrat, Arial, sans-serif" font-weight="700" font-size="17" stroke="#120e0b" stroke-width="6" paint-order="stroke">▲ ${esc(k)}</text>`).join('') : '';
+    let nextOpen = false;
     function draw() {
       const house = css.getPropertyValue('--house').trim() || '#d6a23f', hi = css.getPropertyValue('--house-hi').trim() || '#f2cc72';
       let s = '';
@@ -420,6 +422,7 @@ const Tree = {
         if (n.id.endsWith('-0') && n.branch) {
           const ang = Math.atan2(n.y, n.x), lx = n.x + Math.cos(ang) * 0, ly = n.y;
           s += `<text x="${lx}" y="${ly - r - 18}" text-anchor="middle" fill="${on ? hi : '#b3a084'}" font-family="Montserrat, Arial, sans-serif" font-weight="600" font-size="24" stroke="#120e0b" stroke-width="6" paint-order="stroke">${esc(n.branch.replace('Школа ', '').replace('Базовое плетение', 'Плетение'))}</text>`;
+          if (BRANCH_STAT[n.branch] && got.has(n.cls)) s += `<text x="${lx}" y="${ly - r - 44}" text-anchor="middle" fill="${hi}" font-family="Montserrat, Arial, sans-serif" font-weight="700" font-size="16" letter-spacing="0" stroke="#120e0b" stroke-width="6" paint-order="stroke" opacity="${on ? 1 : .85}">▲ ${esc(BRANCH_STAT[n.branch])}</text>`;
         }
         if (sel === n.id) s += `<circle cx="${n.x}" cy="${n.y}" r="${r + 14}" fill="none" stroke="${hi}" stroke-width="1.5" stroke-dasharray="4 5"><animateTransform attributeName="transform" type="rotate" from="0 ${n.x} ${n.y}" to="360 ${n.x} ${n.y}" dur="9s" repeatCount="indefinite"/></circle>`;
         s += '</g>';
@@ -457,13 +460,17 @@ const Tree = {
         </section>
         <section class="tp-path"><div class="tp-head"><div><div class="eyebrow">Твой путь</div><b><img src="${CLS_ICON(myCls.id)}" alt="">${myCls.name}</b></div><button class="btn small ghost" id="tReset2">Сбросить путь</button></div>
           <div class="tp-sum"><span>Классов <b>${classesOf(got).length}</b></span><span>Узлов <b>${used(got)}/${TREE_POINTS}</b></span><span>Опыта <b>${spent()}</b></span></div>
+          ${(() => { const top = statRows.slice(0, 3); const C = M.classes.filter(c => got.has(c.id)); return top.length
+            ? `<div class="tp-top"><div class="ctrl-label">Сильнее всего растёт</div><div class="tp-top-row">${top.map(([k, raw]) => { const v = typeof raw === 'object' ? Math.min(raw.v, raw.room) : Math.min(raw, STAT_CAP); return `<span><b>+${v}</b>${esc(k)}</span>`; }).join('')}</div></div>`
+            : `<div class="tp-top"><div class="ctrl-label">С чего начать</div><p>Твой класс сильнее всего качает: <b>${C.flatMap(c => c.cubes || []).filter((x, i, a) => a.indexOf(x) === i).slice(0, 5).join(', ')}</b>. Над ветвями твоего класса на древе подписано, какой куб каждая поднимает (▲).</p></div>`; })()}
           <div class="ctrl-label">Как это тебя улучшает</div>
           ${statRows.length ? `<div class="gauges">${statRows.map(([k, raw]) => { const w = typeof raw === 'object', val = w ? raw.v : raw, cap = w ? raw.room : STAT_CAP, eff = Math.min(val, cap); return `<div class="gauge"><div class="row"><span>${k}</span><span><b class="${val > cap ? 'down' : ''}">+${eff}</b>${val > cap ? ` <em class="down">сгорает ${val - cap}</em>` : ''}</span></div><div class="bar"><i style="width:${eff / STAT_CAP * 100}%"></i></div></div>`; }).join('')}</div>` : '<p class="muted" style="font-size:14px">Пока ничего не изучено. Начни с узлов рядом со стартом.</p>'}
-          <div class="ctrl-label" style="margin-top:14px">Куда можно пойти</div>
-          ${next.length ? `<div class="tp-next">${next.slice(0, 8).map(x => `<button data-goto="${x.id}"><span>${esc(x.branch ? x.branch + ' · ' : '')}${esc(x.type === 'bridge' ? 'перекрёсток' : nodeName(x).replace(/^.*?: /, ''))}</span><small>${cost(x)} оп.${bonusText(x) && x.type !== 'bridge' ? ' · ' + bonusText(x) : ''}</small></button>`).join('')}</div>` : `<p class="muted" style="font-size:14px">${used(got) >= TREE_POINTS ? 'Очки закончились.' : 'Нет доступных узлов.'}</p>`}
+          <details class="tp-drop" id="tpNext"${nextOpen ? ' open' : ''}><summary>Куда можно пойти <em>${next.length}</em></summary>
+          ${next.length ? `<div class="tp-next">${next.slice(0, 8).map(x => `<button data-goto="${x.id}"><span>${esc(x.branch ? x.branch + ' · ' : '')}${esc(x.type === 'bridge' ? 'перекрёсток' : nodeName(x).replace(/^.*?: /, ''))}</span><small>${cost(x)} оп.${bonusText(x) && x.type !== 'bridge' ? ' · ' + bonusText(x) : ''}</small></button>`).join('')}</div>` : `<p class="muted" style="font-size:14px">${used(got) >= TREE_POINTS ? 'Очки закончились.' : 'Нет доступных узлов.'}</p>`}</details>
         </section>
         <p class="muted" style="font-size:11px">Заготовка: цены, бонусы и названия будут уточнены после утверждения системы.</p>`;
       const t = q('#tTake', el), d = q('#tDrop', el), w = q('#tSwitch', el);
+      const nx = q('#tpNext', el); if (nx) nx.ontoggle = () => { nextOpen = nx.open; };
       if (t) t.onclick = () => take(sel);
       qa('[data-fork]', el).forEach(b => b.onclick = () => { const i = +b.dataset.fork; if (got.has(sel)) { forks[sel] = i; save(); play('click'); draw(); } else if (canTake(sel)) { forks[sel] = i; take(sel); } });
       if (d) d.onclick = () => { if (sel === cid || sel === 'core') return; got.delete(sel); got = connected(got); save(); draw(); };
