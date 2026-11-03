@@ -43,11 +43,19 @@ const BRANCH_ICON = {
   'Школа Стихий': 'school-elements', 'Школа Материи': 'school-matter', 'Школа Теней': 'school-shadow', 'Школа Крови': 'school-blood'
 };
 const CLS_ICON = id => `assets/art/class-${id}.webp`;
-const NODE_COST = { minor: 40, fork: 50, ability: 60, school: 60, upgrade: 90, bridge: 30, root: 0 };
-const NODE_BONUS = { minor: 1, fork: 1, ability: 1, school: 1, upgrade: 2, bridge: 0, root: 0 };
+const NODE_COST = { minor: 40, fork: 50, ability: 60, school: 60, upgrade: 90, bridge: 30, root: 0, gap: 40, core: 0 };
+const NODE_BONUS = { minor: 1, fork: 1, ability: 1, school: 1, upgrade: 2, bridge: 0, root: 0, gap: 1, core: 0 };
 const STAT_CAP = 10;
 // Второе призвание: максимум 2 класса. Условия открытия, разовый взнос и наценка на узлы второго класса.
-const MC_REQ = 600, MC_FEE = 200, MC_MULT = 1.5;
+const CLASS_STEP = 200; // вход во 2-й класс 200 опыта, в 3-й 400, в 4-й 600, в 5-й 800
+// Общие узлы между секторами: мастерство оружия и ремёсла. Бонус к оружию считается вместе с базовым кубом: кап +10 общий.
+const GAPS = [
+  [['Хват клинка', 'Мечи, сабли, рапиры и палаши ложатся в руку как родные.', { 'Атака · мечи': 1 }], ['Кузнечное дело', 'Горн, молот и закалка: оружие и броня у кузнечной станции.', { 'Ремесло · кузнец': 1 }], ['Мастер клинка', 'Клинок становится продолжением руки.', { 'Атака · мечи': 1 }]],
+  [['Короткий клинок', 'Кинжалы, стилеты и тесаки — удар, который не успевают увидеть.', { 'Атака · кинжалы': 1 }], ['Алхимия', 'Колбы, перегонка и точная мера: зелья, яды и мутагены.', { 'Ремесло · алхимик': 1 }], ['Травник', 'Знает, где растёт нужное, и срезает так, чтобы не погубить куст.', { 'Добыча · травы': 1 }]],
+  [['Посох и жезл', 'Магическое оружие слушается лучше: фокус ровнее, удар точнее.', { 'Магия · посохи': 1 }], ['Огранка Люмерита', 'Точит кристаллы-фокусы и чистит сырой Люмерит.', { 'Ремесло · люмерит': 1 }], ['Рудознатец', 'Видит жилу по цвету породы и бьёт кайлом в нужное место.', { 'Добыча · руда': 1 }]],
+  [['Огнестрел', 'Пистоли, винтовки, мушкеты и дробовики — рука не дрожит на спуске.', { 'Атака · огнестрел': 1 }], ['Оружейник', 'Порох, пули, гильзы и обвесы стрелкового оружия.', { 'Ремесло · оружейник': 1 }], ['Лук и арбалет', 'Тетива, болт и дыхание стрелка.', { 'Атака · луки': 1 }]],
+  [['Тяжёлая рука', 'Топоры, булавы, молоты и древковое — вес работает на тебя.', { 'Атака · дробящее и древковое': 1 }], ['Кулинария', 'Котелок, специи и время: еда, которая держит на ногах всю смену.', { 'Ремесло · повар': 1 }], ['Лесоруб и охотник', 'Рубит, разделывает и снимает шкуры чисто, без потерь.', { 'Добыча · дерево и звери': 1 }]]
+];
 const RADII = { start: 270, b0: 440, b1: 580, b2: 720, b3: 860, bridge: 990 };
 
 /* ======================= ТАЛАНТЫ =======================
@@ -227,33 +235,32 @@ const TALENTS = {
   ]
 };
 const TREE_RULES = [
-  ['Управление', 'Одно нажатие на узел — выбрать и прочитать описание. Второе нажатие по тому же узлу — изучить его, а если он уже изучен — сбросить (вместе с узлами, которые держались только на нём). ПКМ тоже сбрасывает. Тяни поле, чтобы двигать древо, колесо мыши — масштаб.'],
-  ['Опыт', 'Узлы покупаются за опыт: малый узел 40, способность и заклинание 60, вершина 90, перекрёсток 30.'],
-  ['Порядок', 'Узел можно изучить, только если рядом уже есть изученный. Начинаешь со стартовой точки своего класса.'],
-  ['Ветвь', 'Приём (60 опыта) → малый узел (40) → развилка (50) → вершина (90). Приём и вершина дают +1 и +2 к главному кубу ветви, малый узел и развилка — по +1 к кубам класса.'],
-  ['Развилка', 'Ромб А|Б. Выбери один из двух вариантов — так из одной ветви выходят разные стили. Сменить выбор можно, пока планируешь; на игре — только при сбросе.'],
-  ['Ресурс класса', 'Приёмы тратят ресурс класса: Боец — Закалку, Плут — Хитрость, Маг — заряды кристалла, Стрелок — Фокус, Инженер — Детали. Ресурс копится в бою и сгорает после него.'],
-  ['Кап +10', 'Бонус к любому кубу из всех источников вместе — древо, раса, предметы, еда, зелья, протезы, руны — не выше +10. Лишнее сгорает, эффекты узлов остаются.'],
+  ['Одно древо', 'Древо общее для всех. В центре — Пробуждение, вокруг пять секторов классов, между ними — узлы мастерства: оружие, ремесло и добыча.'],
+  ['Выбор класса', 'Путь начинается с выбора класса. Класс из анкеты — стартовый и бесплатный. Войдя в класс, выбираешь одну его способность и получаешь ресурс класса.'],
+  ['Новые классы', 'Можно войти в любой класс, если дойти до него по связям. Каждый следующий дороже: второй — 200 опыта, третий — 400, четвёртый — 600, пятый — 800. Узлы класса берутся только после входа в класс.'],
+  ['Управление', 'Одно нажатие на узел — выбрать и прочитать описание. Второе нажатие — изучить, а если уже изучен — забыть. ПКМ — забыть. Тяни поле, колесо — масштаб.'],
+  ['Опыт', 'Малый узел и узел мастерства 40, развилка 50, способность и заклинание 60, вершина 90, перекрёсток 30.'],
+  ['Порядок', 'Узел можно изучить, только если рядом уже есть изученный.'],
+  ['Всё — плюсы к кубам', 'Каждый узел даёт бонус к кубу: малые и способности +1, вершины +2. Узлы мастерства дают +1 к Атаке определённым оружием, к Магии посохами или к Ремеслу и Добыче своего дела.'],
+  ['Кап +10', 'Бонус к любому кубу из всех источников вместе — древо, раса, предметы, еда, зелья, протезы — не выше +10. Бонус к оружию складывается с базовым кубом: Атака +8 и «Атака · мечи» +3 дают с мечом +10, а не +11. Лишнее сгорает.'],
+  ['Развилка', 'Ромб А|Б: выбери один из двух вариантов. Сменить выбор можно в любой момент, пока узел изучен.'],
+  ['Ресурс класса', 'Приёмы тратят ресурс класса: Боец — Закалку, Плут — Хитрость, Маг — заряды кристалла, Стрелок — Фокус, Инженер — Детали.'],
   ['Красноречие', 'В древе не качается. Красноречие растёт только от одежды и украшений.'],
-  ['Вершины', 'Не больше двух вершин на персонажа.'],
-  ['Школы магии', 'Не больше двух школ на персонажа, даже если дойти до третьей по кольцу.'],
-  ['Второе призвание', 'Классов не больше двух: основной и один второй. Третий класс недоступен никак — ни по ветвям, ни по кольцу.'],
-  ['Условия', 'Второй класс открывается, когда у тебя есть вершина своего класса и в древо своего класса вложено не меньше 600 опыта. Нужен наставник второго класса и отыгранное обучение — подтверждает мастер.'],
-  ['Посвящение', 'Первый узел второго класса стоит дополнительно 200 опыта — разовый взнос за вход в чужое ремесло. Бонусов он не даёт.'],
-  ['Наценка', 'Все узлы второго класса в полтора раза дороже: приём 90, малый узел 60, развилка 75, вершина 135.'],
-  ['Что даёт второй класс', 'Ресурс второго класса с максимумом 2 вместо 3 и одну его базовую способность на выбор. Ограничения брони и оружия второго класса сохраняются. Лимит в две вершины — общий на оба класса.'],
-  ['Кольцо', 'От вершины можно выйти на кольцо перекрёстков и пройти по нему к вершинам других ветвей — но только своих двух классов.'],
-  ['Сброс', 'Раз в сессию можно забыть узлы и вернуть половину потраченного опыта. Если вершин своего класса не осталось или вложено меньше 600 опыта, второй класс снимается целиком. Взнос за Посвящение не возвращается.']
+  ['Вершины и школы', 'Не больше двух вершин и двух школ магии на персонажа.'],
+  ['Кольцо', 'От вершины можно выйти на кольцо перекрёстков и пройти по нему к вершинам других ветвей.'],
+  ['Сброс', 'Раз в сессию можно забыть узлы и вернуть половину потраченного опыта.']
 ];
 
 function buildWorld() {
   const nodes = [], links = [];
   const pol = (r, deg) => [Math.round(r * Math.cos(deg * Math.PI / 180)), Math.round(r * Math.sin(deg * Math.PI / 180))];
   const add = (n, from) => { nodes.push(n); if (from) links.push([from, n.id]); };
+  add({ id: 'core', x: 0, y: 0, type: 'core', name: 'Пробуждение', desc: 'Центр древа. Отсюда начинается путь: выбери класс — он даст одну свою способность и откроет свои ветви.' });
   M.classes.forEach(cls => {
     const a = SECTOR[cls.id], mage = cls.id === 'mage';
     const [sx, sy] = pol(RADII.start, a);
-    add({ id: cls.id, cls: cls.id, x: sx, y: sy, type: 'root', name: cls.name, desc: `Стартовая точка класса «${cls.name}». Способности класса с начала игры: ${(cls.abilities || []).map(x => Array.isArray(x) ? x[0] : x).join(', ')}. Кубы класса: ${(cls.cubes || []).join(', ')}. Все узлы древа — общие: их может взять любой класс, если дойдёт по связям.` });
+    const abil = (cls.abilities || []).filter(x => Array.isArray(x) && x[1] !== 'РЕСУРС'), res = (cls.abilities || []).find(x => Array.isArray(x) && x[1] === 'РЕСУРС');
+    add({ id: cls.id, cls: cls.id, x: sx, y: sy, type: 'root', name: cls.name, opts: abil.map(x => [x[0], x[2]]), desc: `Вход в класс «${cls.name}». Выбери одну способность класса${res ? ` и получи его ресурс — ${res[0]}` : ''}. Открывает ветви класса. Кубы класса: ${(cls.cubes || []).join(', ')}.` }, 'core');
     for (let k = 0; k < 4; k++) {
       const ang = a + BR_OFF[k], br = BRANCHES[cls.id][k], p = `${cls.id}-${k}`;
       const P = r => pol(r, ang);
@@ -265,6 +272,15 @@ function buildWorld() {
       [x, y] = P(RADII.b2); add({ id: p + '-2', cls: cls.id, branch: br, x, y, type: to(2) ? 'fork' : 'minor', name: tn(2, 'Развилка'), desc: td(2, ''), bonus: tb(2), opts: to(2) }, p + '-1');
       [x, y] = P(RADII.b3); add({ id: p + '-3', cls: cls.id, branch: br, x, y, type: 'upgrade', name: tn(3, br + ': вершина'), desc: td(3, '') + ' Отсюда выход на кольцо перекрёстков.', bonus: tb(3) }, p + '-2');
     }
+  });
+  // Общие узлы между секторами: оружие, ремесло, добыча. Связаны с крайними ветвями соседних классов.
+  M.classes.forEach((cls, i) => {
+    const right = M.classes[(i + 1) % M.classes.length].id, ang = SECTOR[cls.id] + 36, G = GAPS[i] || [];
+    [500, 650, 800].forEach((r, j) => {
+      const [x, y] = pol(r, ang), g = G[j] || ['Общий узел', '', {}];
+      add({ id: `g${i}-${j}`, x, y, type: 'gap', name: g[0], desc: g[1], bonus: g[2], branch: 'Мастерство' }, j ? `g${i}-${j - 1}` : null);
+    });
+    links.push([`${cls.id}-3-0`, `g${i}-0`], [`${right}-0-0`, `g${i}-0`], [`${cls.id}-3-2`, `g${i}-2`], [`${right}-0-2`, `g${i}-2`]);
   });
   // Внешнее кольцо: каждый финал ветви выходит на свой перекрёсток, перекрёстки связаны по кругу.
   // Так из финала любой ветви можно уйти в соседние ветви и в древа других классов.
@@ -298,13 +314,16 @@ const Tree = {
     let cid = M.classes.some(c => c.id === classId) ? classId : 'fighter';
     let got, sel;
     let forks = {};
-    const load = () => { got = new Set(MH.store.get('tree2:' + cid, [cid])); got.add(cid); sel = cid; forks = MH.store.get('tree2f:' + cid, {}) || {}; };
-    const save = () => { MH.store.set('tree2:' + cid, [...got]); Object.keys(forks).forEach(k => { if (!got.has(k)) delete forks[k]; }); MH.store.set('tree2f:' + cid, forks); };
+    // Путь хранится по стартовому направлению (класс из анкеты). Старт: центр + свой класс.
+    const load = () => { got = new Set(MH.store.get('tree3:' + cid, ['core', cid])); got.add('core'); got.add(cid); sel = cid; forks = MH.store.get('tree3f:' + cid, {}) || {}; if (forks[cid] == null) forks[cid] = 0; };
+    const save = () => { MH.store.set('tree3:' + cid, [...got]); Object.keys(forks).forEach(k => { if (!got.has(k)) delete forks[k]; }); MH.store.set('tree3f:' + cid, forks); };
     const nodeName = n => n.type === 'fork' && forks[n.id] != null && n.opts ? n.opts[forks[n.id]][0] : n.name;
+    const classesOf = set => M.classes.filter(c => set.has(c.id)).map(c => c.id);
+    const extraClasses = set => classesOf(set).filter(x => x !== cid).length;
     const skillId = (n, opt) => { const m = /^([a-z]+)-(\d)-(\d)$/.exec(n.id); if (!m) return ''; const j = +m[3]; const slot = j === 2 ? (n.opts ? '3' + 'ab'[opt != null ? opt : (forks[n.id] != null ? forks[n.id] : 0)] : '3a') : String(j + 1 + (j === 3 ? 0 : 0)); return `skill-${m[1]}-${m[2]}-${j === 3 ? 4 : slot}`; };
     load();
-    const R = { root: 44, ability: 24, upgrade: 30, minor: 15, fork: 19, school: 30, bridge: 11 };
-    const TYPE = { root: 'Стартовый узел', ability: 'Приём ветви', upgrade: 'Вершина ветви', minor: 'Малый узел', fork: 'Развилка · выбери одно', school: 'Школа магии', bridge: 'Перекрёсток' };
+    const R = { root: 44, ability: 24, upgrade: 30, minor: 15, fork: 19, school: 30, bridge: 11, gap: 17, core: 70 };
+    const TYPE = { core: 'Центр древа', gap: 'Мастерство · оружие и ремесло', root: 'Класс', ability: 'Приём ветви', upgrade: 'Вершина ветви', minor: 'Малый узел', fork: 'Развилка · выбери одно', school: 'Школа магии', bridge: 'Перекрёсток' };
     let view = { x: 0, y: 0, k: 1 };
 
     el.innerHTML = `<div class="tree-full" id="tBox">
@@ -322,35 +341,33 @@ const Tree = {
     </div>`;
     const world = q('#tWorld', el), box = q('#tBox', el), css = getComputedStyle(document.documentElement);
     const countType = t => [...got].filter(id => byId[id].type === t).length;
-    // Второй класс: открывается вершиной своего класса и MC_REQ опыта в нём; третий класс недоступен
-    const STARTS = nodes.filter(n => /-0$/.test(n.id) && n.cls).map(n => n.id);
-    const foreign = n => !!(n && n.cls && n.cls !== cid);
-    const second = set => { for (const id of set) if (foreign(byId[id])) return byId[id].cls; return null; };
-    const ownSpent = set => [...set].reduce((a, id) => { const n = byId[id]; return a + (n && n.cls === cid && n.type !== 'root' ? NODE_COST[n.type] : 0); }, 0);
-    const unlocked = set => [...set].some(id => byId[id] && byId[id].type === 'upgrade' && byId[id].cls === cid) && ownSpent(set) >= MC_REQ;
-    const cost = n => foreign(n) ? Math.round(NODE_COST[n.type] * MC_MULT) : NODE_COST[n.type];
-    const fee = n => foreign(n) && !second(got) ? MC_FEE : 0;
+    // Классы: свой — бесплатно, каждый следующий дороже (200, 400, 600…). Узлы класса — только после входа в класс.
+    const STARTS = [];
+    const isRoot = n => n && n.type === 'root';
+    const cost = n => isRoot(n) ? (n.id === cid ? 0 : CLASS_STEP * (got.has(n.id) ? classOrder(n.id) : extraClasses(got) + 1)) : NODE_COST[n.type];
+    const classOrder = id => { const ex = (MH.store.get('tree3o:' + cid, []) || []).filter(x => got.has(x)); const i = ex.indexOf(id); return i < 0 ? ex.length + 1 : i + 1; };
+    const fee = () => 0;
+    const counted = id => { const t = byId[id] && byId[id].type; return t && t !== 'core' && t !== 'root'; };
+    const used = set => [...set].filter(counted).length;
     const block = id => {
       const n = byId[id];
-      if (foreign(n)) {
-        const s2 = second(got);
-        if (s2 && s2 !== n.cls) return 'Максимум 2 класса — третий недоступен';
-        if (!unlocked(got)) return `Второй класс: нужна вершина своего класса и ${MC_REQ} опыта в нём`;
-      }
-      if (n.type === 'upgrade' && countType('upgrade') >= 2) return 'Уже взяты 2 вершины — больше нельзя'; if (n.type === 'school' && countType('school') >= 2) return 'Уже открыты 2 школы магии — больше нельзя'; return '';
+      if (n.cls && n.type !== 'root' && !got.has(n.cls)) return `Сначала войди в класс «${(M.classes.find(c => c.id === n.cls) || {}).name}»`;
+      if (n.type === 'upgrade' && countType('upgrade') >= 2) return 'Уже взяты 2 вершины — больше нельзя'; if (n.type === 'school' && countType('school') >= 2) return 'Уже открыты 2 школы магии — больше нельзя';
     };
-    const rootOpenFor = id => unlocked(got) && (!second(got) || second(got) === id);
     const reach = x => got.has(x);
-    const canTake = id => byId[id].type !== 'root' && !got.has(id) && ((nb[id] || []).some(reach) || (STARTS.includes(id) && unlocked(got))) && got.size - 1 < TREE_POINTS && !block(id);
+    const canTake = id => { const n = byId[id]; if (!n || n.type === 'core' || got.has(id)) return false; if (!(nb[id] || []).some(reach)) return false; if (n.type !== 'root' && used(got) >= TREE_POINTS) return false; return !block(id); };
     function connected(set) {
-      const seen = new Set([cid]), st = [cid];
-      const walk = () => { while (st.length) { const c = st.pop(); for (const x of out[c] || []) if (set.has(x) && !seen.has(x)) { seen.add(x); st.push(x); } } };
-      walk();
-      for (let guard = 0; guard < 5 && unlocked(seen); guard++) { const add = STARTS.filter(x => set.has(x) && !seen.has(x)); if (!add.length) break; add.forEach(x => { seen.add(x); st.push(x); }); walk(); }
-      // Условия второго класса больше не выполнены — он снимается целиком
-      if (!unlocked(seen)) [...seen].forEach(x => { if (foreign(byId[x])) seen.delete(x); });
-      return seen;
+      // всё, что держится на центре по изученным узлам; узлы класса без входа в класс — снимаются
+      for (let guard = 0; guard < 8; guard++) {
+        const seen = new Set(['core']), st = ['core'];
+        while (st.length) { const c = st.pop(); for (const x of out[c] || []) if (set.has(x) && !seen.has(x)) { seen.add(x); st.push(x); } }
+        [...seen].forEach(x => { const n = byId[x]; if (n.cls && n.type !== 'root' && !seen.has(n.cls)) seen.delete(x); });
+        if (seen.size === set.size) return seen;
+        set = seen;
+      }
+      return set;
     }
+    const remember = id => { if (isRoot(byId[id]) && id !== cid) { const o = (MH.store.get('tree3o:' + cid, []) || []).filter(x => x !== id && got.has(x)); o.push(id); MH.store.set('tree3o:' + cid, o); } };
 
     function draw() {
       const house = css.getPropertyValue('--house').trim() || '#d6a23f', hi = css.getPropertyValue('--house-hi').trim() || '#f2cc72';
@@ -359,7 +376,7 @@ const Tree = {
       s += `<circle r="180" fill="none" stroke="#3a2e23" stroke-width="2"/><image href="assets/gear-md.webp" x="-150" y="-150" width="300" height="300" opacity=".35"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="80s" repeatCount="indefinite"/></image>`;
       s += `<text y="6" text-anchor="middle" fill="#a7967c" font-family="Montserrat, Arial, sans-serif" font-weight="700" font-size="28" letter-spacing="3" stroke="#120e0b" stroke-width="5" paint-order="stroke">МЕТТЕНХЕЙМ</text>`;
       for (const [a, b] of links) {
-        const A = byId[a], B = byId[b], rootOpen = x => byId[x].type === 'root' && rootOpenFor(x), on = (got.has(a) || (rootOpen(a) && got.has(b))) && (got.has(b) || (rootOpen(b) && got.has(a))), can = ((got.has(a) || rootOpen(a)) && canTake(b)) || ((got.has(b) || rootOpen(b)) && canTake(a));
+        const A = byId[a], B = byId[b], on = got.has(a) && got.has(b), can = (got.has(a) && canTake(b)) || (got.has(b) && canTake(a));
         const mine = (A.cls === cid || B.cls === cid);
         if (isJump.has(a + '|' + b)) {
           const mx = (A.x + B.x) / 2 * 1.06, my = (A.y + B.y) / 2 * 1.06, d = `M${A.x} ${A.y} Q${mx} ${my} ${B.x} ${B.y}`;
@@ -371,7 +388,9 @@ const Tree = {
         if (on) s += `<line x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}" stroke="${hi}" stroke-width="1.5" opacity=".7"/>`;
       }
       for (const n of nodes) {
-        const r = R[n.type], on = got.has(n.id), can = canTake(n.id) || (n.type === 'root' && n.id !== cid && rootOpenFor(n.id)), dim = n.cls && n.cls !== cid && !on && !can;
+        const r = R[n.type], on = got.has(n.id), can = canTake(n.id), dim = n.cls && !got.has(n.cls) && !on && !can;
+        if (n.type === 'core') { s += `<g class="tnode" data-id="core" tabindex="0" role="button" aria-label="Центр древа" style="cursor:pointer"><circle r="${r}" fill="transparent" stroke="${hi}" stroke-width="2" opacity=".6"/>${sel === 'core' ? `<circle r="${r + 12}" fill="none" stroke="${hi}" stroke-width="1.5" stroke-dasharray="4 5"/>` : ''}</g>`; continue; }
+        if (n.type === 'gap') { s += `<g class="tnode" data-id="${n.id}" tabindex="0" role="button" aria-label="${esc(n.name)}" style="cursor:pointer">${on ? `<circle cx="${n.x}" cy="${n.y}" r="${r + 9}" fill="${house}" opacity=".35" filter="url(#tglow)"/>` : ''}<polygon points="${[0, 1, 2, 3, 4, 5].map(i => { const g = Math.PI / 3 * i; return (n.x + r * Math.cos(g)).toFixed(1) + ',' + (n.y + r * Math.sin(g)).toFixed(1); }).join(' ')}" fill="${on ? house : 'url(#tg1)'}" stroke="${on ? hi : can ? '#c9a15b' : '#4a3b2d'}" stroke-width="2.5"/>${sel === n.id ? `<circle cx="${n.x}" cy="${n.y}" r="${r + 12}" fill="none" stroke="${hi}" stroke-width="1.5" stroke-dasharray="4 5"/>` : ''}</g>`; continue; }
         const ring = on ? hi : can ? '#c9a15b' : '#4a3b2d';
         s += `<g class="tnode" data-id="${n.id}" tabindex="0" role="button" aria-label="${esc(nodeName(n))}" style="cursor:pointer" opacity="${dim ? .5 : 1}">`;
         if (on) s += `<circle cx="${n.x}" cy="${n.y}" r="${r + 9}" fill="${house}" opacity=".35" filter="url(#tglow)"/>`;
@@ -396,7 +415,7 @@ const Tree = {
         if (n.id.endsWith('-0') && BRANCH_ICON[n.branch]) { const ir = r + (n.type === 'school' ? 2 : 6); s += `<image href="assets/art/${BRANCH_ICON[n.branch]}.webp" x="${n.x - ir}" y="${n.y - ir}" width="${ir * 2}" height="${ir * 2}" opacity="${on ? 1 : can ? .85 : .5}" style="pointer-events:none"/>`; }
         if (n.type === 'root') {
           const c = M.classes.find(z => z.id === n.id);
-          s += `<image href="${CLS_ICON(c.id)}" x="${n.x - r - 12}" y="${n.y - r - 12}" width="${(r + 12) * 2}" height="${(r + 12) * 2}" style="pointer-events:none"/><text x="${n.x}" y="${n.y + r + 44}" text-anchor="middle" fill="${n.id === cid ? hi : '#b8a68a'}" font-family="Montserrat, Arial, sans-serif" font-weight="700" font-size="38" letter-spacing="2" stroke="#120e0b" stroke-width="7" paint-order="stroke">${esc(c.name.toUpperCase())}</text>`;
+          s += `<image href="${CLS_ICON(c.id)}" x="${n.x - r - 12}" y="${n.y - r - 12}" width="${(r + 12) * 2}" height="${(r + 12) * 2}" style="pointer-events:none"/><text x="${n.x}" y="${n.y + r + 44}" text-anchor="middle" fill="${got.has(n.id) ? hi : '#b8a68a'}" font-family="Montserrat, Arial, sans-serif" font-weight="700" font-size="38" letter-spacing="2" stroke="#120e0b" stroke-width="7" paint-order="stroke">${esc(c.name.toUpperCase())}</text>`;
         }
         if (n.id.endsWith('-0') && n.branch) {
           const ang = Math.atan2(n.y, n.x), lx = n.x + Math.cos(ang) * 0, ly = n.y;
@@ -406,52 +425,54 @@ const Tree = {
         s += '</g>';
       }
       world.innerHTML = s; applyView();
-      q('#tPts', el).textContent = `${got.size - 1} / ${TREE_POINTS}`;
+      q('#tPts', el).textContent = `${used(got)} / ${TREE_POINTS}`;
       qa('[data-tc]', el).forEach(b => b.setAttribute('aria-selected', String(b.dataset.tc === cid)));
       panel();
     }
     function stats() {
       const t = {};
       for (const id of got) { const n = byId[id]; for (const [st, v] of Object.entries(n.bonus || {})) t[st] = (t[st] || 0) + v; }
+      // бонусы к оружию и ремеслу складываются с базовым кубом: общий кап +10
+      for (const k of Object.keys(t)) if (k.includes(' · ')) { const base = k.split(' · ')[0], room = Math.max(0, STAT_CAP - Math.min(t[base] || 0, STAT_CAP)); t[k] = { v: t[k], room }; }
       return t;
     }
-    const spent = () => [...got].reduce((a, id) => a + cost(byId[id]), 0) + (second(got) ? MC_FEE : 0);
+    const spent = () => [...got].reduce((a, id) => a + cost(byId[id]), 0);
     const bonusText = n => { const b = Object.entries(n.bonus || {}); return b.length ? b.map(([st, v]) => `+${v} ${st}`).join(', ') : n.type === 'bridge' ? 'проход по кольцу' : ''; };
     function panel() {
       const n = byId[sel], on = got.has(n.id), can = canTake(n.id);
-      const why = n.type === 'root' ? (n.id === cid ? 'Твой старт' : second(got) && second(got) !== n.id ? 'Максимум 2 класса — третий недоступен' : unlocked(got) ? 'Второй класс открыт — бери любую его ветвь' : `Второй класс: нужна вершина своего класса и ${MC_REQ} опыта в нём (сейчас ${ownSpent(got)})`) : on ? 'Изучено · нажми ещё раз, чтобы сбросить' : can ? 'Можно изучить · нажми ещё раз' : block(n.id) || (got.size - 1 >= TREE_POINTS ? 'Узлы закончились' : 'Нужен изученный соседний узел');
-      const S = stats(), nb0 = Object.entries(n.bonus || {}), overSt = nb0.filter(([k, v]) => (S[k] || 0) + v > STAT_CAP).map(([k]) => k), st = overSt.join(', ');
+      const why = n.type === 'core' ? 'Центр древа' : n.type === 'root' ? (n.id === cid ? 'Твой стартовый класс' : on ? 'Класс открыт' : `Войти в класс за ${cost(n)} опыта`) : on ? 'Изучено · нажми ещё раз, чтобы сбросить' : can ? 'Можно изучить · нажми ещё раз' : block(n.id) || (used(got) >= TREE_POINTS ? 'Узлы закончились' : 'Нужен изученный соседний узел');
+      const S = stats(), num = k => typeof S[k] === 'object' ? S[k].v : (S[k] || 0), nb0 = Object.entries(n.bonus || {}), overSt = nb0.filter(([k, v]) => k.includes(' · ') ? num(k) + v > (typeof S[k] === 'object' ? S[k].room : STAT_CAP - Math.min(num(k.split(' · ')[0]), STAT_CAP)) : num(k) + v > STAT_CAP).map(([k]) => k), st = overSt.join(', ');
       const over = !on && overSt.length;
       const myCls = M.classes.find(c => c.id === cid);
-      const next = nodes.filter(x => canTake(x.id)).sort((a, b) => cost(a) + fee(a) - cost(b) - fee(b));
-      const statRows = Object.entries(S).sort((a, b) => b[1] - a[1]);
+      const next = nodes.filter(x => canTake(x.id)).sort((a, b) => cost(a) - cost(b));
+      const statRows = Object.entries(S).sort((a, b) => (typeof b[1] === 'object' ? b[1].v : b[1]) - (typeof a[1] === 'object' ? a[1].v : a[1]));
       q('#tPanel', el).innerHTML = `
         <section class="tp-node">${ICON(skillId(n)) ? `<img class="tp-icon tp-skill" src="${ICON(skillId(n))}" alt="">` : n.branch && BRANCH_ICON[n.branch] ? `<img class="tp-icon" src="assets/art/${BRANCH_ICON[n.branch]}.webp" alt="">` : ''}<div class="eyebrow">${TYPE[n.type]}${n.branch ? ' · ' + esc(n.branch) : ''}</div><h3>${esc(nodeName(n))}</h3>
-          <div class="tp-tags"><span class="tag ${on || n.id === cid ? 'house' : 'stub'}">${why}</span>${n.type !== 'root' ? `<span class="tag">${cost(n)} опыта${foreign(n) ? ' · второй класс ×1,5' : ''}</span>` : ''}${!on && n.type !== 'root' && fee(n) ? `<span class="tag">+${MC_FEE} Посвящение</span>` : ''}${bonusText(n) ? `<span class="tag house">${bonusText(n)}</span>` : ''}</div>
+          <div class="tp-tags"><span class="tag ${on || n.id === cid ? 'house' : 'stub'}">${why}</span>${n.type !== 'core' && cost(n) ? `<span class="tag">${cost(n)} опыта</span>` : ''}${bonusText(n) ? `<span class="tag house">${bonusText(n)}</span>` : ''}</div>
           ${over ? `<p class="note" style="font-size:13px">${st} упрётся в кап +${STAT_CAP}: часть бонуса сгорит.</p>` : ''}
           <p class="muted">${esc(n.desc)}</p>
           ${n.opts ? `<div class="tp-fork">${n.opts.map(([on2, od], i) => `<button type="button" data-fork="${i}" aria-pressed="${forks[n.id] === i}"${!on && !can ? ' disabled' : ''}>${iconImg(skillId(n, i), 'tp-fork-ic')}<b>${'АБ'[i]} · ${esc(on2)}</b><span>${esc(od)}</span></button>`).join('')}</div>` : ''}
-          ${n.type === 'root' && n.id !== cid ? `<button class="btn small" id="tSwitch">Начать за этот класс</button>` : ''}
-          ${n.type !== 'root' ? (on ? `<button class="btn small ghost" id="tDrop">Забыть узел</button>` : n.opts ? '' : `<button class="btn small" id="tTake" ${can ? '' : 'disabled style="opacity:.45;cursor:not-allowed"'}>Изучить</button>`) : ''}
+          ${n.type === 'root' && n.id !== cid && !on ? `<button class="btn small ghost" id="tSwitch">Сделать стартовым</button>` : ''}
+          ${n.type !== 'core' && n.id !== cid ? (on ? `<button class="btn small ghost" id="tDrop">${n.type === 'root' ? 'Выйти из класса' : 'Забыть узел'}</button>` : n.opts ? '' : `<button class="btn small" id="tTake" ${can ? '' : 'disabled style="opacity:.45;cursor:not-allowed"'}>Изучить</button>`) : ''}
         </section>
         <section class="tp-path"><div class="tp-head"><div><div class="eyebrow">Твой путь</div><b><img src="${CLS_ICON(myCls.id)}" alt="">${myCls.name}</b></div><button class="btn small ghost" id="tReset2">Сбросить путь</button></div>
-          <div class="tp-sum"><span>Узлов <b>${got.size - 1}/${TREE_POINTS}</b></span><span>Опыта <b>${spent()}</b></span></div>
+          <div class="tp-sum"><span>Классов <b>${classesOf(got).length}</b></span><span>Узлов <b>${used(got)}/${TREE_POINTS}</b></span><span>Опыта <b>${spent()}</b></span></div>
           <div class="ctrl-label">Как это тебя улучшает</div>
-          ${statRows.length ? `<div class="gauges">${statRows.map(([k, val]) => `<div class="gauge"><div class="row"><span>${k}</span><span><b class="${val > STAT_CAP ? 'down' : ''}">+${Math.min(val, STAT_CAP)}</b>${val > STAT_CAP ? ` <em class="down">сгорает ${val - STAT_CAP}</em>` : ''}</span></div><div class="bar"><i style="width:${Math.min(val, STAT_CAP) / STAT_CAP * 100}%"></i></div></div>`).join('')}</div>` : '<p class="muted" style="font-size:14px">Пока ничего не изучено. Начни с узлов рядом со стартом.</p>'}
+          ${statRows.length ? `<div class="gauges">${statRows.map(([k, raw]) => { const w = typeof raw === 'object', val = w ? raw.v : raw, cap = w ? raw.room : STAT_CAP, eff = Math.min(val, cap); return `<div class="gauge"><div class="row"><span>${k}</span><span><b class="${val > cap ? 'down' : ''}">+${eff}</b>${val > cap ? ` <em class="down">сгорает ${val - cap}</em>` : ''}</span></div><div class="bar"><i style="width:${eff / STAT_CAP * 100}%"></i></div></div>`; }).join('')}</div>` : '<p class="muted" style="font-size:14px">Пока ничего не изучено. Начни с узлов рядом со стартом.</p>'}
           <div class="ctrl-label" style="margin-top:14px">Куда можно пойти</div>
-          ${next.length ? `<div class="tp-next">${next.slice(0, 8).map(x => `<button data-goto="${x.id}"><span>${esc(x.branch ? x.branch + ' · ' : '')}${esc(x.type === 'bridge' ? 'перекрёсток' : nodeName(x).replace(/^.*?: /, ''))}</span><small>${cost(x) + fee(x)} оп.${bonusText(x) && x.type !== 'bridge' ? ' · ' + bonusText(x) : ''}</small></button>`).join('')}</div>` : `<p class="muted" style="font-size:14px">${got.size - 1 >= TREE_POINTS ? 'Очки закончились.' : 'Нет доступных узлов.'}</p>`}
+          ${next.length ? `<div class="tp-next">${next.slice(0, 8).map(x => `<button data-goto="${x.id}"><span>${esc(x.branch ? x.branch + ' · ' : '')}${esc(x.type === 'bridge' ? 'перекрёсток' : nodeName(x).replace(/^.*?: /, ''))}</span><small>${cost(x)} оп.${bonusText(x) && x.type !== 'bridge' ? ' · ' + bonusText(x) : ''}</small></button>`).join('')}</div>` : `<p class="muted" style="font-size:14px">${used(got) >= TREE_POINTS ? 'Очки закончились.' : 'Нет доступных узлов.'}</p>`}
         </section>
         <p class="muted" style="font-size:11px">Заготовка: цены, бонусы и названия будут уточнены после утверждения системы.</p>`;
       const t = q('#tTake', el), d = q('#tDrop', el), w = q('#tSwitch', el);
       if (t) t.onclick = () => take(sel);
       qa('[data-fork]', el).forEach(b => b.onclick = () => { const i = +b.dataset.fork; if (got.has(sel)) { forks[sel] = i; save(); play('click'); draw(); } else if (canTake(sel)) { forks[sel] = i; take(sel); } });
-      if (d) d.onclick = () => { got.delete(sel); got = connected(got); save(); draw(); };
+      if (d) d.onclick = () => { if (sel === cid || sel === 'core') return; got.delete(sel); got = connected(got); save(); draw(); };
       if (w) w.onclick = () => switchTo(n.id);
       q('#tReset2', el).onclick = reset;
       qa('[data-goto]', el).forEach(b => b.onclick = () => { sel = b.dataset.goto; draw(); focus(sel, true); });
     }
-    function reset() { got = new Set([cid]); forks = {}; sel = cid; save(); play('click'); draw(); }
-    function take(id) { if (canTake(id)) { if (byId[id].opts && forks[id] == null) forks[id] = 0; got.add(id); save(); play('card'); draw(); } }
+    function reset() { got = new Set(['core', cid]); forks = { [cid]: 0 }; sel = cid; MH.store.set('tree3o:' + cid, []); save(); play('click'); draw(); }
+    function take(id) { if (canTake(id)) { if (byId[id].opts && forks[id] == null) forks[id] = 0; got.add(id); remember(id); save(); play('card'); draw(); } }
     function switchTo(id) { cid = id; load(); history.replaceState(null, '', '#tree-' + cid); play('card'); draw(); focus(cid); }
     function applyView() { world.setAttribute('transform', `translate(${box.clientWidth / 2 + view.x} ${box.clientHeight / 2 + view.y}) scale(${view.k})`); }
     function fit() { view = { x: 0, y: 0, k: Math.max(.25, Math.min(box.clientWidth, box.clientHeight) / 2120) }; applyView(); }
@@ -463,7 +484,7 @@ const Tree = {
       const id = g.dataset.id;
       if (sel !== id) { sel = id; play('click'); draw(); return; }
       if (canTake(id)) { take(id); return; }
-      if (got.has(id) && byId[id].type !== 'root') { got.delete(id); got = connected(got); save(); play('click'); draw(); return; }
+      if (got.has(id) && id !== cid && id !== 'core') { got.delete(id); got = connected(got); save(); play('click'); draw(); return; }
       play('click'); draw();
     });
     world.addEventListener('keydown', e => { const g = e.target.closest('.tnode'); if (g && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); sel = g.dataset.id; draw(); } });
@@ -482,7 +503,7 @@ const Tree = {
       e.preventDefault(); if (moved) return;
       const g = e.target.closest('.tnode'); if (!g) return;
       const id = g.dataset.id; sel = id;
-      if (got.has(id) && byId[id].type !== 'root') { got.delete(id); got = connected(got); save(); play('click'); }
+      if (got.has(id) && id !== cid && id !== 'core') { got.delete(id); got = connected(got); save(); play('click'); }
       draw();
     });
     box.addEventListener('dragstart', e => e.preventDefault());
