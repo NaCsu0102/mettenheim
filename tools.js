@@ -454,7 +454,7 @@ const Tree = {
           <div class="tp-tags"><span class="tag ${on || n.id === cid ? 'house' : 'stub'}">${why}</span>${n.type !== 'core' && cost(n) ? `<span class="tag">${cost(n)} опыта</span>` : ''}${bonusText(n) ? `<span class="tag house">${bonusText(n)}</span>` : ''}</div>
           ${over ? `<p class="note" style="font-size:13px">${st} упрётся в кап +${STAT_CAP}: часть бонуса сгорит.</p>` : ''}
           <p class="muted">${esc(n.desc)}</p>
-          ${n.opts ? `<div class="tp-fork">${n.opts.map(([on2, od], i) => `<button type="button" data-fork="${i}" aria-pressed="${forks[n.id] === i}"${!on && !can ? ' disabled' : ''}>${iconImg(skillId(n, i), 'tp-fork-ic')}<b>${'АБ'[i]} · ${esc(on2)}</b><span>${esc(od)}</span></button>`).join('')}</div>` : ''}
+          ${n.opts ? `<div class="tp-fork">${n.opts.map(([on2, od], i) => `<button type="button" data-fork="${i}" aria-pressed="${forks[n.id] === i}"${!on && !can ? ' disabled' : ''}>${iconImg(skillId(n, i), 'tp-fork-ic')}<b>${'АБВГДЕЖЗ'[i]} · ${esc(on2)}</b><span>${esc(od)}</span></button>`).join('')}</div>` : ''}
           ${n.type === 'root' && n.id !== cid && !on ? `<button class="btn small ghost" id="tSwitch">Сделать стартовым</button>` : ''}
           ${n.type !== 'core' && n.id !== cid ? (on ? `<button class="btn small ghost" id="tDrop">${n.type === 'root' ? 'Выйти из класса' : 'Забыть узел'}</button>` : n.opts ? '' : `<button class="btn small" id="tTake" ${can ? '' : 'disabled style="opacity:.45;cursor:not-allowed"'}>Изучить</button>`) : ''}
         </section>
