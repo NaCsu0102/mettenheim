@@ -335,7 +335,7 @@ const Tree = {
         <div class="tree-classes" role="tablist">${M.classes.map(c => `<button class="class-tab" data-tc="${c.id}" aria-selected="${c.id === cid}"><img src="${CLS_ICON(c.id)}" alt="">${c.name}</button>`).join('')}</div>
         <div class="tree-hud"><span class="pts">Узлов: <b id="tPts"></b></span><button class="btn small ghost" id="tIn" aria-label="Приблизить">+</button><button class="btn small ghost" id="tOut" aria-label="Отдалить">−</button><button class="btn small ghost" id="tFit">Всё древо</button><button class="btn small ghost" id="tMe">К классу</button><button class="btn small ghost" id="tReset">Сбросить</button><button class="btn small" id="tHelp">Правила</button></div>
       </div>
-      <aside class="panel node-panel tree-panel" id="tPanel"></aside>
+      <aside class="panel tree-clscard" id="tCls" hidden></aside><aside class="panel node-panel tree-panel" id="tPanel"></aside>
       <div class="tree-hint">1 нажатие — прочитать узел · 2 нажатия — изучить или сбросить · ПКМ — сбросить · тяни поле · колесо — масштаб</div>
       <div class="tree-rules panel" id="tRules" hidden><div class="tp-head"><div class="eyebrow">Как работает древо</div><button class="btn small ghost" id="tRulesX">Закрыть</button></div>${TREE_RULES.map(([k, v]) => `<div><b>${k}.</b> <span class="muted">${v}</span></div>`).join('')}</div>
     </div>`;
@@ -449,11 +449,15 @@ const Tree = {
       const myCls = M.classes.find(c => c.id === cid);
       const next = nodes.filter(x => canTake(x.id)).sort((a, b) => cost(a) - cost(b));
       const statRows = Object.entries(S).sort((a, b) => (typeof b[1] === 'object' ? b[1].v : b[1]) - (typeof a[1] === 'object' ? a[1].v : a[1]));
+      const cc = q('#tCls', el), cdat = n.type === 'root' && M.classes.find(z => z.id === n.id);
+      if (cc) { cc.hidden = !cdat; if (cdat) { cc.innerHTML = `<button class="tcc-x" type="button" aria-label="Закрыть">×</button>${cdat.img ? `<div class="tcc-art"><img src="${cdat.img}" alt="${esc(cdat.name)}"></div>` : ''}<div class="eyebrow">Класс${n.id === cid ? ' · стартовый' : ''}</div><h3>${esc(cdat.name)}</h3>
+        <div class="tcc-f"><span><small>Роль</small>${esc(cdat.role || '')}</span><span><small>Ресурс</small>${esc(cdat.resource || '')}</span><span><small>Дистанция</small>${esc(cdat.range || '')}</span></div>
+        <p>${esc(cdat.text || '')}</p>${(cdat.cubes || []).length ? `<div class="tcc-cubes">${cdat.cubes.map(x => `<span>${esc(x)}</span>`).join('')}</div>` : ''}<a class="btn small ghost" href="#class-${cdat.id}">Подробнее о классе</a>`;
+        cc.classList.remove('in'); void cc.offsetWidth; cc.classList.add('in'); q('.tcc-x', cc).onclick = () => { cc.hidden = true; }; } }
       q('#tPanel', el).innerHTML = `
         <section class="tp-node">${ICON(skillId(n)) ? `<img class="tp-icon tp-skill" src="${ICON(skillId(n))}" alt="">` : n.branch && BRANCH_ICON[n.branch] ? `<img class="tp-icon" src="assets/art/${BRANCH_ICON[n.branch]}.webp" alt="">` : ''}<div class="eyebrow">${TYPE[n.type]}${n.branch ? ' · ' + esc(n.branch) : ''}</div><h3>${esc(nodeName(n))}</h3>
           <div class="tp-tags"><span class="tag ${on || n.id === cid ? 'house' : 'stub'}">${why}</span>${n.type !== 'core' && cost(n) ? `<span class="tag">${cost(n)} опыта</span>` : ''}${bonusText(n) ? `<span class="tag house">${bonusText(n)}</span>` : ''}</div>
           ${over ? `<p class="note" style="font-size:13px">${st} упрётся в кап +${STAT_CAP}: часть бонуса сгорит.</p>` : ''}
-          ${n.type === 'root' ? (c => `<div class="tp-cls">${c.img ? `<img src="${c.img}" alt="${esc(c.name)}" loading="lazy">` : ''}<div class="tp-cls-f"><span><small>Роль</small>${esc(c.role || '')}</span><span><small>Ресурс</small>${esc(c.resource || '')}</span><span><small>Дистанция</small>${esc(c.range || '')}</span></div></div><p class="tp-cls-t">${esc(c.text || '')}</p>`)(M.classes.find(z => z.id === n.id)) : ''}
           <p class="muted">${esc(n.desc)}</p>
           ${n.opts ? `<div class="tp-fork">${n.opts.map(([on2, od], i) => `<button type="button" data-fork="${i}" aria-pressed="${forks[n.id] === i}"${!on && !can ? ' disabled' : ''}>${iconImg(skillId(n, i), 'tp-fork-ic')}<b>${'АБВГДЕЖЗ'[i]} · ${esc(on2)}</b><span>${esc(od)}</span></button>`).join('')}</div>` : ''}
           ${n.type === 'root' && n.id !== cid && !on ? `<button class="btn small ghost" id="tSwitch">Сделать стартовым</button>` : ''}

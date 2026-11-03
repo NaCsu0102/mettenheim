@@ -2366,9 +2366,17 @@ body.tree-mode .pipe-side { display: none; }
 .tp-drop[open] summary::after { transform: rotate(180deg); }
 .tp-drop summary em { font-style: normal; color: var(--house-hi); letter-spacing: 0; }
 .tp-drop summary:hover { color: var(--parch); }
-.tp-cls { display: grid; grid-template-columns: 120px 1fr; gap: 12px; align-items: end; margin: 4px 0 2px; }
-.tp-cls img { width: 120px; height: 180px; object-fit: cover; object-position: top; border: 1px solid var(--rivet); background: radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--house) 25%, transparent), #0f0b08 70%); }
-.tp-cls-f { display: grid; gap: 8px; font-size: 13px; color: var(--parch); }
-.tp-cls-f small { display: block; font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--smoke); }
-.tp-cls-t { font-size: 14px; line-height: 1.55; color: var(--parch); margin: 0; }
-@media (max-width: 700px) { .tp-cls { grid-template-columns: 84px 1fr; } .tp-cls img { width: 84px; height: 126px; } }
+
+.tree-clscard { position: absolute; left: 16px; top: 80px; width: 300px; max-height: calc(100% - 96px); overflow-y: auto; z-index: 2; background: rgba(23,18,14,.95); backdrop-filter: blur(4px); display: grid; gap: 10px; align-content: start; }
+.tree-clscard[hidden] { display: none; }
+.tree-clscard.in { animation: tccIn .35s ease both; }
+@keyframes tccIn { from { opacity: 0; transform: translateX(-16px); } to { opacity: 1; transform: none; } }
+.tree-clscard h3 { margin: 0; font-size: 26px; }
+.tcc-art { margin: -4px -4px 4px; height: 300px; border: 1px solid var(--rivet); background: radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--house) 28%, transparent), #0f0b08 72%); overflow: hidden; }
+.tcc-art img { width: 100%; height: 100%; object-fit: contain; object-position: bottom; }
+.tcc-f { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-size: 12.5px; color: var(--parch); }
+.tcc-f small { display: block; font-size: 9.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--smoke); margin-bottom: 2px; }
+.tree-clscard p { margin: 0; font-size: 14px; line-height: 1.55; color: var(--parch); }
+.tcc-cubes { display: flex; flex-wrap: wrap; gap: 6px; } .tcc-cubes span { font-size: 12px; padding: 4px 8px; border: 1px solid var(--rivet); color: var(--smoke); }
+.tcc-x { position: absolute; right: 10px; top: 8px; background: none; border: 0; color: var(--smoke); font-size: 22px; cursor: pointer; z-index: 1; } .tcc-x:hover { color: var(--parch); }
+@media (max-width: 900px) { .tree-clscard { display: none !important; } }
