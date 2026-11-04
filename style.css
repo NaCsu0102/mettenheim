@@ -2443,3 +2443,32 @@ body.tree-mode .pipe-side { display: none; }
 .mg-res ul { grid-column: 1 / -1; margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; font-size: 14px; color: var(--smoke); line-height: 1.5; }
 .mg-res ul b { color: var(--parch); }
 @media (max-width: 800px) { .mg-intro, .mg-flow, .mg-res, .mg-res ul { grid-template-columns: 1fr; } .mg-step::after { display: none; } .mg-pips { grid-template-columns: repeat(10, 1fr); } }
+/* История мира */
+.wg { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; position: relative; }
+.wg::before { content: ''; position: absolute; left: 27px; top: 10px; bottom: 10px; width: 1px; background: linear-gradient(var(--house), var(--rivet) 80%, transparent); }
+.wg li { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 20px; padding: 0 0 26px; position: relative; }
+.wg-n { width: 56px; height: 56px; display: grid; place-items: center; border: 1px solid var(--house); background: #120e0b; color: var(--house-hi); font-family: var(--f-display); font-size: 18px; font-weight: 700; transform: rotate(45deg) scale(.78); }
+.wg-n { line-height: 1; } .wg-n::first-line { }
+.wg li h3 { margin: 8px 0 6px; font-size: 24px; }
+.wg li p { margin: 0; font-size: 16px; line-height: 1.65; color: var(--parch); max-width: 70ch; }
+.wg li:first-child p { font-size: 18px; }
+.wt { list-style: none; margin: 0; padding: 0 0 0 22px; border-left: 1px solid var(--rivet); display: grid; gap: 16px; }
+.wt li { position: relative; display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: 18px; align-items: baseline; }
+.wt li::before { content: ''; position: absolute; left: -27px; top: 6px; width: 9px; height: 9px; background: var(--house); transform: rotate(45deg); }
+.wt b { font-family: var(--f-display); color: var(--house-hi); font-size: 15px; letter-spacing: .04em; }
+.wt p { margin: 0; color: var(--parch); line-height: 1.55; }
+.wt li:nth-last-child(-n+3) p { color: var(--parch); font-weight: 500; }
+.ww { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.ww-card { display: grid; gap: 12px; align-content: start; border-top: 3px solid var(--ww, var(--house)); }
+.ww-card.t-valor { --ww: #b9a27a; } .ww-card.t-elem { --ww: #4fa8d8; } .ww-card.t-pyr { --ww: #e2682c; } .ww-card.t-aet { --ww: #c8cdd6; } .ww-card.t-inf { --ww: #b3243a; } .ww-card.t-tir { --ww: #8a4fd0; }
+.ww-head h3 { margin: 4px 0 0; font-size: 30px; }
+.ww-head .eyebrow { color: var(--ww); }
+.ww-text { margin: 0; font-size: 15px; line-height: 1.65; color: var(--parch); }
+.ww-rows { display: grid; gap: 8px; }
+.ww-rows div { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 12px; padding-top: 8px; border-top: 1px solid var(--rivet); }
+.ww-rows span { font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--smoke); padding-top: 3px; }
+.ww-rows p { margin: 0; font-size: 14px; line-height: 1.5; color: var(--smoke); }
+.ww-card .btn { justify-self: start; }
+@media (max-width: 800px) { .ww { grid-template-columns: 1fr; } .wt li { grid-template-columns: 1fr; gap: 2px; } .ww-rows div { grid-template-columns: 1fr; gap: 2px; } }
+.wg-n { transform: none; border: 0; background: none; position: relative; isolation: isolate; }
+.wg-n::before { content: ''; position: absolute; inset: 8px; border: 1px solid var(--house); background: #120e0b; transform: rotate(45deg); z-index: -1; }

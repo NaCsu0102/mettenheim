@@ -638,11 +638,14 @@ ${(M.spells || []).map(s => { const sc = (M.schools || []).find(x => x.name === 
 </div></section>`;
 }
 function pageWorld() {
-  return head({ eyebrow: 'Память Лимна', title: 'История мира', lead: 'От Слияния миров до новой эпохи заводов.', bg: 'assets/codex/archive.webp', crumbs: 'Мир' }) + subnav(LORE, 'world') + `
+  return head({ eyebrow: 'Память Лимна', title: 'История мира', lead: 'От Безмолвия и семени Лурна до новой эпохи заводов.', bg: 'assets/codex/archive.webp', crumbs: 'Мир' }) + subnav(LORE, 'world') + `
 <section class="content"><div class="wrap">
-<div class="tbl panel" style="padding:8px 18px"><table><thead><tr><th style="width:120px">Год</th><th>Событие</th></tr></thead><tbody>${M.worldTimeline.map(([y, t]) => `<tr><td class="mono" style="color:var(--house-hi)">${y}</td><td>${t}</td></tr>`).join('')}</tbody></table></div>
-<div class="sec-head" style="margin-top:60px"><div class="eyebrow">Перекрёстки миров</div><h2>Миры, касающиеся Лимна</h2><p>Те, кто умеет управлять лей-линиями, могут черпать силу этих миров и формировать заклинания, касаясь материи иных реальностей.</p></div>
-<div class="grid2">${M.worlds.map(([n, t]) => `<article class="panel"><h3 style="font-size:26px;margin-bottom:8px">${n}</h3><p class="muted">${t}</p></article>`).join('')}</div>
+<div class="sec-head"><div class="eyebrow">Как рассказывает Старая вера</div><h2>Зарождение мира</h2><p>Храмы Троединства называют это сказкой, прогрессисты — суеверием. Но кристаллы Люмерита в шахтах — это застывшие лей-линии, и спорить с этим трудно.</p></div>
+<ol class="wg">${(M.genesis || []).map(([t, d], i) => `<li><span class="wg-n">${['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'][i]}</span><div><h3>${t}</h3><p>${d}</p></div></li>`).join('')}</ol>
+<div class="sec-head" style="margin-top:64px"><div class="eyebrow">Летопись</div><h2>От Слияния до Люмерита</h2><p>Годы считают от Слияния — дня, когда люди пришли в Лимн.</p></div>
+<ol class="wt">${M.worldTimeline.map(([y, t]) => `<li><b>${y}</b><p>${t}</p></li>`).join('')}</ol>
+<div class="sec-head" style="margin-top:64px"><div class="eyebrow">Перекрёстки миров</div><h2>Миры, касающиеся Лимна</h2><p>Лей-линии связали Лимн с соседними мирами. После гибели последнего Тихого древа связи ослабли, но разломы остались — и через них по-прежнему приходят гости.</p></div>
+<div class="ww">${(M.worldsFull || []).map(w => `<article class="panel ww-card t-${w.tone}"><div class="ww-head"><div class="eyebrow">${w.ep}</div><h3>${w.name}</h3></div><p class="ww-text">${w.text}</p><div class="ww-rows">${w.rows.map(([k, v]) => `<div><span>${k}</span><p>${v}</p></div>`).join('')}</div>${w.link ? `<a class="btn small ghost" href="${w.link}">Подробнее</a>` : ''}</article>`).join('')}</div>
 </div></section>`;
 }
 function pageDeck() {
