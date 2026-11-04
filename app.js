@@ -104,7 +104,8 @@ setVars();
 const BOOK = [
   ['Начало', [['start', 'Как начать играть'], ['faq', 'Частые вопросы'], ['rules', 'Правила сервера'], ['discord', 'Правила Discord'], ['modlist', 'Модлист'], ['glossary', 'Словарь терминов']]],
   ['Меттенхейм', [['city', 'Город'], ['history', 'История города'], ['houses', 'Дома Талбот и Дорн'], ['factions', 'Фракции и счёт Домов'], ['lumerite', 'Люмерит'], ['chronicle', 'Хроника сессии']]],
-  ['Лимн', [['limn', 'Лимн и его боги'], ['map', 'Карта мира'], ['world', 'История мира'], ['faith', 'Вера'], ['magic', 'Магия'], ['cursed', 'Проклятые'], ['deck', 'Безделицы']]],
+  ['Лимн', [['limn', 'Лимн и его боги'], ['world', 'История мира'], ['faith', 'Вера'], ['magic', 'Магия'], ['cursed', 'Проклятые'], ['deck', 'Безделицы']]],
+  ['Карта', [['map', 'Карта мира']]],
   ['Народы', [['races', 'Народы и отношения'], ...M.peoples.map(p => ['people-' + p.id, p.name]), ['inferno', 'Инферно и Короли']]],
   ['Классы', [['classes', 'Классы'], ['system', 'Ролевая система'], ['eloquence', 'Красноречие'], ['healing', 'Лекари и травмы'], ['curses', 'Развитие Проклятых'], ['inventions', 'Изобретения Инженера']]],
   ['Древо', [['tree', 'Древо талантов']]],
@@ -679,13 +680,10 @@ ${(M.spells || []).map(s => { const sc = (M.schools || []).find(x => x.name === 
 </div></section>`;
 }
 function pageMap() {
-  return head({ eyebrow: 'Лимн', title: 'Карта мира', lead: 'Двигай и приближай карту. Нажми на регион — он приблизится и покажет владения и города.', bg: 'assets/codex/archive.webp', crumbs: 'Мир' }) + subnav(LORE, 'map') + `
-<section class="content"><div class="wrap">
-<div class="map-wrap"><div class="map-view" id="mapView"><div class="map-layer" id="mapLayer"></div></div>
+  return `<h1 class="sr-only">Карта мира</h1><div class="map-full"><div class="map-wrap"><div class="map-view" id="mapView"><div class="map-layer" id="mapLayer"></div></div>
   <div class="map-ctrl"><button data-z="1" aria-label="Приблизить">+</button><button data-z="-1" aria-label="Отдалить">−</button><button data-z="0" aria-label="Весь Лимн" title="Весь Лимн">⟲</button></div>
-  <aside class="panel map-info" id="mapInfo"></aside></div>
-<p class="note" style="margin-top:14px">Расположение некоторых городов предварительное.</p>
-</div></section>`;
+  <aside class="panel map-info" id="mapInfo"></aside>
+  <div class="map-hint">Двигай и приближай карту · нажми на регион, чтобы приблизить · <a href="#limn">о мире Лимна</a></div></div></div>`;
 }
 function mountMap() {
   const MP = M.worldMap, view = $('#mapView'), layer = $('#mapLayer'), info = $('#mapInfo');
@@ -1135,7 +1133,7 @@ function route() {
   houseHooks = []; currentRoute = chapter;
   const view = $('#view');
   view.innerHTML = r[0](arg);
-  if (CHAPTERS.some(c => c.id === chapter) && key !== 'tree') bookify(view, chapter);
+  if (CHAPTERS.some(c => c.id === chapter) && key !== 'tree' && key !== 'map') bookify(view, chapter);
   r[1] && r[1](arg);
   if (chapter === 'people-infernals') { const m = $('.doc-main', view) || $('section.content .wrap', view); if (m) m.insertAdjacentHTML('afterbegin', `<div class="slot-box" data-slot="infernal"></div><p class="note" style="margin:0 0 22px">Короли, грехи и голод инферналов — в главе <a href="#inferno">Инферно и Короли</a>.</p>`); }
   if (chapter === 'people-goblins') { const m = $('.doc-main', view) || $('section.content .wrap', view); if (m) m.insertAdjacentHTML('afterbegin', '<div class="slot-box" data-slot="goblin"></div>'); }
@@ -1145,6 +1143,7 @@ function route() {
   if ((key === 'home' || key === 'anketa') && window.Cabinet) { window.Cabinet.community($('#commMount')); window.Cabinet.live($('#liveMount')); }
   const cb = $('#cabBtn'); if (cb) { if (key === 'cabinet' || key === 'admin') cb.setAttribute('aria-current', 'page'); else cb.removeAttribute('aria-current'); }
   document.body.classList.toggle('tree-mode', key === 'tree');
+  document.body.classList.toggle('map-mode', key === 'map');
   if (key === 'tree') window.Tree.mount($('#treeMount'), arg || 'fighter');
   if (key === 'anketa') setTimeout(() => $('#builder').scrollIntoView({ behavior: 'smooth' }), 60);
   else if (!(lastRoute === 'tree' && key === 'tree')) scrollTo({ top: 0, behavior: 'instant' });
