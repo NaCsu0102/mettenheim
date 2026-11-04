@@ -102,18 +102,19 @@ setVars();
 /* ================= НАВИГАЦИЯ ================= */
 /* Книга: части и главы. Порядок здесь задаёт оглавление и кнопки «Назад / Дальше». */
 const BOOK = [
-  ['Начало', [['start', 'Как начать играть'], ['faq', 'Частые вопросы'], ['modlist', 'Модлист'], ['news', 'Новости и события'], ['residents', 'Жители города'], ['chat', 'Общий чат'], ['glossary', 'Словарь терминов']]],
-  ['Правила', [['rules', 'Правила сервера'], ['discord', 'Правила Discord']]],
-  ['Мир', [['city', 'Меттенхейм'], ['history', 'История города'], ['houses', 'Дома Талбот и Дорн'], ['lumerite', 'Люмерит'], ['faith', 'Вера'], ['magic', 'Магия'], ['limn', 'Лимн'], ['map', 'Карта мира'], ['world', 'История мира'], ['chronicle', 'Хроника сессии'], ['cursed', 'Проклятые'], ['deck', 'Безделицы']]],
+  ['Начало', [['start', 'Как начать играть'], ['faq', 'Частые вопросы'], ['rules', 'Правила сервера'], ['discord', 'Правила Discord'], ['modlist', 'Модлист'], ['glossary', 'Словарь терминов']]],
+  ['Меттенхейм', [['city', 'Город'], ['history', 'История города'], ['houses', 'Дома Талбот и Дорн'], ['factions', 'Фракции и счёт Домов'], ['lumerite', 'Люмерит'], ['chronicle', 'Хроника сессии']]],
+  ['Лимн', [['limn', 'Лимн и его боги'], ['map', 'Карта мира'], ['world', 'История мира'], ['faith', 'Вера'], ['magic', 'Магия'], ['cursed', 'Проклятые'], ['deck', 'Безделицы']]],
   ['Народы', [['races', 'Народы и отношения'], ...M.peoples.map(p => ['people-' + p.id, p.name]), ['inferno', 'Инферно и Короли']]],
-  ['Классы и системы', [['classes', 'Классы'], ['system', 'Ролевая система'], ['eloquence', 'Красноречие'], ['healing', 'Лекари и травмы'], ['curses', 'Развитие Проклятых'], ['factions', 'Фракции'], ['inventions', 'Изобретения Инженера']]],
-  ['Древо талантов', [['tree', 'Древо талантов']]],
-  ['Мастерская', [['forge', 'Оружейная'], ['armor', 'Бронник'], ['craft', 'Крафт-станция'], ['gathering', 'Инструменты добычи'], ['blueprints', 'Чертежи ремёсел'], ['recycle', 'Переработчик'], ['alchemy', 'Алхимия'], ['cooking', 'Кулинария'], ['body', 'Протезы и конструкты']]]
+  ['Классы', [['classes', 'Классы'], ['system', 'Ролевая система'], ['eloquence', 'Красноречие'], ['healing', 'Лекари и травмы'], ['curses', 'Развитие Проклятых'], ['inventions', 'Изобретения Инженера']]],
+  ['Древо', [['tree', 'Древо талантов']]],
+  ['Мастерская', [['forge', 'Оружейная'], ['armor', 'Бронник'], ['craft', 'Крафт-станция'], ['gathering', 'Инструменты добычи'], ['blueprints', 'Чертежи ремёсел'], ['recycle', 'Переработчик'], ['alchemy', 'Алхимия'], ['cooking', 'Кулинария'], ['body', 'Протезы и конструкты']]],
+  ['Сообщество', [['news', 'Новости и события'], ['residents', 'Жители города'], ['chat', 'Общий чат']]]
 ];
 const CHAPTERS = BOOK.flatMap(([part, ch]) => ch.map(([id, t]) => ({ id, t, part })));
 const partOf = id => { const c = CHAPTERS.find(x => x.id === id); return c ? c.part : null; };
 const nav = $('#nav');
-nav.innerHTML = BOOK.map(([part, ch]) => `<a class="nav-btn" href="#${ch[0][0]}" data-part="${part}">${({ 'Классы и системы': 'Классы', 'Древо талантов': 'Древо' })[part] || part}</a>`).join('') + `<a class="nav-btn" href="#anketa" data-part="anketa">Анкета</a>`;
+nav.innerHTML = BOOK.map(([part, ch]) => `<a class="nav-btn" href="#${ch[0][0]}" data-part="${part}">${part}</a>`).join('') + `<a class="nav-btn" href="#anketa" data-part="anketa">Анкета</a>`;
 function bookTOC(cur) {
   return BOOK.map(([part, ch]) => `<div class="rail-part${partOf(cur) === part ? ' on' : ''}"><h5>${part}</h5>${ch.map(([id, t]) => `<a href="#${id}"${id === cur ? ' aria-current="page"' : ''}>${t}</a>`).join('')}</div>`).join('')
     + `<div class="rail-part"><h5>Игроку</h5><a href="#anketa">Анкета персонажа</a><a href="#cabinet">Личный кабинет</a><a href="#home">Главная</a></div>`;
@@ -179,10 +180,13 @@ const head = ({ eyebrow, title, lead, bg, crumbs }) => (bg = CH_BG[currentRoute]
 <section class="page-head"><div class="bg" style="background-image:url('${bg || 'assets/city-bg.webp'}')"></div>
 <div class="wrap reveal">${crumbs ? `<div class="crumbs"><a href="#home">Главная</a> / ${crumbs}</div>` : ''}<div class="eyebrow">${eyebrow || 'Хроники Меттенхейма'}</div><h1>${title}</h1>${lead ? `<p>${lead}</p>` : ''}</div><div class="ph-pipe" aria-hidden="true"></div></section>`);
 const subnav = (items, cur) => `<nav class="subnav" aria-label="Подразделы"><div class="wrap">${items.map(([r, t]) => `<a href="#${r}" ${r === cur ? 'aria-current="page"' : ''}>${t}</a>`).join('')}</div></nav>`;
-const LORE = [['city', 'Меттенхейм'], ['history', 'История города'], ['houses', 'Дома'], ['lumerite', 'Люмерит'], ['faith', 'Вера'], ['magic', 'Магия'], ['limn', 'Лимн'], ['map', 'Карта'], ['world', 'История мира'], ['chronicle', 'Хроника'], ['cursed', 'Проклятые'], ['deck', 'Безделицы']];
+const CITY_NAV = [['city', 'Город'], ['history', 'История'], ['houses', 'Дома'], ['factions', 'Фракции'], ['lumerite', 'Люмерит'], ['chronicle', 'Хроника']];
+const LIMN_NAV = [['limn', 'Лимн'], ['map', 'Карта'], ['world', 'История мира'], ['faith', 'Вера'], ['magic', 'Магия'], ['cursed', 'Проклятые'], ['deck', 'Безделицы']];
+const LORE = LIMN_NAV;
 const PEOPLE_NAV = [['races', 'Все народы'], ...M.peoples.map(p => ['people-' + p.id, p.name]), ['inferno', 'Инферно']];
-const CLS_NAV = [['classes', 'Классы'], ['tree', 'Древо талантов'], ['system', 'Ролевая система'], ['eloquence', 'Красноречие'], ['healing', 'Лекари'], ['curses', 'Проклятые'], ['factions', 'Фракции'], ['inventions', 'Изобретения'], ['forge', 'Оружейная'], ['armor', 'Бронник'], ['craft', 'Крафт-станция'], ['gathering', 'Добыча'], ['blueprints', 'Чертежи'], ['recycle', 'Переработчик'], ['alchemy', 'Алхимия'], ['cooking', 'Кулинария'], ['body', 'Протезы']];
-const START_NAV = [['start', 'Как начать'], ['faq', 'FAQ'], ['modlist', 'Модлист'], ['rules', 'Правила']];
+const CLS_NAV = [['classes', 'Классы'], ['tree', 'Древо талантов'], ['system', 'Ролевая система'], ['eloquence', 'Красноречие'], ['healing', 'Лекари'], ['curses', 'Развитие Проклятых'], ['inventions', 'Изобретения']];
+const WORK_NAV = [['forge', 'Оружейная'], ['armor', 'Бронник'], ['craft', 'Крафт-станция'], ['gathering', 'Добыча'], ['blueprints', 'Чертежи'], ['recycle', 'Переработчик'], ['alchemy', 'Алхимия'], ['cooking', 'Кулинария'], ['body', 'Протезы']];
+const START_NAV = [['start', 'Как начать'], ['faq', 'FAQ'], ['rules', 'Правила'], ['discord', 'Discord'], ['modlist', 'Модлист'], ['glossary', 'Словарь']];
 const ul = a => `<ul>${a.map(x => `<li>${esc(x)}</li>`).join('')}</ul>`;
 const charImg = (folder, g, c) => `assets/characters/${folder}/${g}-${c}.webp`;
 
@@ -456,7 +460,7 @@ function mountBuilder() {
 
 /* ================= ЛОР ================= */
 function pageCity() {
-  return head({ eyebrow: 'Город двух заводов', title: 'Меттенхейм', lead: 'Пар, сталь и Люмерит. Два дома спорят о будущем, пока Лимн меняется вокруг них.', bg: 'assets/city-bg.webp', crumbs: 'Мир' }) + subnav(LORE, 'city') + `
+  return head({ eyebrow: 'Город двух заводов', title: 'Меттенхейм', lead: 'Пар, сталь и Люмерит. Два дома спорят о будущем, пока Лимн меняется вокруг них.', bg: 'assets/city-bg.webp', crumbs: 'Мир' }) + subnav(CITY_NAV, 'city') + `
 <section class="content"><div class="wrap"><div class="prose reveal">
 <p class="lead">Меттенхейм вырос у реки и железной руды. Семь веков он превращал дым плавилен в механизмы, а механизмы — в силу, с которой считается даже Западная Корона.</p>
 <h2>На пороге новой эпохи</h2>
@@ -504,7 +508,7 @@ function mountChrono() {
   era(0);
 }
 function pageHistory() {
-  return head({ eyebrow: 'Архив Меттенхейма · Том I', title: 'История города', lead: 'От поселения у плавилен до города машин. Ранняя история остаётся реконструкцией архивариусов: даты связывают события, но не являются окончательным каноном.', bg: 'assets/codex/history.webp', crumbs: 'Мир' }) + subnav(LORE, 'history') + `
+  return head({ eyebrow: 'Архив Меттенхейма · Том I', title: 'История города', lead: 'От поселения у плавилен до города машин. Ранняя история остаётся реконструкцией архивариусов: даты связывают события, но не являются окончательным каноном.', bg: 'assets/codex/history.webp', crumbs: 'Мир' }) + subnav(CITY_NAV, 'history') + `
 ${CHRONO_HTML}
 <section class="content"><div class="wrap"><div class="prose reveal" style="max-width:860px">
 ${M.eras.map(e => `<article class="panel" style="margin-bottom:6px"><div class="eyebrow">Эпоха ${e.n} · ${e.years}</div><h2 style="margin:6px 0 12px;font-size:30px">${e.title}</h2>${e.text.map(p => `<p style="margin-bottom:10px">${p}</p>`).join('')}</article>`).join('')}
@@ -512,7 +516,7 @@ ${M.eras.map(e => `<article class="panel" style="margin-bottom:6px"><div class="
 }
 function pageHouses() {
   const H = M.houses;
-  return head({ eyebrow: 'Жёлтые и Красные', title: 'Дома Талбот и Дорн', lead: 'Два предприятия. Два взгляда на то, кому должен служить прогресс.', bg: 'assets/house-talbot-banner.webp', crumbs: 'Мир' }) + subnav(LORE, 'houses') + `
+  return head({ eyebrow: 'Жёлтые и Красные', title: 'Дома Талбот и Дорн', lead: 'Два предприятия. Два взгляда на то, кому должен служить прогресс.', bg: 'assets/house-talbot-banner.webp', crumbs: 'Мир' }) + subnav(CITY_NAV, 'houses') + `
 <section class="content"><div class="wrap">
 <div class="houses">${['talbot', 'dorn'].map(k => `<article class="panel house-card ${k === house ? 'lit' : ''}" data-hcard="${k}"><img src="${H[k].img}" alt="">${H[k].crest ? `<img class="hc-crest" src="${H[k].crest}" alt="Герб: ${H[k].name}" loading="lazy">` : ''}<div><div class="eyebrow ${k[0]}">${H[k].side}</div><h3>${H[k].name}</h3><p>${H[k].head}</p>${ul(H[k].points)}<p style="margin-top:14px"><button class="btn small" data-pick="${k}" aria-pressed="false">Выбрать сторону</button></p></div></article>`).join('')}</div>
 <div class="prose" style="margin-top:40px">
@@ -522,7 +526,7 @@ function pageHouses() {
 </div></div></section>`;
 }
 function pageLumerite() {
-  return head({ eyebrow: 'Энергия лей-линий', title: 'Люмерит', lead: 'Застывшая магия мира. Источник энергии для заводов и единственный источник силы для плетения.', bg: 'assets/codex/magic.webp', crumbs: 'Мир' }) + subnav(LORE, 'lumerite') + `
+  return head({ eyebrow: 'Энергия лей-линий', title: 'Люмерит', lead: 'Застывшая магия мира. Источник энергии для заводов и единственный источник силы для плетения.', bg: 'assets/codex/magic.webp', crumbs: 'Мир' }) + subnav(CITY_NAV, 'lumerite') + `
 <section class="content"><div class="wrap"><img class="wide-art" src="assets/art/head-lumerite.webp" alt=""><div class="prose reveal">
 <h2>Гибель Тихого древа</h2><p>Лей-линии слабели годами: нити силы, что текли сквозь всё живое, кристаллизовались и уходили под землю. В 700 году в Меттенхейме нашли первые люмеритовые жилы — застывшую магию мира, спрятанную в камне. Тогда маги ещё плели своей внутренней силой. В 702 году, во время падения Риверсайда и пробуждения Древнего, было уничтожено последнее Тихое древо — последний оплот магии этого мира. Магия внутри живых исчезла вовсе.</p>
 <p>Чистый кристалл светится изнутри холодным золотом и тёплый на ощупь. Его первыми нашли в шахтах Меттенхейма.</p>
@@ -991,8 +995,8 @@ ${M.statuses.map(g => `<h3 style="font-size:20px;color:var(--house-hi);margin:20
 ${diceHTML()}
 </div></section>`;
 }
-function pageForge() { return head({ eyebrow: 'Мастерская · заготовка', title: 'Оружейная', lead: 'Выбери оружие, поставь особые улучшения в слоты и подбери боеприпас. Урон считается в ЕУ, дистанция — в тайлах, способности оружие получает только от улучшений.', bg: 'assets/codex/workshop-v2.webp', crumbs: 'Мастерская' }) + subnav(CLS_NAV, 'forge') + `<section class="content"><div class="wrap" id="forgeMount"></div></section>`; }
-function pageBody() { return head({ eyebrow: 'Мастерская · протезист', title: 'Протезы и конструкты', lead: 'Меттенхейм чинит людей так же, как машины. Живым ставят протезы и импланты — от простой руки до нейроускорителя, — пока тело выдерживает нагрузку. Конструкты меняют детали целиком: ядро, каркас, оптику, руки.', bg: 'assets/codex/workshop-v2.webp', crumbs: 'Мастерская' }) + subnav(CLS_NAV, 'body') + `<section class="content"><div class="wrap" id="bodyMount"></div></section>`; }
+function pageForge() { return head({ eyebrow: 'Мастерская · заготовка', title: 'Оружейная', lead: 'Выбери оружие, поставь особые улучшения в слоты и подбери боеприпас. Урон считается в ЕУ, дистанция — в тайлах, способности оружие получает только от улучшений.', bg: 'assets/codex/workshop-v2.webp', crumbs: 'Мастерская' }) + subnav(WORK_NAV, 'forge') + `<section class="content"><div class="wrap" id="forgeMount"></div></section>`; }
+function pageBody() { return head({ eyebrow: 'Мастерская · протезист', title: 'Протезы и конструкты', lead: 'Меттенхейм чинит людей так же, как машины. Живым ставят протезы и импланты — от простой руки до нейроускорителя, — пока тело выдерживает нагрузку. Конструкты меняют детали целиком: ядро, каркас, оптику, руки.', bg: 'assets/codex/workshop-v2.webp', crumbs: 'Мастерская' }) + subnav(WORK_NAV, 'body') + `<section class="content"><div class="wrap" id="bodyMount"></div></section>`; }
 // Проклятые в мире: суть, как приходит проклятие, отношение города и облик по ступеням
 function pageCursed() {
   const L = M.curseLore;
@@ -1021,14 +1025,14 @@ function pageCursed() {
 }
 function pageCurses() { return head({ eyebrow: 'Системы · уникальность', title: 'Развитие Проклятых', lead: 'Проклятие растёт, когда им пользуются. Пять ступеней: каждая даёт силу и берёт свою цену. Сдержать рост можно, повернуть назад — нет.', bg: 'assets/codex/deck.webp', crumbs: 'Классы и системы' }) + subnav(CLS_NAV, 'curses') + `<section class="content"><div class="wrap" id="curseMount"></div></section>`; }
 function pageInventions() { return head({ eyebrow: 'Системы · инженер', title: 'Изобретения', lead: 'Помощник, боевая турель и автоматон в кейсе — три чертежа Инженера. Что они умеют и когда открываются.', bg: 'assets/codex/workshop-v2.webp', crumbs: 'Классы и системы' }) + subnav(CLS_NAV, 'inventions') + `<section class="content"><div class="wrap"><div class="sec-head"><div class="eyebrow">Чертежи инженера</div><h2>Три вида механизмов</h2><p>Чем дальше Инженер идёт по древу, тем больше слотов и сложнее чертежи. Ниже — что умеет каждый механизм.</p></div><div id="invMount"></div></div></section>`; }
-function pageFactions() { return head({ eyebrow: 'Системы · Дома', title: 'Фракции', lead: 'Игроки приносят Дому очки фракции, и всё идёт в общий пул. Уровни пула открывают то, чем Дом силён: у Талботов — протезы, у Дорна — материалы для оружия.', bg: 'assets/codex/housing.webp', crumbs: 'Классы и системы' }) + subnav(CLS_NAV, 'factions') + `<section class="content"><div class="wrap" id="factionMount"></div></section>`; }
-function pageCooking() { return head({ eyebrow: 'Мастерская · повар', title: 'Кулинария', lead: 'Кухня города пара: от заводского кренделя до стола Домов. Брось в котелок продукты и заготовки — еда снимает Голод и даёт бафы на несколько часов.', bg: 'assets/codex/housing.webp', crumbs: 'Мастерская' }) + subnav(CLS_NAV, 'cooking') + `<section class="content"><div class="wrap" id="cookMount"></div></section>`; }
-function pageAlchemy() { return head({ eyebrow: 'Мастерская · алхимик', title: 'Алхимия', lead: 'Ремесленник куёт металл, алхимик варит то, что меняет тело и разум. Положи в колбу два-три компонента и свари зелье.', bg: 'assets/codex/arcane-v2.webp', crumbs: 'Мастерская' }) + subnav(CLS_NAV, 'alchemy') + `<section class="content"><div class="wrap" id="alchMount"></div></section>`; }
-function pageGathering() { return head({ eyebrow: 'Мастерская · добыча', title: 'Инструменты добычи', lead: 'Чем рубить, копать, срезать и разделывать. Простой инструмент на каждое дело, улучшенный — вдвое больше и доступ к редкому, а паровой бур перерабатывает руду прямо в забое.', bg: 'assets/codex/workshop.webp', crumbs: 'Мастерская' }) + subnav(CLS_NAV, 'gathering') + `<section class="content"><div class="wrap" id="gatherMount"></div></section>`; }
-function pageBlueprints() { return head({ eyebrow: 'Мастерская · знания', title: 'Чертежи ремёсел', lead: 'Станция и материалы — ещё не всё. Каждая вещь тратит чертёж своего ремесла и тира: один чертёж — одно изделие. Шесть ремёсел, три тира. Чертежи покупают, добывают, копируют и выбивают при разборке.', bg: 'assets/codex/workshop.webp', crumbs: 'Мастерская' }) + subnav(CLS_NAV, 'blueprints') + `<section class="content"><div class="wrap" id="bpMount"></div></section>`; }
-function pageRecycle() { return head({ eyebrow: 'Мастерская · ресурсы', title: 'Переработчик', lead: 'Брось сырьё в бункер — машина разберёт его на материалы. Полученное можно перерабатывать дальше. Шансы и выходы черновые.', bg: 'assets/codex/workshop-v2.webp', crumbs: 'Мастерская' }) + subnav(CLS_NAV, 'recycle') + `<section class="content"><div class="wrap" id="recycleMount"></div></section>`; }
-function pageCraft() { return head({ eyebrow: 'Мастерская · каталог', title: 'Крафт-станция', lead: 'Всё оружие, броня, улучшения и боеприпасы в одном месте — и на какой станции их делают. Рецепты появятся вместе с каталогом материалов.', bg: 'assets/codex/workshop.webp', crumbs: 'Мастерская' }) + subnav(CLS_NAV, 'craft') + `<section class="content"><div class="wrap" id="craftMount"></div></section>`; }
-function pageArmor() { return head({ eyebrow: 'Мастерская · заготовка', title: 'Бронник', lead: 'Выбери корпус — лёгкий, средний или тяжёлый — и навесь на него детали: наручи, наплечники, нагрудную пластину, поножи и накладки. У каждого корпуса своя особенность и своя уникальная деталь.', bg: 'assets/codex/workshop.webp', crumbs: 'Мастерская' }) + subnav(CLS_NAV, 'armor') + `<section class="content"><div class="wrap" id="armorMount"></div></section>`; }
+function pageFactions() { return head({ eyebrow: 'Системы · Дома', title: 'Фракции', lead: 'Игроки приносят Дому очки фракции, и всё идёт в общий пул. Уровни пула открывают то, чем Дом силён: у Талботов — протезы, у Дорна — материалы для оружия.', bg: 'assets/codex/housing.webp', crumbs: 'Классы и системы' }) + subnav(CITY_NAV, 'factions') + `<section class="content"><div class="wrap" id="factionMount"></div></section>`; }
+function pageCooking() { return head({ eyebrow: 'Мастерская · повар', title: 'Кулинария', lead: 'Кухня города пара: от заводского кренделя до стола Домов. Брось в котелок продукты и заготовки — еда снимает Голод и даёт бафы на несколько часов.', bg: 'assets/codex/housing.webp', crumbs: 'Мастерская' }) + subnav(WORK_NAV, 'cooking') + `<section class="content"><div class="wrap" id="cookMount"></div></section>`; }
+function pageAlchemy() { return head({ eyebrow: 'Мастерская · алхимик', title: 'Алхимия', lead: 'Ремесленник куёт металл, алхимик варит то, что меняет тело и разум. Положи в колбу два-три компонента и свари зелье.', bg: 'assets/codex/arcane-v2.webp', crumbs: 'Мастерская' }) + subnav(WORK_NAV, 'alchemy') + `<section class="content"><div class="wrap" id="alchMount"></div></section>`; }
+function pageGathering() { return head({ eyebrow: 'Мастерская · добыча', title: 'Инструменты добычи', lead: 'Чем рубить, копать, срезать и разделывать. Простой инструмент на каждое дело, улучшенный — вдвое больше и доступ к редкому, а паровой бур перерабатывает руду прямо в забое.', bg: 'assets/codex/workshop.webp', crumbs: 'Мастерская' }) + subnav(WORK_NAV, 'gathering') + `<section class="content"><div class="wrap" id="gatherMount"></div></section>`; }
+function pageBlueprints() { return head({ eyebrow: 'Мастерская · знания', title: 'Чертежи ремёсел', lead: 'Станция и материалы — ещё не всё. Каждая вещь тратит чертёж своего ремесла и тира: один чертёж — одно изделие. Шесть ремёсел, три тира. Чертежи покупают, добывают, копируют и выбивают при разборке.', bg: 'assets/codex/workshop.webp', crumbs: 'Мастерская' }) + subnav(WORK_NAV, 'blueprints') + `<section class="content"><div class="wrap" id="bpMount"></div></section>`; }
+function pageRecycle() { return head({ eyebrow: 'Мастерская · ресурсы', title: 'Переработчик', lead: 'Брось сырьё в бункер — машина разберёт его на материалы. Полученное можно перерабатывать дальше. Шансы и выходы черновые.', bg: 'assets/codex/workshop-v2.webp', crumbs: 'Мастерская' }) + subnav(WORK_NAV, 'recycle') + `<section class="content"><div class="wrap" id="recycleMount"></div></section>`; }
+function pageCraft() { return head({ eyebrow: 'Мастерская · каталог', title: 'Крафт-станция', lead: 'Всё оружие, броня, улучшения и боеприпасы в одном месте — и на какой станции их делают. Рецепты появятся вместе с каталогом материалов.', bg: 'assets/codex/workshop.webp', crumbs: 'Мастерская' }) + subnav(WORK_NAV, 'craft') + `<section class="content"><div class="wrap" id="craftMount"></div></section>`; }
+function pageArmor() { return head({ eyebrow: 'Мастерская · заготовка', title: 'Бронник', lead: 'Выбери корпус — лёгкий, средний или тяжёлый — и навесь на него детали: наручи, наплечники, нагрудную пластину, поножи и накладки. У каждого корпуса своя особенность и своя уникальная деталь.', bg: 'assets/codex/workshop.webp', crumbs: 'Мастерская' }) + subnav(WORK_NAV, 'armor') + `<section class="content"><div class="wrap" id="armorMount"></div></section>`; }
 
 /* ================= РОУТЕР ================= */
 function pageInferno() { return head({ eyebrow: 'Народы · инферналы', title: 'Инферно и Короли', lead: 'Мир под миром. Десять великих Домов, десять грехов — и голод, который инфернал приносит с собой в Меттенхейм.', bg: 'assets/codex/peoples.webp', crumbs: 'Народы' }) + subnav(PEOPLE_NAV, 'inferno') + `<section class="content"><div class="wrap">${window.Inferno.pageHTML()}</div></section>`; }
@@ -1045,7 +1049,7 @@ function mountGlossary() {
   inp.addEventListener('input', f); f();
 }
 function pageChronicle() {
-  return head({ eyebrow: 'Летопись игроков', title: 'Хроника сессии', lead: 'Что уже произошло в мире: сюжетные ветки, которые вели игроки и мастера. Читай, чтобы догнать историю.', bg: 'assets/codex/history.webp', crumbs: 'Мир' }) + subnav(LORE, 'chronicle') + `
+  return head({ eyebrow: 'Летопись игроков', title: 'Хроника сессии', lead: 'Что уже произошло в мире: сюжетные ветки, которые вели игроки и мастера. Читай, чтобы догнать историю.', bg: 'assets/codex/history.webp', crumbs: 'Мир' }) + subnav(CITY_NAV, 'chronicle') + `
 <section class="content"><div class="wrap">${M.chronicle.length ? '' : '<article class="panel cab-empty"><h3>Летопись собирается</h3><p class="muted">Скоро здесь появятся сюжетные ветки игроков и мастеров.</p></article>'}${M.chronicle.map(b => `<article class="panel chr-branch" id="chr-${b.id}"><div class="eyebrow">${b.tag}</div><h2>${b.title}</h2><p class="lead">${b.lead}</p>${b.parts.map(([h, t]) => `<h3>${h}</h3><p>${t}</p>`).join('')}${b.open ? `<p class="note">${b.open}</p>` : ''}</article>`).join('')}</div></section>`;
 }
 function pagePrivacy() {

@@ -2538,3 +2538,5 @@ body.tree-mode .pipe-side { display: none; }
 .map-layer > img { position: absolute; inset: 0; width: 100%; height: 100%; }
 .map-layer .map-ov { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; }
 .map-pin { z-index: 2; }
+@media (max-width: 1380px) { .nav-btn { padding: 10px 8px; font-size: 14px; letter-spacing: .03em; } }
+@media (max-width: 1200px) { .nav-btn { padding: 10px 6px; font-size: 13px; } .brand small { display: none; } }
