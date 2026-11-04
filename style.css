@@ -2411,3 +2411,12 @@ body.tree-mode .pipe-side { display: none; }
 .spell:has(.spell-art) { grid-template-columns: 52px minmax(0, 1fr); column-gap: 12px; }
 .spell:has(.spell-art) > :not(.spell-art) { grid-column: 2; }
 .spell-art { grid-column: 1; grid-row: 1 / span 2; width: 52px; height: 52px; border-radius: 4px; object-fit: cover; }
+.sp-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 18px; }
+.sp-step { position: relative; padding: 16px 14px 14px; border: 1px solid var(--rivet); background: rgba(15,11,8,.6); display: grid; gap: 2px; align-content: start; }
+.sp-step:not(:last-child)::after { content: '›'; position: absolute; right: -10px; top: 50%; transform: translateY(-50%); color: var(--house); font-size: 22px; z-index: 1; }
+.sp-n { font-size: 10px; letter-spacing: .2em; color: var(--smoke); }
+.sp-step b { font-size: 18px; color: var(--parch); }
+.sp-step small { font-size: 12px; color: var(--smoke); margin-bottom: 8px; }
+.sp-step em { font-style: normal; font-size: 30px; font-weight: 700; color: var(--house-hi); line-height: 1; }
+.sp-step > span:last-child { font-size: 13px; color: var(--parch); }
+@media (max-width: 700px) { .sp-steps { grid-template-columns: 1fr 1fr; } .sp-step::after { display: none; } }
