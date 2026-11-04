@@ -595,10 +595,26 @@ const spellCard = (n, k, r, d, c, id) => `<div class="spell${id ? ' has-art' : '
 function pageMagic() {
   return head({ eyebrow: 'Лей-линии и плетение', title: 'Магия', lead: 'После гибели последнего Тихого древа магия ушла в камень. Колдовать можно только через Люмерит — и только тем, у кого есть Дар жилы.', bg: 'assets/codex/arcane-v2.webp', crumbs: 'Мир' }) + subnav(LORE, 'magic') + `
 <section class="content"><div class="wrap">
-<div class="prose" style="margin-bottom:34px"><p class="lead">Лей-линии — нити силы, когда-то пронизывавшие всё живое. Когда было уничтожено последнее Тихое древо, они кристаллизовались и ушли под землю люмеритовыми жилами. Теперь маг плетёт только через Люмерит.</p>
-<p>Впитывать кристалл и плести через него умеют немногие: это Дар жилы, особый талант. Магами становятся лишь те, кто научился обращаться с Люмеритом. Поэтому маги в Меттенхейме редки и нужны заводам как никогда.</p>
-<p>У каждого мага четыре базовых плетения. Дальше он развивается по ветвям школ на древе развития.</p></div>
-<div class="sec-head"><div class="eyebrow">Кристаллы магии</div><h2>Сила из застывшей жилы</h2><p>Кристаллы Люмерита — сила для плетения. Маг впитывает их в момент плетения и сразу колдует, а за плетение платит своей внутренней силой — ячейками плетения. Их 10, с классом до 20, и они восстанавливаются со временем.</p></div>
+<div class="mg-intro">
+  <div class="mg-lore"><p class="mg-drop">Лей-линии — нити силы, когда-то пронизывавшие всё живое. Когда было уничтожено последнее Тихое древо, они кристаллизовались и ушли под землю люмеритовыми жилами.</p>
+    <p>Теперь своей силы у мага нет — он плетёт только через Люмерит. Впитывать кристалл и плести через него умеют немногие, и потому маги в Меттенхейме редки и нужны заводам как никогда.</p></div>
+  <aside class="mg-facts">
+    <div><b>Дар жилы</b><span>редкий врождённый талант — без него Люмерит не откликается</span></div>
+    <div><b>4 плетения</b><span>базовые способности есть у каждого мага с первого дня</span></div>
+    <div><b>5 школ</b><span>дальше маг растёт по ветвям школ на древе развития</span></div>
+  </aside>
+</div>
+<div class="sec-head" style="margin-top:56px"><div class="eyebrow">Кристаллы магии</div><h2>Как плетут заклинание</h2></div>
+<div class="mg-flow">
+  <div class="mg-step"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 4 36 16 30 44H18L12 16Z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 16h24M24 4l-6 12 6 28 6-28Z" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".6"/></svg><span class="mg-k">1 · Кристалл</span><p>Маг берёт кристалл Люмерита и напитывает его — в нём сила для плетения.</p></div>
+  <div class="mg-step"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 30c6-14 12 14 18 0s12 14 18 0" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 20c6-10 12 10 18 0s12 10 18 0" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".6"/><circle cx="24" cy="25" r="3" fill="currentColor"/></svg><span class="mg-k">2 · Плетение</span><p>Прямо в моменте он создаёт из кристалла одно из заклинаний своего пула.</p></div>
+  <div class="mg-step"><svg viewBox="0 0 48 48" aria-hidden="true">${[0, 1, 2, 3, 4].map(i => `<rect x="${5 + i * 8}" y="14" width="6" height="20" rx="1" fill="${i < 3 ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.5"/>`).join('')}</svg><span class="mg-k">3 · Ячейки плетения</span><p>За плетение маг платит своей внутренней силой: простое — 1 ячейка, среднее — 3, сложное — 5.</p></div>
+</div>
+<div class="panel mg-res">
+  <div><div class="eyebrow">Резервуар</div><b>10 ячеек плетения</b><span>с ростом в классе — до 20</span></div>
+  <div class="mg-pips" aria-hidden="true">${Array.from({ length: 20 }, (_, i) => `<i class="${i < 10 ? 'on' : ''}"></i>`).join('')}</div>
+  <ul><li><b>Восстанавливаются</b> со временем: 2 за час покоя, все — за ночь сна, быстрее — Зелье внутренней силы.</li><li><b>Исчерпал все</b> — Истощение.</li><li><b>Сверх резервуара</b> — только своей жизнью: Сильное истощение.</li></ul>
+</div>
 <p class="note">Учёт резервуара и кристаллов — в <a href="#cabinet">личном кабинете</a>, вкладка «Дневники».</p>
 <div class="grid2" style="margin-top:22px">
 <article class="panel"><div class="eyebrow">Цена заклинаний</div>${SPELL_COST_HTML()}</article>

@@ -2420,3 +2420,26 @@ body.tree-mode .pipe-side { display: none; }
 .sp-step em { font-style: normal; font-size: 30px; font-weight: 700; color: var(--house-hi); line-height: 1; }
 .sp-step > span:last-child { font-size: 13px; color: var(--parch); }
 @media (max-width: 700px) { .sp-steps { grid-template-columns: 1fr 1fr; } .sp-step::after { display: none; } }
+/* вступление страницы магии */
+.mg-intro { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 36px; align-items: start; }
+.mg-lore p { margin: 0 0 14px; font-size: 17px; line-height: 1.7; color: var(--parch); max-width: 62ch; }
+.mg-lore .mg-drop { font-size: 22px; line-height: 1.55; }
+.mg-lore .mg-drop::first-letter { float: left; font-size: 74px; line-height: .82; padding: 6px 12px 0 0; color: var(--house-hi); font-weight: 700; font-family: var(--f-display); }
+.mg-facts { display: grid; gap: 0; border-left: 2px solid var(--house); }
+.mg-facts div { padding: 12px 0 12px 20px; border-bottom: 1px solid var(--rivet); display: grid; gap: 2px; }
+.mg-facts div:last-child { border-bottom: 0; }
+.mg-facts b { font-size: 20px; color: var(--house-hi); font-family: var(--f-display); }
+.mg-facts span { font-size: 14px; color: var(--smoke); line-height: 1.45; }
+.mg-flow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.mg-step { position: relative; padding: 20px 18px; border: 1px solid var(--rivet); background: rgba(15,11,8,.6); display: grid; gap: 8px; align-content: start; }
+.mg-step:not(:last-child)::after { content: '›'; position: absolute; right: -13px; top: 38px; font-size: 28px; color: var(--house); z-index: 1; }
+.mg-step svg { width: 46px; height: 46px; color: var(--house-hi); filter: drop-shadow(0 0 8px color-mix(in srgb, var(--house) 50%, transparent)); }
+.mg-k { font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--house-hi); }
+.mg-step p { margin: 0; font-size: 15px; line-height: 1.55; color: var(--parch); }
+.mg-res { margin: 14px 0 18px; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px 28px; align-items: center; }
+.mg-res > div:first-child { display: grid; gap: 2px; } .mg-res > div:first-child b { font-size: 22px; color: var(--parch); } .mg-res > div:first-child span { font-size: 13px; color: var(--smoke); }
+.mg-pips { display: grid; grid-template-columns: repeat(20, 1fr); gap: 4px; }
+.mg-pips i { height: 18px; border: 1px solid var(--rivet); background: #0f0b08; } .mg-pips i.on { background: var(--house); border-color: var(--house-hi); box-shadow: 0 0 8px color-mix(in srgb, var(--house) 60%, transparent); }
+.mg-res ul { grid-column: 1 / -1; margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; font-size: 14px; color: var(--smoke); line-height: 1.5; }
+.mg-res ul b { color: var(--parch); }
+@media (max-width: 800px) { .mg-intro, .mg-flow, .mg-res, .mg-res ul { grid-template-columns: 1fr; } .mg-step::after { display: none; } .mg-pips { grid-template-columns: repeat(10, 1fr); } }
