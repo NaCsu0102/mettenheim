@@ -2540,3 +2540,9 @@ body.tree-mode .pipe-side { display: none; }
 .map-pin { z-index: 2; }
 @media (max-width: 1380px) { .nav-btn { padding: 10px 8px; font-size: 14px; letter-spacing: .03em; } }
 @media (max-width: 1200px) { .nav-btn { padding: 10px 6px; font-size: 13px; } .brand small { display: none; } }
+.ww-more { border-top: 1px solid var(--rivet); }
+.ww-more summary { cursor: pointer; list-style: none; padding: 10px 0 4px; font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--ww, var(--house-hi)); display: flex; gap: 8px; align-items: center; }
+.ww-more summary::-webkit-details-marker { display: none; }
+.ww-more summary::after { content: '▾'; margin-left: auto; transition: transform .2s; }
+.ww-more[open] summary::after { transform: rotate(180deg); }
+.ww-more div { padding: 10px 0 0; } .ww-more b { color: var(--parch); font-size: 15px; } .ww-more p { margin: 4px 0 0; font-size: 14px; line-height: 1.55; color: var(--smoke); }
