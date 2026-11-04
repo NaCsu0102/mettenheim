@@ -2583,3 +2583,21 @@ body.tree-mode .pipe-side { display: none; }
 .ww-tier i { grid-row: span 2; }
 .ww-tier span { grid-column: 2; }
 .ww-card .btn { margin-top: 4px; }
+/* миры: вместо фигур — мягкие цветовые пятна */
+.ww-card::before { clip-path: none !important; box-shadow: none !important; border-radius: 50% !important; width: 260px; height: 260px; right: -90px; top: -110px; filter: blur(40px) !important; opacity: .55 !important; background: var(--spot, rgba(242,201,76,.35)) !important; }
+.ww-card::after { content: ''; position: absolute; left: -80px; bottom: -100px; width: 220px; height: 220px; border-radius: 50%; filter: blur(50px); opacity: .35; background: var(--spot2, transparent); pointer-events: none; }
+.ww-card.t-tir { --spot: #8a4fd0; --spot2: #3a1a5a; }
+.ww-card.t-elf { --spot: #dfe8f4; --spot2: #6a7a9a; }
+.ww-card.t-valor { --spot: #c9a46a; --spot2: #6a4a2a; }
+.ww-card.t-pyr { --spot: #ff7a2a; --spot2: #a0200a; }
+.ww-card.t-aet { --spot: #ffffff; --spot2: #8a90a0; }
+.ww-card.t-elem { --spot: #4fa8d8; --spot2: #e2682c; }
+.ww-card.t-asura { --spot: #9fe6f0; --spot2: #f4f7ff; }
+.ww-card.t-inf { --spot: #d0283c; --spot2: #5aa0d8; }
+.ww-card { isolation: isolate; }
+.ww-card::before, .ww-card::after { z-index: -1; }
+.ww-card.t-aet { --spot: rgba(255,255,255,.55); }
+.ww-card.t-elf { --spot: rgba(223,232,244,.7); }
+.ww-card::before { opacity: .4 !important; }
+.ww-card.t-inf .ww-quote, .ww-card.t-inf .eyebrow { color: #ff9a9a; }
+.ww-card.t-pyr .ww-quote { color: #ffb27a; }
