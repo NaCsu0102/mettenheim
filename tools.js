@@ -1881,6 +1881,26 @@ const Healing = {
     const sevCol = s => SEV.find(x => x[0] === s)[2];
     el.innerHTML = `<div class="hv-levels">${HEALERS.map((h, i) => `<article class="hv-lvl t${i + 1}"><div class="hv-badge">${h.t}</div><div class="eyebrow">${h.t} тир</div><h3>${h.name}</h3><div class="hv-beds" aria-label="Пациентов за раз: ${h.cap}">${'<i></i>'.repeat(h.cap)}<span>${h.cap} пациентов</span></div>
       <ul class="hv-can">${SEV.map(([s, n, c]) => `<li style="--sc:${c}"><b>${n}</b><span>${h.easy.includes(s) ? 'лечит без проверки' : h.risk[s] ? `с риском · Медицина ${h.risk[s]}` : 'не берёт — только перевязать'}</span><em class="${h.easy.includes(s) ? 'ok' : h.risk[s] ? 'rk' : 'no'}"></em></li>`).join('')}</ul></article>`).join('')}</div>
+    <div class="sec-head" style="margin:44px 0 16px"><div class="eyebrow">Квалификация</div><h2>Как растёт лекарь</h2><p>Уровень лекаря поднимает только работа: смены в Лекарской и лечение пациентов. Это долгий путь — новый тир нельзя получить за пару вечеров.</p></div>
+    <div class="hv-grow">
+      <article class="panel"><div class="eyebrow">Очки практики</div>
+        <div class="hv-pts"><div><b>+1</b><span>лёгкая травма</span></div><div><b>+3</b><span>средняя травма</span></div><div><b>+6</b><span>тяжёлая травма</span></div><div><b>+2</b><span>смена в Лекарской</span></div></div>
+        <p class="muted" style="margin:12px 0 0;font-size:14px">Смена — отыгрыш в Лекарской от часа: приём, перевязки, уход за больными.</p></article>
+      <article class="panel"><div class="eyebrow">Путь до следующего тира</div>
+        <div class="hv-path">
+          <div class="hv-step t1"><b>Санитар</b><span>с начала</span></div><i></i>
+          <div class="hv-step t2"><b>Лекарь</b><span>60 очков · не раньше 3 недель</span></div><i></i>
+          <div class="hv-step t3"><b>Хирург</b><span>ещё 180 очков · не раньше 8 недель</span></div>
+        </div></article>
+    </div>
+    <div class="panel hv-rules"><div class="eyebrow">Чтобы рост был не быстрым</div><ul>
+      <li><b>Не больше 10 очков в день.</b> Остальное в этот день не засчитывается.</li>
+      <li><b>Один пациент — раз в сутки.</b> Повторно лечить того же персонажа можно, но очки за него идут только раз в день.</li>
+      <li><b>Только чужие травмы.</b> Лечение себя и своих твинков очков не даёт.</li>
+      <li><b>Риск тоже учит.</b> Провал проверки Медицины всё равно даёт очки — но только при честном отыгрыше, а не «бросил и ушёл».</li>
+      <li><b>Срок в тире.</b> Даже набрав очки, лекарь ждёт минимальный срок: до Лекаря 3 недели, до Хирурга 8 недель с получения тира Лекаря.</li>
+      <li><b>Подтверждение.</b> Новый тир выдаёт мастер, проверив дневник практики.</li>
+    </ul></div>
     <div class="panel hv-roll"><div class="eyebrow">Когда персонаж падает до 0 ОЗ</div><div class="hv-roll-g"><div><b>d20</b><span>тяжесть</span><p><i style="--sc:#c23b2c">1–5 тяжёлая</i><i style="--sc:#e0672a">6–12 средняя</i><i style="--sc:#c9b27a">13–20 лёгкая</i></p></div><div><b>d5</b><span>место</span><p><i>голова</i><i>тело</i><i>рука</i><i>нога</i><i>внутренняя</i></p></div></div><p class="muted" style="margin:10px 0 0;font-size:14px">Болезни, интоксикацию и Гниль назначает мастер по событию.</p></div>
     <div class="sec-head" style="margin:44px 0 16px"><div class="eyebrow">Справочник лекаря</div><h2>Травмы и лечение</h2><p>Восемь видов, у каждого три ступени тяжести. Не вылеченная травма держится весь срок, а Гниль со временем тяжелеет сама.</p></div>
     <div class="hl-book">${Object.entries(TRAUMA).map(([k, t]) => `<article class="hl-kind" style="--tc:${t[2]}"><h4><i>${t[1]}</i>${t[0]}</h4>${SEV.map(([s, n, c]) => { const x = t[3][s]; return `<div class="hl-row" style="--sc:${c}"><div class="hl-sv">${n}</div><div><b>${x[0]}</b><p>${x[1]}</p><p class="hl-cure"><span>Лечение:</span> ${x[2]} <em>${x[3]}</em></p><div class="hl-meds">${medList(k, s)}</div></div></div>`; }).join('')}</article>`).join('')}</div>
