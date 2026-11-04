@@ -687,11 +687,10 @@ function mountMap() {
   const setFocus = id => { focus = id; layer.dataset.focus = id || ''; $$('.rg', layer).forEach(p => p.classList.toggle('on', p.dataset.r === id)); };
   const goRegion = id => { setFocus(id); regInfo(id); fitBox(MP.regions[id].box, true); play('card'); };
   const goWorld = () => { setFocus(null); worldInfo(); size(); s = 1; tx = (view.clientWidth - MP.w * k) / 2; ty = (view.clientHeight - MP.h * k) / 2; apply(true); };
-  const zoom = (f, cx, cy) => { const ns = Math.min(8, Math.max(1, s * f)); if (cx == null) { cx = view.clientWidth / 2; cy = view.clientHeight / 2; } tx = cx - (cx - tx) * ns / s; ty = cy - (cy - ty) * ns / s; s = ns; apply(); };
-  fetch(MP.img).then(r => r.text()).then(svg => {
-    layer.innerHTML = svg.replace(/width="\d+" height="\d+"/, 'width="100%" height="100%"') + pinsHTML();
-    goWorld();
-  }).catch(() => { layer.innerHTML = `<img src="${MP.img}" alt="Карта Лимна">` + pinsHTML(); goWorld(); });
+  const zoom = (f, cx, cy) => { const ns = Math.min(4, Math.max(1, s * f)); if (cx == null) { cx = view.clientWidth / 2; cy = view.clientHeight / 2; } tx = cx - (cx - tx) * ns / s; ty = cy - (cy - ty) * ns / s; s = ns; apply(); };
+  layer.innerHTML = `<img src="${MP.img}" alt="Карта Лимна" draggable="false" decoding="async">` + pinsHTML();
+  goWorld();
+  fetch(MP.zones).then(r => r.text()).then(svg => { layer.insertAdjacentHTML('afterbegin', svg); setFocus(focus); }).catch(() => {});
   view.addEventListener('wheel', e => { e.preventDefault(); const r = view.getBoundingClientRect(); zoom(e.deltaY < 0 ? 1.2 : 1 / 1.2, e.clientX - r.left, e.clientY - r.top); }, { passive: false });
   view.addEventListener('pointerdown', e => { if (e.target.closest('.map-pin')) return; drag = { x: e.clientX - tx, y: e.clientY - ty, sx: e.clientX, sy: e.clientY }; moved = false; view.setPointerCapture(e.pointerId); });
   view.addEventListener('pointermove', e => { if (!drag) return; if (Math.abs(e.clientX - drag.sx) + Math.abs(e.clientY - drag.sy) > 5) { moved = true; view.classList.add('drag'); } if (moved) { tx = e.clientX - drag.x; ty = e.clientY - drag.y; apply(); } });
