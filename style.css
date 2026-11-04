@@ -2407,3 +2407,7 @@ body.tree-mode .pipe-side { display: none; }
 .spell p { margin: 0; font-size: 14px; line-height: 1.5; color: var(--smoke); }
 .spell-list.base { margin-bottom: 10px; }
 @media (max-width: 600px) { .spell-school header { grid-template-columns: 64px 1fr; } .spell-school header img { width: 64px; height: 64px; } }
+.spell-style { margin: 10px 0 0; font-size: 14px; color: var(--parch); } .spell-style b { color: var(--house-hi); font-weight: 600; }
+.spell:has(.spell-art) { grid-template-columns: 52px minmax(0, 1fr); column-gap: 12px; }
+.spell:has(.spell-art) > :not(.spell-art) { grid-column: 2; }
+.spell-art { grid-column: 1; grid-row: 1 / span 2; width: 52px; height: 52px; border-radius: 4px; object-fit: cover; }
