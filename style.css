@@ -2495,3 +2495,6 @@ body.tree-mode .pipe-side { display: none; }
 .tcc-scene { margin: -4px -4px 4px; aspect-ratio: 4 / 3; border: 1px solid var(--rivet); overflow: hidden; }
 .tcc-scene img { width: 100%; height: 100%; object-fit: cover; }
 @media (max-width: 700px) { .cls-scene { aspect-ratio: 16 / 9; } .cls-scene span { font-size: 28px; } }
+.wg.saga li p { white-space: pre-line; font-size: 17px; line-height: 1.75; }
+.saga-end { margin: 6px 0 0 76px; padding: 18px 24px; border-left: 2px solid var(--house); white-space: pre-line; font-size: 22px; line-height: 1.6; font-style: italic; color: var(--house-hi); background: rgba(15,11,8,.5); }
+@media (max-width: 700px) { .saga-end { margin-left: 0; font-size: 18px; } }

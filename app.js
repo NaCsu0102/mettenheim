@@ -671,12 +671,15 @@ function pageLimn() {
 <section class="content"><div class="wrap">
 <div class="mg-intro"><div class="mg-lore"><p class="mg-drop">${N.what}</p></div>
 <aside class="mg-facts">${N.facts.map(([b, s]) => `<div><b>${b}</b><span>${s}</span></div>`).join('')}</aside></div>
-<div class="sec-head" style="margin-top:56px"><div class="eyebrow">До людей и после</div><h2>История Лимна</h2></div>
-<ol class="wg">${N.story.map(([t, d], i) => `<li><span class="wg-n">${['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'][i]}</span><div><h3>${t}</h3><p>${d}</p></div></li>`).join('')}</ol>
+<div class="sec-head" style="margin-top:56px"><div class="eyebrow">Сказание</div><h2>Зарождение мира</h2></div>
+<ol class="wg saga">${N.saga.map(([t, d], i) => `<li><span class="wg-n">${['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'][i]}</span><div><h3>${t}</h3><p>${d}</p></div></li>`).join('')}</ol>
+<blockquote class="saga-end">${N.sagaEnd}</blockquote>
+<div class="sec-head" style="margin-top:48px"><div class="eyebrow">Что было дальше</div><h2>Конец эпохи</h2></div>
+<div class="grid2">${N.after.map(([t, d]) => `<article class="panel"><h3 style="margin:0 0 8px;font-size:22px">${t}</h3><p class="muted" style="margin:0">${d}</p></article>`).join('')}</div>
 <article class="panel noct"><div class="eyebrow">Вечное проклятие</div><h2>Нокторн</h2>${N.noctorn.map(x => `<p>${x}</p>`).join('')}</article>
 <div class="grid2" style="margin-top:18px">${N.terms.map(([n, d]) => `<article class="panel"><h3 style="margin:0 0 8px;font-size:22px">${n}</h3><p class="muted" style="margin:0">${d}</p></article>`).join('')}</div>
 <div class="sec-head" style="margin-top:64px"><div class="eyebrow">Перекрёстки миров</div><h2>Миры, касающиеся Лимна</h2><p>Мироздание состоит из бесконечного числа миров, соединённых перекрёстками лей-линий. Вот ближайшие к Лимну.</p></div>
-<div class="ww">${(M.worldsFull || []).map(w => `<article class="panel ww-card t-${w.tone}"><div class="ww-head"><div class="eyebrow">${w.ep}</div><h3>${w.name}</h3></div><p class="ww-text">${w.text}</p>${w.rows.length ? `<div class="ww-rows">${w.rows.map(([k, v]) => `<div><span>${k}</span><p>${v}</p></div>`).join('')}</div>` : ''}${w.link ? `<a class="btn small ghost" href="${w.link}">Подробнее</a>` : ''}</article>`).join('')}</div>
+<div class="ww">${(M.worldsFull || []).map(w => `<article class="panel ww-card t-${w.tone}"><div class="ww-head"><div class="eyebrow">${w.ep}</div><h3>${w.name}</h3></div>${(Array.isArray(w.text) ? w.text : [w.text]).map(x => `<p class="ww-text">${x}</p>`).join('')}${w.rows.length ? `<div class="ww-rows">${w.rows.map(([k, v]) => `<div><span>${k}</span><p>${v}</p></div>`).join('')}</div>` : ''}${w.link ? `<a class="btn small ghost" href="${w.link}">Подробнее</a>` : ''}</article>`).join('')}</div>
 <div class="sec-head" style="margin-top:64px"><div class="eyebrow">Старая вера</div><h2>Хранители Природы</h2></div>
 <div class="mg-intro"><div class="mg-lore">${L.intro.map(x => `<p>${x}</p>`).join('')}</div>
 <aside class="mg-facts"><div><b>Круговорот мира</b><span>${L.cycle}</span></div><div><span style="font-style:italic;color:var(--parch)">${L.quote}</span></div></aside></div>
