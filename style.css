@@ -2528,7 +2528,7 @@ body.tree-mode .pipe-side { display: none; }
 .map-layer svg { display: block; width: 100%; height: 100%; }
 .map-layer .rg { fill: transparent; cursor: pointer; transition: fill .2s; }
 .map-layer .rg:hover { fill: rgba(242, 201, 76, .10); }
-.map-layer .rg.on { fill: transparent; stroke: var(--house-hi); stroke-width: 3; }
+.map-layer .rg.on { fill: rgba(242, 201, 76, .08); }
 .map-pin.sub { opacity: 0; pointer-events: none; transition: opacity .3s; }
 .map-layer[data-focus="west"] .map-pin.sub[data-r="west"], .map-layer[data-focus="east"] .map-pin.sub[data-r="east"], .map-layer[data-focus="south"] .map-pin.sub[data-r="south"], .map-layer[data-focus="noct"] .map-pin.sub[data-r="noct"], .map-layer[data-focus="eir"] .map-pin.sub[data-r="eir"] { opacity: 1; pointer-events: auto; }
 .map-pin.sub i { width: 13px; height: 13px; }

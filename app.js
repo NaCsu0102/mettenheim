@@ -671,7 +671,7 @@ function pageMap() {
 <div class="map-wrap"><div class="map-view" id="mapView"><div class="map-layer" id="mapLayer"></div></div>
   <div class="map-ctrl"><button data-z="1" aria-label="Приблизить">+</button><button data-z="-1" aria-label="Отдалить">−</button><button data-z="0" aria-label="Весь Лимн" title="Весь Лимн">⟲</button></div>
   <aside class="panel map-info" id="mapInfo"></aside></div>
-<p class="note" style="margin-top:14px">Схема материка. Расположение Меттенхейма и некоторых городов предварительное.</p>
+<p class="note" style="margin-top:14px">Цветом показаны владения домов, пунктиром — границы графств. Расположение некоторых городов предварительное.</p>
 </div></section>`;
 }
 function mountMap() {
@@ -679,7 +679,7 @@ function mountMap() {
   let s = 1, tx = 0, ty = 0, k = 1, drag = null, moved = false, focus = null;
   const apply = (anim) => { layer.classList.toggle('anim', !!anim); layer.style.transform = `translate(${tx}px, ${ty}px) scale(${s})`; layer.style.setProperty('--inv', 1 / s); };
   const size = () => { const W = view.clientWidth, H = view.clientHeight; k = Math.min(W / MP.w, H / MP.h); layer.style.width = MP.w * k + 'px'; layer.style.height = MP.h * k + 'px'; };
-  const fitBox = ([x1, y1, x2, y2], anim) => { x1 += MP.ox || 0; x2 += MP.ox || 0; y1 += MP.oy || 0; y2 += MP.oy || 0; const W = view.clientWidth - (view.clientWidth > 800 ? 330 : 0), H = view.clientHeight, bw = (x2 - x1) * k, bh = (y2 - y1) * k; s = Math.min(6, Math.max(1, Math.min(W / bw, H / bh) * .92)); tx = W / 2 - (x1 + x2) / 2 * k * s; ty = H / 2 - (y1 + y2) / 2 * k * s; apply(anim); };
+  const fitBox = ([x1, y1, x2, y2], anim) => { x1 += MP.ox || 0; x2 += MP.ox || 0; y1 += MP.oy || 0; y2 += MP.oy || 0; const pad = view.clientWidth > 800 ? 330 : 0, W = view.clientWidth, H = view.clientHeight, bw = (x2 - x1) * k, bh = (y2 - y1) * k; s = Math.min(6, Math.max(1.25, Math.min((W - pad * .6) / bw, H / bh) * .95)); tx = (W - pad) / 2 - (x1 + x2) / 2 * k * s; ty = H / 2 - (y1 + y2) / 2 * k * s; apply(anim); };
   const houseText = n => { const all = []; (M.peoples || []).forEach(p => (p.origins || []).forEach(o => ((o.lore || {}).houses || []).forEach(h => all.push(h)))); const h = all.find(x => x.name === n); return h ? h.text : ''; };
   const pinsHTML = () => MP.pins.map((p, i) => `<button class="map-pin${p.r ? ' sub' : ''}" data-pin="${i}" data-r="${p.r || ''}" style="left:${(p.x + (MP.ox || 0)) / MP.w * 100}%;top:${(p.y + (MP.oy || 0)) / MP.h * 100}%"><i></i><span>${p.n}</span></button>`).join('');
   const regInfo = id => { const R = MP.regions[id]; info.innerHTML = `<div class="eyebrow">Регион</div><h3>${R.name}</h3><p>${R.lead}</p><p class="map-kv"><b>Главные:</b> ${R.houses}</p><p class="map-kv"><b>Особенности:</b> ${R.feat}</p><button class="btn small ghost" data-back>← Весь Лимн</button>`; };
