@@ -1886,13 +1886,16 @@ const Healing = {
       <article class="panel"><div class="eyebrow">Очки практики</div>
         <div class="hv-pts"><div><b>+2</b><span>лёгкая травма</span></div><div><b>+5</b><span>средняя травма</span></div><div><b>+10</b><span>тяжёлая травма</span></div><div><b>+2</b><span>смена в Лекарской</span></div><div class="hv-mentor"><b>+20</b><span>урок у Хирурга</span><b>+10</b><span>урок у Лекаря · не чаще 2 раз в неделю</span></div></div>
         <p class="muted" style="margin:12px 0 0;font-size:14px">Счётчик идёт за все лечения. Смена — отыгрыш в Лекарской от часа: приём, перевязки, уход за больными.</p></article>
-      <article class="panel"><div class="eyebrow">Путь до следующего тира</div>
-        <div class="hv-path">
-          <div class="hv-step t1"><b>Санитар</b><span>с начала</span></div><i></i>
-          <div class="hv-step t2"><b>Лекарь</b><span>100 очков · не раньше 2 недель</span></div><i></i>
-          <div class="hv-step t3"><b>Хирург</b><span>ещё 300 очков · не раньше 2 недель</span></div>
-        </div></article>
+
     </div>
+    <div class="panel hv-road"><div class="eyebrow">Путь лекаря</div>
+      <div class="hv-track">
+        <div class="hv-node t1"><span>I</span><b>Санитар</b><small>с начала</small></div>
+        <div class="hv-link"><b>100 очков</b><small>не раньше 2 недель</small></div>
+        <div class="hv-node t2"><span>II</span><b>Лекарь</b><small>до 5 пациентов</small></div>
+        <div class="hv-link"><b>300 очков</b><small>не раньше 2 недель</small></div>
+        <div class="hv-node t3"><span>III</span><b>Хирург</b><small>лечит всё</small></div>
+      </div></div>
     <div class="panel hv-rules"><div class="eyebrow">Чтобы рост был не быстрым</div><ul>
       <li><b>Один пациент — раз в сутки.</b> Повторно лечить того же персонажа можно, но очки за него идут только раз в день.</li>
       <li><b>Только чужие травмы.</b> Лечение себя и своих твинков очков не даёт.</li>
