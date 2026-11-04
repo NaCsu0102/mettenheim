@@ -2382,3 +2382,28 @@ body.tree-mode .pipe-side { display: none; }
 @media (max-width: 900px) { .tree-clscard { display: none !important; } }
 .cry-max { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--smoke); }
 .cry-max button { width: 22px; height: 22px; border: 1px solid var(--rivet); background: #0f0b08; color: var(--parch); cursor: pointer; line-height: 1; }
+/* заклинания магов */
+.spell-legend { display: flex; flex-wrap: wrap; gap: 10px 22px; margin: 0 0 22px; font-size: 14px; color: var(--smoke); }
+.spell-legend b { display: inline-grid; place-items: center; width: 26px; height: 26px; margin-right: 8px; border: 1px solid var(--house); color: var(--house-hi); font-size: 13px; transform: rotate(45deg); }
+.spell-legend b::first-line { }
+.spell-school { margin-bottom: 22px; display: grid; gap: 18px; }
+.spell-school header { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 18px; align-items: start; }
+.spell-school header img { width: 96px; height: 96px; object-fit: contain; filter: drop-shadow(0 0 16px rgba(0,0,0,.6)); }
+.spell-school h3 { margin: 4px 0 8px; font-size: 28px; }
+.spell-tier { display: grid; gap: 10px; }
+.spell-tier-h { display: flex; align-items: center; gap: 10px; font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--parch); }
+.spell-tier-h small { letter-spacing: .05em; text-transform: none; color: var(--smoke); font-size: 12px; }
+.spell-cost { display: inline-grid; place-items: center; width: 26px; height: 26px; background: #0f0b08; border: 1px solid var(--house); color: var(--house-hi); font-weight: 700; letter-spacing: 0; font-size: 13px; }
+.spell-tier.t3 .spell-cost { background: color-mix(in srgb, var(--house) 22%, #0f0b08); }
+.spell-tier.t5 .spell-cost { background: var(--house); color: #1a130e; }
+.spell-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+.spell { padding: 12px 14px; border: 1px solid var(--rivet); background: rgba(15,11,8,.6); display: grid; gap: 6px; align-content: start; }
+.spell-tier.t5 .spell { border-color: var(--house); }
+.spell-top { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.spell-top b { font-size: 16px; color: var(--parch); margin-right: auto; }
+.spell-k, .spell-r { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; padding: 2px 6px; border: 1px solid var(--rivet); color: var(--smoke); }
+.spell-r.dmg { color: #e48a6a; border-color: #6b3524; } .spell-r.help { color: #8fd0a0; border-color: #2f5a3a; } .spell-r.buff { color: #e6c27a; border-color: #6a5426; }
+.spell-c { font-size: 12px; color: var(--house-hi); }
+.spell p { margin: 0; font-size: 14px; line-height: 1.5; color: var(--smoke); }
+.spell-list.base { margin-bottom: 10px; }
+@media (max-width: 600px) { .spell-school header { grid-template-columns: 64px 1fr; } .spell-school header img { width: 64px; height: 64px; } }
