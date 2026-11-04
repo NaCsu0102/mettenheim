@@ -2546,3 +2546,17 @@ body.tree-mode .pipe-side { display: none; }
 .ww-more summary::after { content: '▾'; margin-left: auto; transition: transform .2s; }
 .ww-more[open] summary::after { transform: rotate(180deg); }
 .ww-more div { padding: 10px 0 0; } .ww-more b { color: var(--parch); font-size: 15px; } .ww-more p { margin: 4px 0 0; font-size: 14px; line-height: 1.55; color: var(--smoke); }
+/* Кристалларис и красивые карточки миров */
+.ww-card.t-asura { background: radial-gradient(120% 80% at 85% 0%, rgba(159,230,240,.16), transparent 55%), linear-gradient(180deg, rgba(25,30,40,.6), rgba(18,14,11,.92)); position: relative; overflow: hidden; }
+.ww-card.t-asura::before { content: ''; position: absolute; right: -30px; top: -30px; width: 160px; height: 160px; background: conic-gradient(from 30deg, transparent, rgba(255,255,255,.18), transparent 30%, rgba(159,230,240,.22), transparent 55%, rgba(255,255,255,.12), transparent 80%); clip-path: polygon(50% 0, 100% 38%, 82% 100%, 18% 100%, 0 38%); opacity: .7; pointer-events: none; }
+.ww-quote { margin: 8px 0 0; font-style: italic; color: var(--ww, var(--house-hi)); font-size: 15px; opacity: .9; }
+.ww-tiers { display: grid; gap: 6px; padding: 12px 0 4px; border-top: 1px solid var(--rivet); }
+.ww-tiers-h { font-size: 10.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--smoke); margin-bottom: 2px; }
+.ww-tier { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 8px 12px 8px calc(12px + var(--i) * 14px); background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.06); }
+.ww-tier i { width: 22px; height: 22px; background: var(--g); clip-path: polygon(50% 0, 100% 38%, 82% 100%, 18% 100%, 0 38%); box-shadow: 0 0 12px rgba(255,255,255,.25); }
+.ww-tier b { color: var(--parch); font-size: 15px; } .ww-tier span { font-size: 13px; color: var(--smoke); }
+.ww-more summary { justify-content: flex-start; padding: 12px 0 6px; }
+.ww-more summary span { color: var(--ww, var(--house-hi)); }
+.ww-more summary em { font-style: normal; font-size: 11px; letter-spacing: 0; padding: 1px 7px; border: 1px solid currentColor; border-radius: 10px; color: var(--smoke); }
+.ww-more summary::after { content: '▾'; font-size: 16px; color: var(--ww, var(--house-hi)); }
+.ww-more div { padding: 12px 0 0 14px; border-left: 2px solid color-mix(in srgb, var(--ww, var(--house)) 45%, transparent); margin-top: 10px; }
