@@ -454,7 +454,7 @@ const Tree = {
       const next = nodes.filter(x => canTake(x.id)).sort((a, b) => cost(a) - cost(b));
       const statRows = Object.entries(S).sort((a, b) => (typeof b[1] === 'object' ? b[1].v : b[1]) - (typeof a[1] === 'object' ? a[1].v : a[1]));
       const cc = q('#tCls', el), cdat = n.type === 'root' && M.classes.find(z => z.id === n.id);
-      if (cc) { cc.hidden = !cdat; if (cdat) { cc.innerHTML = `<button class="tcc-x" type="button" aria-label="Закрыть">×</button>${cdat.img ? `<div class="tcc-art"><img src="${cdat.img}" alt="${esc(cdat.name)}"></div>` : ''}<div class="eyebrow">Класс${n.id === cid ? ' · стартовый' : ''}</div><h3>${esc(cdat.name)}</h3>
+      if (cc) { cc.hidden = !cdat; if (cdat) { cc.innerHTML = `<button class="tcc-x" type="button" aria-label="Закрыть">×</button>${(M.classScene || {})[cdat.id] ? `<div class="tcc-scene"><img src="${M.classScene[cdat.id]}" alt="${esc(cdat.name)}"></div>` : cdat.img ? `<div class="tcc-art"><img src="${cdat.img}" alt="${esc(cdat.name)}"></div>` : ''}<div class="eyebrow">Класс${n.id === cid ? ' · стартовый' : ''}</div><h3>${esc(cdat.name)}</h3>
         <div class="tcc-f"><span><small>Роль</small>${esc(cdat.role || '')}</span><span><small>Ресурс</small>${esc(cdat.resource || '')}</span><span><small>Дистанция</small>${esc(cdat.range || '')}</span></div>
         <p>${esc(cdat.text || '')}</p>${(cdat.cubes || []).length ? `<div class="tcc-cubes">${cdat.cubes.map(x => `<span>${esc(x)}</span>`).join('')}</div>` : ''}<a class="btn small ghost" href="#class-${cdat.id}">Подробнее о классе</a>`;
         cc.classList.remove('in'); void cc.offsetWidth; cc.classList.add('in'); q('.tcc-x', cc).onclick = () => { cc.hidden = true; }; } }

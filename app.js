@@ -846,7 +846,8 @@ function mountClasses(id) {
   const show = cid => {
     const c = M.classes.find(x => x.id === cid) || M.classes[0];
     $$('[data-cls]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.cls === c.id)));
-    $('#clsView').innerHTML = `<div class="class-view reveal"><div class="class-art"><img id="cFig" src="${charImg('mettenheimer', g, c.id)}" alt="${c.name}"></div>
+    const sc = (M.classScene || {})[c.id];
+    $('#clsView').innerHTML = `${sc ? `<div class="cls-scene reveal"><img src="${sc}" alt="${c.name}"><span>${c.name}</span></div>` : ''}<div class="class-view reveal"><div class="class-art"><img id="cFig" src="${charImg('mettenheimer', g, c.id)}" alt="${c.name}"></div>
     <div class="class-info"><div class="eyebrow">Класс${c.isNew ? ' · новый в этой сессии' : ''}</div><h2>${c.name}</h2>
       <div class="facts"><div><small>Роль</small><b>${c.role}</b></div><div><small>Ресурс</small><b>${c.resource}</b></div><div><small>Дистанция</small><b>${c.range}</b></div></div>
       <p class="lead" style="font-size:18px">${c.text}</p>

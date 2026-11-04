@@ -2488,3 +2488,10 @@ body.tree-mode .pipe-side { display: none; }
 .noct h2 { margin: 6px 0 12px; font-size: 34px; } .noct p { margin: 0 0 10px; font-size: 16px; line-height: 1.65; color: var(--parch); max-width: 72ch; }
 .noct .eyebrow { color: #b48ad8; }
 .ban { border-top: 3px solid #6b2a2a; } .ban h3 { margin: 0 0 6px; font-size: 22px; }
+.cls-scene { position: relative; margin: 0 0 24px; border: 1px solid var(--rivet); overflow: hidden; aspect-ratio: 16 / 6; }
+.cls-scene img { width: 100%; height: 100%; object-fit: cover; object-position: center 35%; display: block; }
+.cls-scene::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 50%, rgba(12,9,8,.85)); }
+.cls-scene span { position: absolute; left: 24px; bottom: 16px; z-index: 1; font-family: var(--f-display); font-size: 40px; font-weight: 700; color: var(--parch); text-shadow: 0 2px 12px #000; }
+.tcc-scene { margin: -4px -4px 4px; aspect-ratio: 4 / 3; border: 1px solid var(--rivet); overflow: hidden; }
+.tcc-scene img { width: 100%; height: 100%; object-fit: cover; }
+@media (max-width: 700px) { .cls-scene { aspect-ratio: 16 / 9; } .cls-scene span { font-size: 28px; } }

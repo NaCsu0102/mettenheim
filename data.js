@@ -965,3 +965,6 @@ M.privacy = [
 
 M.houses.talbot.crest = 'assets/crests/talbot.webp'; M.houses.dorn.crest = 'assets/crests/dorn.webp';
 M.curseArt = { vrakhir: 'assets/curses/vrakhir.webp', doppler: 'assets/curses/doppler.webp', possessed: 'assets/curses/possessed.webp', beast: 'assets/curses/beast.webp' };
+
+// Сюжетные арты классов (сцены)
+M.classScene = { fighter: 'assets/classes/scene-fighter.webp', mage: 'assets/classes/scene-mage.webp', engineer: 'assets/classes/scene-engineer.webp', shooter: 'assets/classes/scene-shooter.webp', rogue: 'assets/classes/scene-rogue.webp' };
