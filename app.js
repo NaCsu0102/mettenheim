@@ -666,38 +666,41 @@ ${(M.spells || []).map(s => { const sc = (M.schools || []).find(x => x.name === 
 </div></section>`;
 }
 function pageMap() {
-  return head({ eyebrow: 'Лимн', title: 'Карта мира', lead: 'Двигай и приближай карту, нажимай на метки — откроется, что там находится.', bg: 'assets/codex/archive.webp', crumbs: 'Мир' }) + subnav(LORE, 'map') + `
+  return head({ eyebrow: 'Лимн', title: 'Карта мира', lead: 'Двигай и приближай карту. Нажми на регион — он приблизится и покажет владения и города.', bg: 'assets/codex/archive.webp', crumbs: 'Мир' }) + subnav(LORE, 'map') + `
 <section class="content"><div class="wrap">
-<div class="map-tabs" role="tablist">${M.maps.map((m, i) => `<button role="tab" data-map="${m.id}" aria-selected="${i === 0}">${m.name}</button>`).join('')}</div>
 <div class="map-wrap"><div class="map-view" id="mapView"><div class="map-layer" id="mapLayer"></div></div>
-  <div class="map-ctrl"><button data-z="1" aria-label="Приблизить">+</button><button data-z="-1" aria-label="Отдалить">−</button><button data-z="0" aria-label="Сбросить">⟲</button></div>
+  <div class="map-ctrl"><button data-z="1" aria-label="Приблизить">+</button><button data-z="-1" aria-label="Отдалить">−</button><button data-z="0" aria-label="Весь Лимн" title="Весь Лимн">⟲</button></div>
   <aside class="panel map-info" id="mapInfo"></aside></div>
-<p class="note" style="margin-top:14px">Это временные карты регионов со старого сайта. Скоро здесь будет общая карта Лимна.</p>
+<p class="note" style="margin-top:14px">Схема материка. Расположение Меттенхейма и некоторых городов предварительное.</p>
 </div></section>`;
 }
 function mountMap() {
-  const view = $('#mapView'), layer = $('#mapLayer'), info = $('#mapInfo');
-  let cur = M.maps[0], s = 1, tx = 0, ty = 0, drag = null;
-  const apply = () => { layer.style.transform = `translate(${tx}px, ${ty}px) scale(${s})`; layer.style.setProperty('--inv', 1 / s); };
-  const fit = () => { const W = view.clientWidth, H = view.clientHeight, im = layer.querySelector('img'); if (!im || !im.naturalWidth) return; const k = Math.min(W / im.naturalWidth, H / im.naturalHeight); layer.style.width = im.naturalWidth * k + 'px'; layer.style.height = im.naturalHeight * k + 'px'; s = 1; tx = (W - im.naturalWidth * k) / 2; ty = (H - im.naturalHeight * k) / 2; apply(); };
+  const MP = M.worldMap, view = $('#mapView'), layer = $('#mapLayer'), info = $('#mapInfo');
+  let s = 1, tx = 0, ty = 0, k = 1, drag = null, moved = false, focus = null;
+  const apply = (anim) => { layer.classList.toggle('anim', !!anim); layer.style.transform = `translate(${tx}px, ${ty}px) scale(${s})`; layer.style.setProperty('--inv', 1 / s); };
+  const size = () => { const W = view.clientWidth, H = view.clientHeight; k = Math.min(W / MP.w, H / MP.h); layer.style.width = MP.w * k + 'px'; layer.style.height = MP.h * k + 'px'; };
+  const fitBox = ([x1, y1, x2, y2], anim) => { const W = view.clientWidth - (view.clientWidth > 800 ? 330 : 0), H = view.clientHeight, bw = (x2 - x1) * k, bh = (y2 - y1) * k; s = Math.min(6, Math.max(1, Math.min(W / bw, H / bh) * .92)); tx = W / 2 - (x1 + x2) / 2 * k * s; ty = H / 2 - (y1 + y2) / 2 * k * s; apply(anim); };
   const houseText = n => { const all = []; (M.peoples || []).forEach(p => (p.origins || []).forEach(o => ((o.lore || {}).houses || []).forEach(h => all.push(h)))); const h = all.find(x => x.name === n); return h ? h.text : ''; };
-  const showInfo = p => { info.innerHTML = p ? `<div class="eyebrow">${p.k || ''}</div><h3>${p.n}</h3><p>${p.t || houseText(p.h) || ''}</p>` : `<div class="eyebrow">Регион</div><h3>${cur.name}</h3><p>${cur.lead}</p><p class="map-kv"><b>Главные дома:</b> ${cur.houses}</p><p class="map-kv"><b>Особенности:</b> ${cur.feat}</p>`; };
-  const load = id => {
-    cur = M.maps.find(m => m.id === id) || M.maps[0];
-    $$('[data-map]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.map === cur.id)));
-    layer.innerHTML = `<img src="${cur.img}" alt="${cur.name}" draggable="false">${cur.pins.map((p, i) => `<button class="map-pin" data-pin="${i}" style="left:${p.x}%;top:${p.y}%"><i></i><span>${p.n}</span></button>`).join('')}`;
-    const im = layer.querySelector('img'); im.complete ? fit() : (im.onload = fit); showInfo(null);
-  };
-  const zoom = (f, cx, cy) => { const ns = Math.min(5, Math.max(1, s * f)); if (cx == null) { cx = view.clientWidth / 2; cy = view.clientHeight / 2; } tx = cx - (cx - tx) * ns / s; ty = cy - (cy - ty) * ns / s; s = ns; apply(); };
+  const pinsHTML = () => MP.pins.map((p, i) => `<button class="map-pin${p.r ? ' sub' : ''}" data-pin="${i}" data-r="${p.r || ''}" style="left:${p.x / MP.w * 100}%;top:${p.y / MP.h * 100}%"><i></i><span>${p.n}</span></button>`).join('');
+  const regInfo = id => { const R = MP.regions[id]; info.innerHTML = `<div class="eyebrow">Регион</div><h3>${R.name}</h3><p>${R.lead}</p><p class="map-kv"><b>Главные:</b> ${R.houses}</p><p class="map-kv"><b>Особенности:</b> ${R.feat}</p><button class="btn small ghost" data-back>← Весь Лимн</button>`; };
+  const worldInfo = () => { info.innerHTML = `<div class="eyebrow">Перекрёсток миров</div><h3>Лимн</h3><p>Запад, Восток и Юг лежат вокруг Нокторна — мёртвого сердца бывшего Великого Леса. На севере — снега Эйрлианда.</p><p class="map-kv">Нажми на регион, чтобы приблизить его.</p>`; };
+  const setFocus = id => { focus = id; layer.dataset.focus = id || ''; $$('.rg', layer).forEach(p => p.classList.toggle('on', p.dataset.r === id)); };
+  const goRegion = id => { setFocus(id); regInfo(id); fitBox(MP.regions[id].box, true); play('card'); };
+  const goWorld = () => { setFocus(null); worldInfo(); size(); s = 1; tx = (view.clientWidth - MP.w * k) / 2; ty = (view.clientHeight - MP.h * k) / 2; apply(true); };
+  const zoom = (f, cx, cy) => { const ns = Math.min(8, Math.max(1, s * f)); if (cx == null) { cx = view.clientWidth / 2; cy = view.clientHeight / 2; } tx = cx - (cx - tx) * ns / s; ty = cy - (cy - ty) * ns / s; s = ns; apply(); };
+  fetch(MP.img).then(r => r.text()).then(svg => {
+    layer.innerHTML = svg.replace(/width="\d+" height="\d+"/, 'width="100%" height="100%"') + pinsHTML();
+    goWorld();
+  }).catch(() => { layer.innerHTML = `<img src="${MP.img}" alt="Карта Лимна">` + pinsHTML(); goWorld(); });
   view.addEventListener('wheel', e => { e.preventDefault(); const r = view.getBoundingClientRect(); zoom(e.deltaY < 0 ? 1.2 : 1 / 1.2, e.clientX - r.left, e.clientY - r.top); }, { passive: false });
-  view.addEventListener('pointerdown', e => { if (e.target.closest('.map-pin')) return; drag = { x: e.clientX - tx, y: e.clientY - ty }; view.setPointerCapture(e.pointerId); view.classList.add('drag'); });
-  view.addEventListener('pointermove', e => { if (!drag) return; tx = e.clientX - drag.x; ty = e.clientY - drag.y; apply(); });
-  const up = () => { drag = null; view.classList.remove('drag'); }; view.addEventListener('pointerup', up); view.addEventListener('pointercancel', up);
-  layer.addEventListener('click', e => { const b = e.target.closest('[data-pin]'); if (!b) return; $$('.map-pin').forEach(x => x.classList.toggle('on', x === b)); showInfo(cur.pins[+b.dataset.pin]); play('click'); });
-  $$('[data-z]').forEach(b => b.addEventListener('click', () => { const z = +b.dataset.z; z ? zoom(z > 0 ? 1.4 : 1 / 1.4) : fit(); }));
-  $$('[data-map]').forEach(b => b.addEventListener('click', () => { play('card'); load(b.dataset.map); }));
-  window.addEventListener('resize', fit);
-  load(M.maps[0].id);
+  view.addEventListener('pointerdown', e => { if (e.target.closest('.map-pin')) return; drag = { x: e.clientX - tx, y: e.clientY - ty, sx: e.clientX, sy: e.clientY }; moved = false; view.setPointerCapture(e.pointerId); });
+  view.addEventListener('pointermove', e => { if (!drag) return; if (Math.abs(e.clientX - drag.sx) + Math.abs(e.clientY - drag.sy) > 5) { moved = true; view.classList.add('drag'); } if (moved) { tx = e.clientX - drag.x; ty = e.clientY - drag.y; apply(); } });
+  const up = e => { const wasDrag = moved; drag = null; view.classList.remove('drag'); if (!wasDrag && e && e.type === 'pointerup') { const el = document.elementFromPoint(e.clientX, e.clientY), rg = el && el.closest && el.closest('.rg'); if (rg && rg.dataset.r !== focus) goRegion(rg.dataset.r); } };
+  view.addEventListener('pointerup', up); view.addEventListener('pointercancel', () => { drag = null; view.classList.remove('drag'); });
+  layer.addEventListener('click', e => { const b = e.target.closest('[data-pin]'); if (!b) return; const p = MP.pins[+b.dataset.pin]; $$('.map-pin', layer).forEach(x => x.classList.toggle('on', x === b)); info.innerHTML = `<div class="eyebrow">${p.k || ''}</div><h3>${p.n}</h3><p>${p.t || houseText(p.h) || ''}</p>${p.r ? `<button class="btn small ghost" data-reg="${p.r}">← ${MP.regions[p.r].name}</button>` : ''}`; if (p.r && focus !== p.r) { setFocus(p.r); fitBox(MP.regions[p.r].box, true); } play('click'); });
+  info.addEventListener('click', e => { if (e.target.closest('[data-back]')) goWorld(); const g = e.target.closest('[data-reg]'); if (g) goRegion(g.dataset.reg); });
+  $$('[data-z]').forEach(b => b.addEventListener('click', () => { const z = +b.dataset.z; z ? zoom(z > 0 ? 1.4 : 1 / 1.4) : goWorld(); }));
+  window.addEventListener('resize', () => focus ? (size(), fitBox(MP.regions[focus].box)) : goWorld());
 }
 function pageLimn() {
   const L = M.limnOld, N = M.limn;
