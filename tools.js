@@ -1879,85 +1879,15 @@ const Healing = {
     const save = () => MH.store.set('heal', st);
     const sevName = s => SEV.find(x => x[0] === s)[1];
     const sevCol = s => SEV.find(x => x[0] === s)[2];
-    el.innerHTML = `
-    <div class="hl-tiers" role="group" aria-label="Тир лекаря">${HEALERS.map((h, i) => `<button type="button" data-tier="${i}"><span class="hl-t">${h.t} тир</span><b>${h.name}</b><small>${h.text}</small><em>${'▮'.repeat(h.cap)}</em></button>`).join('')}</div>
-    <div class="hl-wrap">
-      <section class="panel hl-intake"><div class="eyebrow">Приём</div>
-        <div class="al-sub">Вид травмы</div><div class="hl-kinds">${Object.entries(TRAUMA).map(([k, t]) => `<button type="button" data-kind="${k}" style="--tc:${t[2]}"><i>${t[1]}</i>${t[0]}</button>`).join('')}</div>
-        <div class="al-sub">Тяжесть</div><div class="hl-sev">${SEV.map(([k, n, c]) => `<button type="button" data-sev="${k}" style="--tc:${c}">${n}</button>`).join('')}</div>
-        <div class="hl-preview" id="hPrev"></div>
-        <div class="al-btns" style="justify-content:flex-start"><button class="btn" id="hAdd">Положить на койку</button><button class="btn ghost" id="hRoll" title="Персонаж упал до 0 ОЗ в бою">Травма после боя</button></div>
-        <p class="muted hl-note">Упал до 0 ОЗ — бросай d20 на тяжесть (1–5 тяжёлая, 6–12 средняя, 13–20 лёгкая) и d5 на место: голова, тело, рука, нога, внутренняя. Болезни, отравления и Гниль приходят из сюжета и ивентов.</p>
-      </section>
-      <section class="hl-ward"><div class="rc-head"><div class="eyebrow" id="hCap"></div><div class="al-btns"><button class="btn small" id="hTreat">Лечить</button><button class="btn small ghost" id="hOut">Выписать</button></div></div>
-        <div class="hl-beds" id="hBeds"></div><div class="hl-log" id="hLog" aria-live="polite"></div></section>
-    </div>
+    el.innerHTML = `<div class="hv-levels">${HEALERS.map((h, i) => `<article class="hv-lvl t${i + 1}"><div class="hv-badge">${h.t}</div><div class="eyebrow">${h.t} тир</div><h3>${h.name}</h3><div class="hv-beds" aria-label="Пациентов за раз: ${h.cap}">${'<i></i>'.repeat(h.cap)}<span>${h.cap} пациентов</span></div>
+      <ul class="hv-can">${SEV.map(([s, n, c]) => `<li style="--sc:${c}"><b>${n}</b><span>${h.easy.includes(s) ? 'лечит без проверки' : h.risk[s] ? `с риском · Медицина ${h.risk[s]}` : 'не берёт — только перевязать'}</span><em class="${h.easy.includes(s) ? 'ok' : h.risk[s] ? 'rk' : 'no'}"></em></li>`).join('')}</ul></article>`).join('')}</div>
+    <div class="panel hv-roll"><div class="eyebrow">Когда персонаж падает до 0 ОЗ</div><div class="hv-roll-g"><div><b>d20</b><span>тяжесть</span><p><i style="--sc:#c23b2c">1–5 тяжёлая</i><i style="--sc:#e0672a">6–12 средняя</i><i style="--sc:#c9b27a">13–20 лёгкая</i></p></div><div><b>d5</b><span>место</span><p><i>голова</i><i>тело</i><i>рука</i><i>нога</i><i>внутренняя</i></p></div></div><p class="muted" style="margin:10px 0 0;font-size:14px">Болезни, интоксикацию и Гниль назначает мастер по событию.</p></div>
     <div class="sec-head" style="margin:44px 0 16px"><div class="eyebrow">Справочник лекаря</div><h2>Травмы и лечение</h2><p>Восемь видов, у каждого три ступени тяжести. Не вылеченная травма держится весь срок, а Гниль со временем тяжелеет сама.</p></div>
     <div class="hl-book">${Object.entries(TRAUMA).map(([k, t]) => `<article class="hl-kind" style="--tc:${t[2]}"><h4><i>${t[1]}</i>${t[0]}</h4>${SEV.map(([s, n, c]) => { const x = t[3][s]; return `<div class="hl-row" style="--sc:${c}"><div class="hl-sv">${n}</div><div><b>${x[0]}</b><p>${x[1]}</p><p class="hl-cure"><span>Лечение:</span> ${x[2]} <em>${x[3]}</em></p><div class="hl-meds">${medList(k, s)}</div></div></div>`; }).join('')}</article>`).join('')}</div>
     <div class="sec-head" style="margin:44px 0 16px"><div class="eyebrow">Стол лекаря</div><h2>Лекарства</h2><p>Три тира, как и травмы: I тир — на лёгкие, II — на средние, III — на тяжёлые. Применить может любой лекарь, а изготовить — только своего тира и ниже: санитар делает I тир, лекарь — I и II, хирург — всё. Зелья (⚗) варит алхимик.</p></div>
     <div class="hl-pharm">${[1, 2, 3].map(t => `<div class="al-group"><div class="wgroup">${TIER_NAME[t]} тир · ${['', 'санитар и выше', 'лекарь и выше', 'только хирург'][t]}</div><div class="hl-mgrid">${MEDS.filter(m => m[2] === t).map(m => `<article class="hl-med"><h4><i>✚</i>${m[1]}${m[4] > 1 ? ` <em>×${m[4]}</em>` : ''}</h4><p>${m[5]}</p><div class="cc-rec">${m[3].map(([i, n]) => matChip(i, n)).join('')}</div></article>`).join('')}</div></div>`).join('')}</div>
     <div class="sec-head" style="margin:44px 0 16px"><div class="eyebrow">Риск</div><h2>Если лечение сорвалось</h2></div>
     <div class="hl-risk panel"><p><b>Провал проверки Медицины</b> — травма остаётся, пациент теряет 1 ОЗ. Можно попробовать снова в следующий сеанс.</p><p><b>Выпала 1</b> — осложнение: средняя травма становится тяжёлой, тяжёлая — пациент без сознания, и спасти его может только лекарь выше тиром.</p><p><b>Выпала 20</b> — лечение идёт вдвое быстрее, срок делится пополам.</p></div>`;
-    const tierBtns = qa('[data-tier]', el);
-    function status(b) {
-      const h = HEALERS[st.tier];
-      if (h.easy.includes(b.s)) return ['easy', 'вылечит'];
-      if (h.risk[b.s]) return ['risk', `риск · Медицина ${h.risk[b.s]}`];
-      return ['no', 'не по силам'];
-    }
-    function drawIntake() {
-      qa('[data-kind]', el).forEach(b => b.setAttribute('aria-pressed', String(b.dataset.kind === st.kind)));
-      qa('[data-sev]', el).forEach(b => b.setAttribute('aria-pressed', String(b.dataset.sev === st.sev)));
-      const x = TRAUMA[st.kind][3][st.sev];
-      q('#hPrev', el).innerHTML = `<b style="color:${sevCol(st.sev)}">${x[0]}</b><p>${x[1]}</p><p class="hl-cure"><span>Лечение:</span> ${x[2]} <em>${x[3]}</em></p><div class="hl-meds">${medList(st.kind, st.sev)}</div>`;
-    }
-    function drawBeds() {
-      const h = HEALERS[st.tier];
-      tierBtns.forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.tier === st.tier)));
-      q('#hCap', el).textContent = `Лазарет · ${h.name} · ${Math.min(st.beds.length, h.cap)}/${h.cap} коек`;
-      q('#hBeds', el).innerHTML = [...Array(h.cap).keys()].map(i => {
-        const b = st.beds[i];
-        if (!b) return `<div class="hl-bed empty"><span>Койка ${i + 1}</span></div>`;
-        const t = TRAUMA[b.k], x = t[3][b.s], [cls, lbl] = b.res ? [b.res, ''] : status(b);
-        return `<div class="hl-bed ${cls}" style="--tc:${t[2]};--sc:${sevCol(b.s)}"><button type="button" class="hl-x" data-del="${i}" aria-label="Убрать">×</button><div class="hl-bt"><i>${t[1]}</i><span>${t[0]} · ${sevName(b.s)}</span></div><b>${x[0]}</b><div class="hl-meds sm">${medList(b.k, b.s)}</div><div class="hl-st">${b.res ? b.msg : lbl}</div></div>`;
-      }).join('');
-      const over = st.beds.length - h.cap;
-      q('#hLog', el).innerHTML = over > 0 ? `<span class="minus">В очереди ещё ${over}: ${h.name} не примет их в этот сеанс.</span>` : '';
-    }
-    el.addEventListener('click', e => {
-      const t = e.target.closest('[data-tier]'), k = e.target.closest('[data-kind]'), s = e.target.closest('[data-sev]'), d = e.target.closest('[data-del]');
-      if (t) { st.tier = +t.dataset.tier; st.beds.forEach(b => { delete b.res; }); play('click'); drawBeds(); save(); }
-      else if (k) { st.kind = k.dataset.kind; play('click'); drawIntake(); save(); }
-      else if (s) { st.sev = s.dataset.sev; play('click'); drawIntake(); save(); }
-      else if (d) { st.beds.splice(+d.dataset.del, 1); drawBeds(); save(); }
-    });
-    q('#hAdd', el).onclick = () => { st.beds.push({ k: st.kind, s: st.sev }); play('card'); drawBeds(); save(); };
-    q('#hRoll', el).onclick = () => {
-      const r = 1 + Math.floor(Math.random() * 20), loc = ['head', 'body', 'arm', 'leg', 'internal'][Math.floor(Math.random() * 5)];
-      st.kind = loc; st.sev = r <= 5 ? 'heavy' : r <= 12 ? 'medium' : 'light';
-      st.beds.push({ k: st.kind, s: st.sev }); play('dice'); drawIntake(); drawBeds(); save();
-      q('#hLog', el).innerHTML = `<span>d20 = <b>${r}</b> → ${sevName(st.sev).toLowerCase()} · ${TRAUMA[loc][0].toLowerCase()}: ${TRAUMA[loc][3][st.sev][0]}</span>`;
-    };
-    q('#hTreat', el).onclick = () => {
-      const h = HEALERS[st.tier]; let healed = 0, failed = 0;
-      play('dice');
-      st.beds.slice(0, h.cap).forEach(b => {
-        if (b.res === 'done') return;
-        const [cls] = status(b);
-        if (cls === 'easy') { b.res = 'done'; b.msg = 'вылечен'; healed++; }
-        else if (cls === 'risk') {
-          const r = 1 + Math.floor(Math.random() * 20), need = h.risk[b.s];
-          if (r === 20) { b.res = 'done'; b.msg = `d20 = 20 · вылечен, срок вдвое короче`; healed++; }
-          else if (r >= need) { b.res = 'done'; b.msg = `d20 = ${r} · вылечен`; healed++; }
-          else if (r === 1) { b.res = 'crit'; b.msg = b.s === 'medium' ? 'd20 = 1 · осложнение: травма стала тяжёлой' : 'd20 = 1 · осложнение: без сознания, нужен лекарь выше тиром'; if (b.s === 'medium') b.s = 'heavy'; failed++; }
-          else { b.res = 'fail'; b.msg = `d20 = ${r} · не вышло, −1 ОЗ`; failed++; }
-        } else { b.res = 'no'; b.msg = 'не по силам — нужен лекарь выше тиром'; }
-      });
-      drawBeds(); save();
-      const wait = st.beds.length - h.cap; q('#hLog', el).innerHTML = `<span>Сеанс окончен: вылечено ${healed}${failed ? `, неудач ${failed}` : ''}.${wait > 0 ? ` В очереди ещё ${wait} — выпиши вылеченных и лечи снова.` : ''}</span>`;
-    };
-    q('#hOut', el).onclick = () => { st.beds = st.beds.filter(b => b.res !== 'done'); st.beds.forEach(b => { delete b.res; }); drawBeds(); save(); };
-    drawIntake(); drawBeds();
   }
 };
 
