@@ -591,26 +591,26 @@ const kvRows = rows => `<div class="kv">${rows.map(([k, v]) => `<div class="wrow
 const SPELL_COST_HTML = () => kvRows(window.SPELL_COST || []);
 const RECHARGE_HTML = () => kvRows(window.RECHARGE || []);
 const SPELL_ROLE = { 'урон': 'dmg', 'помощь': 'help', 'усиление': 'buff' };
-const spellCard = (n, k, r, d, c) => `<div class="spell"><div class="spell-top"><b>${n}</b><span class="spell-k">${k}</span>${r ? `<span class="spell-r ${SPELL_ROLE[r] || ''}">${r}</span>` : ''}<span class="spell-c" title="Осколков">${c}◆</span></div><p>${d}</p></div>`;
+const spellCard = (n, k, r, d, c) => `<div class="spell"><div class="spell-top"><b>${n}</b><span class="spell-k">${k}</span>${r ? `<span class="spell-r ${SPELL_ROLE[r] || ''}">${r}</span>` : ''}<span class="spell-c" title="Кристаллов и ячеек">${c}◆</span></div><p>${d}</p></div>`;
 function pageMagic() {
   return head({ eyebrow: 'Лей-линии и плетение', title: 'Магия', lead: 'После гибели последнего Тихого древа магия ушла в камень. Колдовать можно только через Люмерит — и только тем, у кого есть Дар жилы.', bg: 'assets/codex/arcane-v2.webp', crumbs: 'Мир' }) + subnav(LORE, 'magic') + `
 <section class="content"><div class="wrap">
 <div class="prose" style="margin-bottom:34px"><p class="lead">Лей-линии — нити силы, когда-то пронизывавшие всё живое. Когда было уничтожено последнее Тихое древо, они кристаллизовались и ушли под землю люмеритовыми жилами. Теперь маг берёт ману только из Люмерита.</p>
 <p>Черпать ману из кристалла умеют немногие: это Дар жилы, особый талант. Магами становятся лишь те, кто научился обращаться с Люмеритом. Поэтому маги в Меттенхейме редки и нужны заводам как никогда.</p>
 <p>У каждого мага четыре базовых плетения. Дальше он развивается по ветвям школ на древе развития.</p></div>
-<div class="sec-head"><div class="eyebrow">Кристаллы магии</div><h2>Сила из застывшей жилы</h2><p>Маг колдует через осколки очищенного Люмерита: пока хватает осколков, заклинание не трогает его собственную жизнь. Заклинания вплетают в осколки заранее, а в бою поглощают заготовку.</p></div>
-<p class="note">Учёт резервуара и осколков — в <a href="#cabinet">личном кабинете</a>, вкладка «Дневники».</p>
+<div class="sec-head"><div class="eyebrow">Кристаллы магии</div><h2>Сила из застывшей жилы</h2><p>Кристаллы Люмерита — это мана. Маг впитывает их в момент плетения и сразу колдует, а за плетение платит своей внутренней силой — ячейками резервуара. Их 10, с классом до 20, и они восстанавливаются со временем.</p></div>
+<p class="note">Учёт резервуара и кристаллов — в <a href="#cabinet">личном кабинете</a>, вкладка «Дневники».</p>
 <div class="grid2" style="margin-top:22px">
 <article class="panel"><div class="eyebrow">Цена заклинаний</div>${SPELL_COST_HTML()}</article>
 <article class="panel"><div class="eyebrow">Как восстановиться</div>${RECHARGE_HTML()}</article></div>
 <div class="cards-list" style="margin-top:18px">${(window.CRYSTAL_RULES || []).map(([n, d]) => `<div class="cardrow"><b>${n}</b><p>${d}</p></div>`).join('')}</div>
-<p class="note" style="margin-top:16px">Осколки очищенного Люмерита, огранённые осколки и Сердце жилы делают на люмеритовой станции. Рецепты в Крафт-станции.</p>
+<p class="note" style="margin-top:16px">Кристаллы люмерита, огранённые кристаллы и Сердце жилы делают на люмеритовой станции. Рецепты в Крафт-станции.</p>
 <div class="sec-head" style="margin-top:60px"><div class="eyebrow">Плетения мага</div><h2>Базовые способности</h2><p>Их знает каждый маг с самого начала. Одну из них маг выбирает при входе в класс на древе.</p></div>
 <div class="spell-list base">${M.classes.find(c => c.id === 'mage').abilities.filter(a => a[1] !== 'РЕСУРС').map(([n, k, d]) => spellCard(n, k, '', d.replace(/^(Простое|Среднее|Сложное)\.\s*/, ''), /^Среднее/.test(d) ? 3 : 1)).join('')}</div>
-<div class="sec-head" style="margin-top:60px"><div class="eyebrow">Школы</div><h2>Пять школ и их заклинания</h2><p>У каждой школы три силы заклинаний. Узел школы на древе открывает все простые, на развилке маг выбирает одно среднее, вершина даёт сложное.</p></div>
-<div class="spell-legend"><span><b>1</b> простое — урон, помощь, усиление</span><span><b>3</b> среднее — выбор на развилке</span><span><b>5</b> сложное — вершина школы</span></div>
+<div class="sec-head" style="margin-top:60px"><div class="eyebrow">Школы</div><h2>Пять школ и их заклинания</h2><p>У каждой школы три силы заклинаний. Узел школы на древе открывает все простые, на развилке маг выбирает одно среднее из четырёх, на вершине — одно сложное из двух. Сила растёт с ценой: простое бьёт одну цель на 2 ЕУ или лечит на 3–6 ОЗ, среднее — 3 ЕУ или область, сложное — 3 ЕУ +1d6 по области.</p></div>
+<div class="spell-legend"><span><b>1</b> простое — урон, помощь, усиление</span><span><b>3</b> среднее — одно из четырёх на развилке</span><span><b>5</b> сложное — одно из двух на вершине</span></div>
 ${(M.spells || []).map(s => { const sc = (M.schools || []).find(x => x.name === s.school) || {}; return `<article class="panel spell-school" id="sp-${s.art}"><header><img src="assets/art/school-${s.art}.webp" alt=""><div><div class="eyebrow">Ветвь древа мага</div><h3>${s.school}</h3><p class="muted">${sc.text || ''}</p>${s.note ? `<p class="note" style="margin-top:8px">${s.note}</p>` : ''}</div></header>
-  ${[['simple', 'Простые', 1], ['mid', 'Средние · одно на выбор', 3], ['hard', 'Сложное', 5]].map(([key, lbl, c]) => `<div class="spell-tier t${c}"><div class="spell-tier-h"><span class="spell-cost">${c}</span>${lbl}<small>${c === 1 ? '1 осколок' : c === 3 ? '3 осколка' : '5 осколков'}</small></div><div class="spell-list">${s[key].map(([n, k, r, d]) => spellCard(n, k, r, d, c)).join('')}</div></div>`).join('')}
+  ${[['simple', 'Простые · все', 1], ['mid', 'Средние · одно на выбор', 3], ['hard', 'Сложные · одно на выбор', 5]].map(([key, lbl, c]) => `<div class="spell-tier t${c}"><div class="spell-tier-h"><span class="spell-cost">${c}</span>${lbl}<small>${c === 1 ? '1 кристалл · 1 ячейка' : c === 3 ? '3 кристалла · 3 ячейки' : '5 кристаллов · 5 ячеек'}</small></div><div class="spell-list">${s[key].map(([n, k, r, d]) => spellCard(n, k, r, d, c)).join('')}</div></div>`).join('')}
 </article>`; }).join('')}
 <p style="margin-top:22px"><a class="btn" href="#tree-mage">Открыть древо мага</a></p>
 </div></section>`;
