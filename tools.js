@@ -1884,17 +1884,16 @@ const Healing = {
     <div class="sec-head" style="margin:44px 0 16px"><div class="eyebrow">Квалификация</div><h2>Как растёт лекарь</h2><p>Уровень лекаря поднимает только работа: смены в Лекарской и лечение пациентов. Это долгий путь — новый тир нельзя получить за пару вечеров.</p></div>
     <div class="hv-grow">
       <article class="panel"><div class="eyebrow">Очки практики</div>
-        <div class="hv-pts"><div><b>+1</b><span>лёгкая травма</span></div><div><b>+3</b><span>средняя травма</span></div><div><b>+6</b><span>тяжёлая травма</span></div><div><b>+2</b><span>смена в Лекарской</span></div></div>
-        <p class="muted" style="margin:12px 0 0;font-size:14px">Смена — отыгрыш в Лекарской от часа: приём, перевязки, уход за больными.</p></article>
+        <div class="hv-pts"><div><b>+2</b><span>лёгкая травма</span></div><div><b>+5</b><span>средняя травма</span></div><div><b>+10</b><span>тяжёлая травма</span></div><div><b>+2</b><span>смена в Лекарской</span></div></div>
+        <p class="muted" style="margin:12px 0 0;font-size:14px">Счётчик идёт за все лечения. Смена — отыгрыш в Лекарской от часа: приём, перевязки, уход за больными.</p></article>
       <article class="panel"><div class="eyebrow">Путь до следующего тира</div>
         <div class="hv-path">
           <div class="hv-step t1"><b>Санитар</b><span>с начала</span></div><i></i>
-          <div class="hv-step t2"><b>Лекарь</b><span>60 очков · не раньше 3 недель</span></div><i></i>
-          <div class="hv-step t3"><b>Хирург</b><span>ещё 180 очков · не раньше 8 недель</span></div>
+          <div class="hv-step t2"><b>Лекарь</b><span>150 очков · не раньше 3 недель</span></div><i></i>
+          <div class="hv-step t3"><b>Хирург</b><span>ещё 450 очков · не раньше 8 недель</span></div>
         </div></article>
     </div>
     <div class="panel hv-rules"><div class="eyebrow">Чтобы рост был не быстрым</div><ul>
-      <li><b>Не больше 10 очков в день.</b> Остальное в этот день не засчитывается.</li>
       <li><b>Один пациент — раз в сутки.</b> Повторно лечить того же персонажа можно, но очки за него идут только раз в день.</li>
       <li><b>Только чужие травмы.</b> Лечение себя и своих твинков очков не даёт.</li>
       <li><b>Риск тоже учит.</b> Провал проверки Медицины всё равно даёт очки — но только при честном отыгрыше, а не «бросил и ушёл».</li>
