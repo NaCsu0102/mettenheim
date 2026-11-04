@@ -546,6 +546,15 @@ function pageFaith() {
 <article class="panel prose"><h3 style="margin-top:0">Учение о сотворении</h3>${(M.trinityLore || {}).genesis.map(x => `<p>${x}</p>`).join('')}</article>
 <article class="panel prose"><h3 style="margin-top:0">Четыре истины</h3><ul>${M.trinityLore.tenets.map(([n, d]) => `<li><b>${n}.</b> ${d}</li>`).join('')}</ul><h3>Обряды</h3><ul>${M.trinityLore.rites.map(([n, d]) => `<li><b>${n}.</b> ${d}</li>`).join('')}</ul></article>
 </div>
+
+<div class="sec-head" style="margin-top:56px"><div class="eyebrow">Учение церкви</div><h2>Уделы и Столп</h2><p>${M.trinityOrder.lots.lead}</p></div>
+<div class="grid3">${M.trinityOrder.lots.rows.map(([n, d]) => `<article class="panel"><h3 style="margin:0 0 8px;font-size:21px">${n}</h3><p class="muted" style="margin:0">${d}</p></article>`).join('')}</div>
+<div class="grid2" style="margin-top:18px">
+<article class="panel prose"><h3 style="margin-top:0">Столп мира</h3>${M.trinityOrder.pillar.map(x => `<p>${x}</p>`).join('')}</article>
+<div style="display:grid;gap:18px;align-content:start"><article class="panel"><div class="eyebrow">Можно ли сменить Удел</div>${kvRows(M.trinityOrder.change)}</article>
+<article class="panel"><div class="eyebrow">Знаки Удела</div>${kvRows(M.trinityOrder.signs)}</article></div></div>
+<div class="sec-head" style="margin-top:44px"><div class="eyebrow">То, за что сжигают</div><h2>Ереси и расколы</h2></div>
+<div class="grid3">${M.trinityOrder.heresies.map(([n, d]) => `<article class="panel ban"><h3>${n}</h3><p class="muted">${d}</p></article>`).join('')}</div>
 <div class="sec-head" style="margin-top:44px"><div class="eyebrow">Голос храма</div><h2>Песнопения</h2></div>
 <div class="grid3 hymns">${M.trinityLore.hymns.map(h => `<article class="panel hymn"><div class="eyebrow">${h.when}</div><h3>${h.name}</h3><p>${h.lines.join('<br>')}</p></article>`).join('')}</div>
 <div class="grid2" style="margin-top:18px">
