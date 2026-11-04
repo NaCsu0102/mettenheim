@@ -104,7 +104,7 @@ setVars();
 const BOOK = [
   ['Начало', [['start', 'Как начать играть'], ['faq', 'Частые вопросы'], ['modlist', 'Модлист'], ['news', 'Новости и события'], ['residents', 'Жители города'], ['chat', 'Общий чат'], ['glossary', 'Словарь терминов']]],
   ['Правила', [['rules', 'Правила сервера'], ['discord', 'Правила Discord']]],
-  ['Мир', [['city', 'Меттенхейм'], ['history', 'История города'], ['houses', 'Дома Талбот и Дорн'], ['lumerite', 'Люмерит'], ['faith', 'Вера'], ['magic', 'Магия'], ['world', 'История мира'], ['chronicle', 'Хроника сессии'], ['cursed', 'Проклятые'], ['deck', 'Безделицы']]],
+  ['Мир', [['city', 'Меттенхейм'], ['history', 'История города'], ['houses', 'Дома Талбот и Дорн'], ['lumerite', 'Люмерит'], ['faith', 'Вера'], ['magic', 'Магия'], ['limn', 'Лимн'], ['world', 'История мира'], ['chronicle', 'Хроника сессии'], ['cursed', 'Проклятые'], ['deck', 'Безделицы']]],
   ['Народы', [['races', 'Народы и отношения'], ...M.peoples.map(p => ['people-' + p.id, p.name]), ['inferno', 'Инферно и Короли']]],
   ['Классы и системы', [['classes', 'Классы'], ['system', 'Ролевая система'], ['eloquence', 'Красноречие'], ['healing', 'Лекари и травмы'], ['curses', 'Развитие Проклятых'], ['factions', 'Фракции'], ['inventions', 'Изобретения Инженера']]],
   ['Древо талантов', [['tree', 'Древо талантов']]],
@@ -174,12 +174,12 @@ searchBtn.addEventListener('click', openSearch);
 addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'л')) { e.preventDefault(); if (!$('.pal')) openSearch(); } });
 
 /* ================= ОБЩИЕ КУСКИ ================= */
-const CH_BG = { start: 'bg-start', faq: 'bg-faq', modlist: 'bg-modlist', rules: 'bg-rules', discord: 'bg-discord', city: 'bg-city', history: 'bg-history', houses: 'bg-houses', lumerite: 'bg-lumerite', faith: 'bg-faith', magic: 'bg-magic', world: 'bg-world', cursed: 'bg-deck', deck: 'bg-deck', races: 'bg-peoples', 'people-humans': 'bg-humans', 'people-elves': 'bg-elves', 'people-dwarves': 'bg-dwarves', 'people-goblins': 'bg-goblins', 'people-infernals': 'bg-peoples', classes: 'bg-classes', system: 'bg-rules', eloquence: 'bg-houses', forge: 'bg-forge', armor: 'bg-armor', craft: 'bg-forge', recycle: 'bg-armor', alchemy: 'bg-magic', cooking: 'bg-forge', healing: 'bg-faith', body: 'bg-forge', curses: 'bg-deck', factions: 'bg-houses', inventions: 'bg-forge', gathering: 'bg-armor', blueprints: 'bg-forge', inferno: 'bg-peoples' };
+const CH_BG = { start: 'bg-start', faq: 'bg-faq', modlist: 'bg-modlist', rules: 'bg-rules', discord: 'bg-discord', city: 'bg-city', history: 'bg-history', houses: 'bg-houses', lumerite: 'bg-lumerite', faith: 'bg-faith', magic: 'bg-magic', world: 'bg-world', limn: 'bg-world', cursed: 'bg-deck', deck: 'bg-deck', races: 'bg-peoples', 'people-humans': 'bg-humans', 'people-elves': 'bg-elves', 'people-dwarves': 'bg-dwarves', 'people-goblins': 'bg-goblins', 'people-infernals': 'bg-peoples', classes: 'bg-classes', system: 'bg-rules', eloquence: 'bg-houses', forge: 'bg-forge', armor: 'bg-armor', craft: 'bg-forge', recycle: 'bg-armor', alchemy: 'bg-magic', cooking: 'bg-forge', healing: 'bg-faith', body: 'bg-forge', curses: 'bg-deck', factions: 'bg-houses', inventions: 'bg-forge', gathering: 'bg-armor', blueprints: 'bg-forge', inferno: 'bg-peoples' };
 const head = ({ eyebrow, title, lead, bg, crumbs }) => (bg = CH_BG[currentRoute] ? 'assets/art/' + CH_BG[currentRoute] + '.webp' : bg, `
 <section class="page-head"><div class="bg" style="background-image:url('${bg || 'assets/city-bg.webp'}')"></div>
 <div class="wrap reveal">${crumbs ? `<div class="crumbs"><a href="#home">Главная</a> / ${crumbs}</div>` : ''}<div class="eyebrow">${eyebrow || 'Хроники Меттенхейма'}</div><h1>${title}</h1>${lead ? `<p>${lead}</p>` : ''}</div><div class="ph-pipe" aria-hidden="true"></div></section>`);
 const subnav = (items, cur) => `<nav class="subnav" aria-label="Подразделы"><div class="wrap">${items.map(([r, t]) => `<a href="#${r}" ${r === cur ? 'aria-current="page"' : ''}>${t}</a>`).join('')}</div></nav>`;
-const LORE = [['city', 'Меттенхейм'], ['history', 'История города'], ['houses', 'Дома'], ['lumerite', 'Люмерит'], ['faith', 'Вера'], ['magic', 'Магия'], ['world', 'История мира'], ['chronicle', 'Хроника'], ['cursed', 'Проклятые'], ['deck', 'Безделицы']];
+const LORE = [['city', 'Меттенхейм'], ['history', 'История города'], ['houses', 'Дома'], ['lumerite', 'Люмерит'], ['faith', 'Вера'], ['magic', 'Магия'], ['limn', 'Лимн'], ['world', 'История мира'], ['chronicle', 'Хроника'], ['cursed', 'Проклятые'], ['deck', 'Безделицы']];
 const PEOPLE_NAV = [['races', 'Все народы'], ...M.peoples.map(p => ['people-' + p.id, p.name]), ['inferno', 'Инферно']];
 const CLS_NAV = [['classes', 'Классы'], ['tree', 'Древо талантов'], ['system', 'Ролевая система'], ['eloquence', 'Красноречие'], ['healing', 'Лекари'], ['curses', 'Проклятые'], ['factions', 'Фракции'], ['inventions', 'Изобретения'], ['forge', 'Оружейная'], ['armor', 'Бронник'], ['craft', 'Крафт-станция'], ['gathering', 'Добыча'], ['blueprints', 'Чертежи'], ['recycle', 'Переработчик'], ['alchemy', 'Алхимия'], ['cooking', 'Кулинария'], ['body', 'Протезы']];
 const START_NAV = [['start', 'Как начать'], ['faq', 'FAQ'], ['modlist', 'Модлист'], ['rules', 'Правила']];
@@ -538,9 +538,31 @@ function pageFaith() {
   const T = M.trinity, P = M.progress;
   return head({ eyebrow: 'Столпы, шестерня и запретные боги', title: 'Вера', lead: 'В Меттенхейме молятся Столпам, тайно чтят Старых богов и платят культам Юга и Востока. А сам город родил антиверу: богов нет, всё решает ум. Дворфы и инферналы хранят своё.', bg: 'assets/codex/faith.webp', crumbs: 'Мир' }) + subnav(LORE, 'faith') + `
 <section class="content"><div class="wrap">
-<div class="sec-head"><div class="eyebrow">Новая вера людей</div><h2>Троединство</h2><p>Вера в Тарна, Солла и Морна. Столпы — не совсем обычные боги, а стиль жизни и путь, которому следуют. Удел Порядка наследуется, Труд принимает любого, а Безмолвие выбирается сознательно.</p></div>
+<div class="sec-head"><div class="eyebrow">Новая вера людей</div><h2>Троединство</h2><p>Вера, которую люди принесли из Терры Валор. Вера в Тарна, Солла и Морна. Столпы — не совсем обычные боги, а стиль жизни и путь, которому следуют. Удел Порядка наследуется, Труд принимает любого, а Безмолвие выбирается сознательно.</p></div>
 <div class="faith-grid">${T.map(t => `<article class="panel pillar"><img class="medal" src="assets/art/faith-${({ Тарн: 'tarn', Солл: 'varn', Морн: 'morn' })[t.name]}.webp" alt=""><div class="role">${t.role}</div><h3>${t.name}</h3><p>${t.text}</p><h4>Удел</h4>${ul(t.who)}<h4>Как это играется</h4>${ul(t.play)}<h4>Цена</h4>${ul(t.minus)}</article>`).join('')}</div>
 <p class="note" style="margin-top:18px">Вера не даёт бонусов к кубам. Она подсказывает, как персонаж думает, куда идёт за помощью и какие сцены ему по душе — а мастер учитывает это в ивентах.</p>
+
+<div class="grid2" style="margin-top:30px">
+<article class="panel prose"><h3 style="margin-top:0">Учение о сотворении</h3>${(M.trinityLore || {}).genesis.map(x => `<p>${x}</p>`).join('')}</article>
+<article class="panel prose"><h3 style="margin-top:0">Четыре истины</h3><ul>${M.trinityLore.tenets.map(([n, d]) => `<li><b>${n}.</b> ${d}</li>`).join('')}</ul><h3>Обряды</h3><ul>${M.trinityLore.rites.map(([n, d]) => `<li><b>${n}.</b> ${d}</li>`).join('')}</ul></article>
+</div>
+<div class="sec-head" style="margin-top:44px"><div class="eyebrow">Голос храма</div><h2>Песнопения</h2></div>
+<div class="grid3 hymns">${M.trinityLore.hymns.map(h => `<article class="panel hymn"><div class="eyebrow">${h.when}</div><h3>${h.name}</h3><p>${h.lines.join('<br>')}</p></article>`).join('')}</div>
+<div class="grid2" style="margin-top:18px">
+<article class="panel"><div class="eyebrow">Книги и трактаты</div>${kvRows(M.trinityLore.texts)}</article>
+<article class="panel"><div class="eyebrow">Церковь</div>${kvRows(M.trinityLore.church)}</article>
+</div>
+<div class="sec-head" style="margin-top:56px"><div class="eyebrow">Запад · Дом Гриммар</div><h2>Инквизиторы Коллегии</h2><p>${M.inquisition.lead}</p></div>
+<div class="grid2">
+<article class="panel prose"><img class="inq-crest" src="assets/crests/grimmar.webp" alt="Герб дома Гриммар">${M.inquisition.about.map(x => `<p>${x}</p>`).join('')}</article>
+<div style="display:grid;gap:18px;align-content:start">
+<article class="panel"><div class="eyebrow">Кого ищут</div>${kvRows(M.inquisition.hunt)}</article>
+<article class="panel"><div class="eyebrow">Чины</div>${kvRows(M.inquisition.ranks)}</article>
+</div></div>
+<div class="grid2" style="margin-top:18px">
+<article class="panel prose"><h3 style="margin-top:0">Как они работают</h3>${ul(M.inquisition.ways)}</article>
+<article class="panel prose"><h3 style="margin-top:0">В игре</h3>${ul(M.inquisition.play)}</article>
+</div>
 
 <div class="faith-banner"><img src="assets/art/head-progress.webp" alt=""><img class="medal" src="assets/art/faith-progress.webp" alt=""></div>
 <div class="sec-head" style="margin-top:30px"><div class="eyebrow">Антивера Меттенхейма</div><h2>Вера в Прогресс</h2><p>${P.lead}</p></div>
@@ -621,6 +643,12 @@ function pageMagic() {
 <article class="panel"><div class="eyebrow">Как восстановиться</div>${RECHARGE_HTML()}</article></div>
 <div class="cards-list" style="margin-top:18px">${(window.CRYSTAL_RULES || []).map(([n, d]) => `<div class="cardrow"><b>${n}</b><p>${d}</p></div>`).join('')}</div>
 <p class="note" style="margin-top:16px">Кристаллы люмерита, огранённые кристаллы и Сердце жилы делают на люмеритовой станции. Рецепты в Крафт-станции.</p>
+<div class="sec-head" style="margin-top:60px"><div class="eyebrow">Недоступно игрокам</div><h2>Запретные школы</h2><p>Плетение мага зависит от его фантазии, и доступны все школы — кроме трёх.</p></div>
+<div class="grid3">
+<article class="panel ban"><h3>Магия Света</h3><p class="muted">Ею могут владеть лишь истово чистые люди.</p></article>
+<article class="panel ban"><h3>Тёмная магия</h3><p class="muted">Разрывы линий и использование сил своих союзников.</p></article>
+<article class="panel ban"><h3>Магия Гнили</h3><p class="muted">Магия болезни. Маг Гнили не может создавать плетение: касаясь линий, он их заражает.</p></article>
+</div>
 <div class="sec-head" style="margin-top:60px"><div class="eyebrow">Плетения мага</div><h2>Базовые способности</h2><p>Их знает каждый маг с самого начала. Одну из них маг выбирает при входе в класс на древе.</p></div>
 <div class="spell-list base">${M.classes.find(c => c.id === 'mage').abilities.filter(a => a[1] !== 'РЕСУРС').map(([n, k, d]) => spellCard(n, k, '', d.replace(/^(Простое|Среднее|Сложное)\.\s*/, ''), /^Среднее/.test(d) ? 3 : 1)).join('')}</div>
 <div class="sec-head" style="margin-top:60px"><div class="eyebrow">Пул заклинаний</div><h2>Создание заклинаний</h2><p>У каждого мага свой пул — заклинания его школы, которые он умеет создавать. С каждой ступенью школы пул растёт.</p></div>
@@ -637,15 +665,38 @@ ${(M.spells || []).map(s => { const sc = (M.schools || []).find(x => x.name === 
 <p style="margin-top:22px"><a class="btn" href="#tree-mage">Открыть древо мага</a></p>
 </div></section>`;
 }
-function pageWorld() {
-  return head({ eyebrow: 'Память Лимна', title: 'История мира', lead: 'От Безмолвия и семени Лурна до новой эпохи заводов.', bg: 'assets/codex/archive.webp', crumbs: 'Мир' }) + subnav(LORE, 'world') + `
+function pageLimn() {
+  const L = M.limnOld, N = M.limn;
+  return head({ eyebrow: 'Перекрёсток миров', title: 'Лимн', lead: 'Мир бесконечного Великого Леса, ставший перекрёстком миров. Его история до людей, его боги и миры, которые его касаются.', bg: 'assets/codex/archive.webp', crumbs: 'Мир' }) + subnav(LORE, 'limn') + `
 <section class="content"><div class="wrap">
-<div class="sec-head"><div class="eyebrow">Как рассказывает Старая вера</div><h2>Зарождение мира</h2><p>Храмы Троединства называют это сказкой, прогрессисты — суеверием. Но кристаллы Люмерита в шахтах — это застывшие лей-линии, и спорить с этим трудно.</p></div>
-<ol class="wg">${(M.genesis || []).map(([t, d], i) => `<li><span class="wg-n">${['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'][i]}</span><div><h3>${t}</h3><p>${d}</p></div></li>`).join('')}</ol>
-<div class="sec-head" style="margin-top:64px"><div class="eyebrow">Летопись</div><h2>От Слияния до Люмерита</h2><p>Годы считают от Слияния — дня, когда люди пришли в Лимн.</p></div>
+<div class="mg-intro"><div class="mg-lore"><p class="mg-drop">${N.what}</p></div>
+<aside class="mg-facts">${N.facts.map(([b, s]) => `<div><b>${b}</b><span>${s}</span></div>`).join('')}</aside></div>
+<div class="sec-head" style="margin-top:56px"><div class="eyebrow">До людей и после</div><h2>История Лимна</h2></div>
+<ol class="wg">${N.story.map(([t, d], i) => `<li><span class="wg-n">${['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'][i]}</span><div><h3>${t}</h3><p>${d}</p></div></li>`).join('')}</ol>
+<article class="panel noct"><div class="eyebrow">Вечное проклятие</div><h2>Нокторн</h2>${N.noctorn.map(x => `<p>${x}</p>`).join('')}</article>
+<div class="grid2" style="margin-top:18px">${N.terms.map(([n, d]) => `<article class="panel"><h3 style="margin:0 0 8px;font-size:22px">${n}</h3><p class="muted" style="margin:0">${d}</p></article>`).join('')}</div>
+<div class="sec-head" style="margin-top:64px"><div class="eyebrow">Перекрёстки миров</div><h2>Миры, касающиеся Лимна</h2><p>Мироздание состоит из бесконечного числа миров, соединённых перекрёстками лей-линий. Вот ближайшие к Лимну.</p></div>
+<div class="ww">${(M.worldsFull || []).map(w => `<article class="panel ww-card t-${w.tone}"><div class="ww-head"><div class="eyebrow">${w.ep}</div><h3>${w.name}</h3></div><p class="ww-text">${w.text}</p>${w.rows.length ? `<div class="ww-rows">${w.rows.map(([k, v]) => `<div><span>${k}</span><p>${v}</p></div>`).join('')}</div>` : ''}${w.link ? `<a class="btn small ghost" href="${w.link}">Подробнее</a>` : ''}</article>`).join('')}</div>
+<div class="sec-head" style="margin-top:64px"><div class="eyebrow">Старая вера</div><h2>Хранители Природы</h2></div>
+<div class="mg-intro"><div class="mg-lore">${L.intro.map(x => `<p>${x}</p>`).join('')}</div>
+<aside class="mg-facts"><div><b>Круговорот мира</b><span>${L.cycle}</span></div><div><span style="font-style:italic;color:var(--parch)">${L.quote}</span></div></aside></div>
+<div class="grid2" style="margin-top:22px">
+<article class="panel prose"><h3 style="margin-top:0">Во что верят староверы</h3>${ul(L.beliefs)}</article>
+<article class="panel prose"><h3 style="margin-top:0">Старые традиции</h3>${ul(L.traditions)}</article></div>
+<div class="sec-head" style="margin-top:44px"><div class="eyebrow">Первородные</div><h2>Семь Старых Богов</h2><p>Сегодня их чтят тайно: Совет Меттенхейма запретил Старую веру. Троединство пришло из Терры Валор и рассказывает о сотворении по-своему — <a href="#faith">см. «Вера»</a>.</p></div>
+<div class="og-list">${L.gods.map(([n, ep, d, rule, q]) => `<article class="panel og"><div class="og-h"><h3>${n}</h3><span>${ep}</span></div><p>${d}</p><p class="og-rule"><b>Отвечал за:</b> ${rule}</p><p class="og-q">${q}</p></article>`).join('')}</div>
+<p style="margin-top:26px"><a class="btn" href="#world">Дальше — летопись после прихода людей</a></p>
+</div></section>`;
+}
+function pageWorld() {
+  const sl = [0, 'Мор\'Аль, пытаясь уничтожить эльфов, открыл портал в Тир\'Нарак — и ослабил границы миров. Лимн слился с Террой Валор, миром людей. Этот год стал нулевым в летописи: год Слияния и Великого Перехода.'];
+  return head({ eyebrow: 'Эпоха людей', title: 'История мира', lead: 'От Слияния и Великого Перехода до открытия Люмерита.', bg: 'assets/codex/archive.webp', crumbs: 'Мир' }) + subnav(LORE, 'world') + `
+<section class="content"><div class="wrap">
+${sl ? `<div class="mg-intro"><div class="mg-lore"><p class="mg-drop">${sl[1]}</p><p>Что было до людей, Лимн помнит сам — об этом страница <a href="#limn">«Лимн»</a>. Люди же принесли с собой свою веру, Троединство, и свой счёт лет.</p></div>
+<aside class="mg-facts"><div><b>0 год</b><span>Слияние Лимна и Терры Валор</span></div><div><b>700</b><span>открытие Люмерита</span></div><div><b>702</b><span>падение Риверсайда и гибель последнего Тихого древа</span></div></aside></div>` : ''}
+<div class="sec-head" style="margin-top:56px"><div class="eyebrow">Летопись</div><h2>От Слияния до падения Риверсайда</h2><p>Годы считают от Слияния — дня, когда люди пришли в Лимн.</p></div>
 <ol class="wt">${M.worldTimeline.map(([y, t]) => `<li><b>${y}</b><p>${t}</p></li>`).join('')}</ol>
-<div class="sec-head" style="margin-top:64px"><div class="eyebrow">Перекрёстки миров</div><h2>Миры, касающиеся Лимна</h2><p>Лей-линии связали Лимн с соседними мирами. После гибели последнего Тихого древа в 702 году связи ослабли, но разломы остались — и через них по-прежнему приходят гости.</p></div>
-<div class="ww">${(M.worldsFull || []).map(w => `<article class="panel ww-card t-${w.tone}"><div class="ww-head"><div class="eyebrow">${w.ep}</div><h3>${w.name}</h3></div><p class="ww-text">${w.text}</p><div class="ww-rows">${w.rows.map(([k, v]) => `<div><span>${k}</span><p>${v}</p></div>`).join('')}</div>${w.link ? `<a class="btn small ghost" href="${w.link}">Подробнее</a>` : ''}</article>`).join('')}</div>
+<p style="margin-top:26px"><a class="btn ghost" href="#limn">Лимн до людей</a> <a class="btn ghost" href="#history">История Меттенхейма</a></p>
 </div></section>`;
 }
 function pageDeck() {
@@ -965,7 +1016,7 @@ const ROUTES = {
   inferno: [pageInferno],
   cabinet: [() => pageCabinet('player'), () => window.Cabinet.mount($('#cabMount'), 'player')], admin: [() => pageCabinet('admin'), () => window.Cabinet.mount($('#cabMount'), 'admin')],
   city: [pageCity], history: [pageHistory, mountChrono], houses: [pageHouses, () => { $$('[data-pick]').forEach(b => b.addEventListener('click', () => { if (b.dataset.pick !== house) applyHouse(b.dataset.pick, true); })); setVars(); MH.onHouse(hcards); }],
-  lumerite: [pageLumerite], faith: [pageFaith], magic: [pageMagic], world: [pageWorld], deck: [pageDeck, mountDeck],
+  lumerite: [pageLumerite], faith: [pageFaith], magic: [pageMagic], limn: [pageLimn], world: [pageWorld], deck: [pageDeck, mountDeck],
   rules: [pageRules], discord: [pageDiscord], start: [pageStart], faq: [pageFaq], modlist: [pageModlist],
   races: [pageRaces, mountRaces], classes: [pageClasses, mountClasses], system: [pageSystem, () => mountDice($('[data-dice]').parentElement)], eloquence: [pageEloquence, () => window.Eloquence.mount($('#eloqMount'))], healing: [pageHealing, () => window.Healing.mount($('#healMount'))],
   tree: [pageTree], forge: [pageForge, () => window.Forge.mount($('#forgeMount'))], armor: [pageArmor, () => window.Armor.mount($('#armorMount'))], craft: [pageCraft, () => window.Craft.mount($('#craftMount'))], gathering: [pageGathering, () => window.Gathering.mount($('#gatherMount'))], blueprints: [pageBlueprints, () => window.Blueprints.mount($('#bpMount'))], recycle: [pageRecycle, () => window.Recycler.mount($('#recycleMount'))], alchemy: [pageAlchemy, () => window.Alchemy.mount($('#alchMount'))], cooking: [pageCooking, () => window.Cooking.mount($('#cookMount'))], body: [pageBody, () => window.BodyLab.mount($('#bodyMount'))], curses: [pageCurses, () => window.CurseLab.mount($('#curseMount'))], cursed: [pageCursed], factions: [pageFactions, () => window.Factions.mount($('#factionMount'))], inventions: [pageInventions, () => window.Inventor.mount($('#invMount'))]
@@ -1011,7 +1062,7 @@ function bookify(view, chapter) {
 }
 let lastRoute = null;
 /* тяжёлые арты (предметы ~5 МБ, иконки ~2 МБ) грузятся только для страниц, где они нужны */
-const LIGHT = new Set(['home', 'anketa', 'cabinet', 'admin', 'residents', 'chat', 'news', 'hero', 'glossary', 'chronicle', 'privacy', 'city', 'history', 'houses', 'lumerite', 'faith', 'world', 'rules', 'discord', 'start', 'faq', 'modlist', 'inferno', 'races']);
+const LIGHT = new Set(['home', 'anketa', 'cabinet', 'admin', 'residents', 'chat', 'news', 'hero', 'glossary', 'chronicle', 'privacy', 'city', 'history', 'limn', 'houses', 'lumerite', 'faith', 'world', 'rules', 'discord', 'start', 'faq', 'modlist', 'inferno', 'races']);
 const ART_V = ((document.querySelector('script[src*="app.js"]') || {}).src || '').split('?')[1] || '';
 let artP = null;
 const loadArt = () => artP || (artP = Promise.all(['items-art.js', 'icons-art.js'].map(f => new Promise((res, rej) => {
