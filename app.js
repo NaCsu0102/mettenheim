@@ -684,7 +684,7 @@ function pageMap() {
 <div class="map-wrap"><div class="map-view" id="mapView"><div class="map-layer" id="mapLayer"></div></div>
   <div class="map-ctrl"><button data-z="1" aria-label="Приблизить">+</button><button data-z="-1" aria-label="Отдалить">−</button><button data-z="0" aria-label="Весь Лимн" title="Весь Лимн">⟲</button></div>
   <aside class="panel map-info" id="mapInfo"></aside></div>
-<p class="note" style="margin-top:14px">Цветом показаны владения домов, пунктиром — границы графств. Расположение некоторых городов предварительное.</p>
+<p class="note" style="margin-top:14px">Расположение некоторых городов предварительное.</p>
 </div></section>`;
 }
 function mountMap() {
