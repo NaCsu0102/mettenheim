@@ -2631,3 +2631,5 @@ body.tree-mode .pipe-side { display: none; }
 .hv-step b { font-size: 17px; color: var(--parch); } .hv-step span { font-size: 12.5px; color: var(--smoke); line-height: 1.4; }
 .hv-rules { margin-top: 16px; } .hv-rules ul { margin: 8px 0 0; padding-left: 18px; display: grid; gap: 6px; } .hv-rules li { font-size: 14.5px; color: var(--smoke); line-height: 1.55; } .hv-rules b { color: var(--parch); }
 @media (max-width: 900px) { .hv-grow { grid-template-columns: 1fr; } .hv-pts { grid-template-columns: 1fr 1fr; } .hv-path { grid-template-columns: 1fr; gap: 8px; } .hv-path > i { display: none; } }
+.hv-pts .hv-mentor { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; justify-content: center; border-color: var(--house); background: color-mix(in srgb, var(--house) 10%, #0f0b08); }
+.hv-pts .hv-mentor b { display: inline; font-size: 24px; }
