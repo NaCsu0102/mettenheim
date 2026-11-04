@@ -2664,3 +2664,12 @@ body.map-mode #view { padding: 0; }
 @media (max-width: 800px) { .map-full .map-info { position: absolute; left: 12px; right: 12px; top: auto; bottom: 12px; width: auto; max-height: 40%; } .map-hint { display: none; } }
 .map-layer { will-change: auto; }
 .map-layer > img { image-rendering: auto; }
+/* рамка поверх окна карты — стоит на месте, карта двигается под ней */
+.map-view::after { content: ''; position: absolute; inset: 0; z-index: 3; pointer-events: none; border-style: solid; border-width: 70px 70px; border-image: url("assets/maps/frame.webp") 150 / 70px stretch; }
+.map-full .map-ctrl { top: 86px; left: 86px; }
+.map-full .map-info { top: 86px; right: 86px; max-height: calc(100% - 172px); }
+.map-full .map-hint { bottom: 82px; }
+.map-view { background: #0b1a22; }
+@media (max-width: 800px) { .map-view::after { border-width: 36px; border-image-width: 36px; } .map-full .map-ctrl { top: 46px; left: 46px; } .map-full .map-info { left: 46px; right: 46px; bottom: 46px; } }
+
+body.map-mode .map-full { position: fixed; left: 0; right: 0; bottom: 0; top: 66px; height: auto; z-index: 1; }
