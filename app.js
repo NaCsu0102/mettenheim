@@ -104,7 +104,7 @@ setVars();
 const BOOK = [
   ['Начало', [['start', 'Как начать играть'], ['faq', 'Частые вопросы'], ['modlist', 'Модлист'], ['news', 'Новости и события'], ['residents', 'Жители города'], ['chat', 'Общий чат'], ['glossary', 'Словарь терминов']]],
   ['Правила', [['rules', 'Правила сервера'], ['discord', 'Правила Discord']]],
-  ['Мир', [['city', 'Меттенхейм'], ['history', 'История города'], ['houses', 'Дома Талбот и Дорн'], ['lumerite', 'Люмерит'], ['faith', 'Вера'], ['magic', 'Магия'], ['limn', 'Лимн'], ['world', 'История мира'], ['chronicle', 'Хроника сессии'], ['cursed', 'Проклятые'], ['deck', 'Безделицы']]],
+  ['Мир', [['city', 'Меттенхейм'], ['history', 'История города'], ['houses', 'Дома Талбот и Дорн'], ['lumerite', 'Люмерит'], ['faith', 'Вера'], ['magic', 'Магия'], ['limn', 'Лимн'], ['map', 'Карта мира'], ['world', 'История мира'], ['chronicle', 'Хроника сессии'], ['cursed', 'Проклятые'], ['deck', 'Безделицы']]],
   ['Народы', [['races', 'Народы и отношения'], ...M.peoples.map(p => ['people-' + p.id, p.name]), ['inferno', 'Инферно и Короли']]],
   ['Классы и системы', [['classes', 'Классы'], ['system', 'Ролевая система'], ['eloquence', 'Красноречие'], ['healing', 'Лекари и травмы'], ['curses', 'Развитие Проклятых'], ['factions', 'Фракции'], ['inventions', 'Изобретения Инженера']]],
   ['Древо талантов', [['tree', 'Древо талантов']]],
@@ -174,12 +174,12 @@ searchBtn.addEventListener('click', openSearch);
 addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'л')) { e.preventDefault(); if (!$('.pal')) openSearch(); } });
 
 /* ================= ОБЩИЕ КУСКИ ================= */
-const CH_BG = { start: 'bg-start', faq: 'bg-faq', modlist: 'bg-modlist', rules: 'bg-rules', discord: 'bg-discord', city: 'bg-city', history: 'bg-history', houses: 'bg-houses', lumerite: 'bg-lumerite', faith: 'bg-faith', magic: 'bg-magic', world: 'bg-world', limn: 'bg-world', cursed: 'bg-deck', deck: 'bg-deck', races: 'bg-peoples', 'people-humans': 'bg-humans', 'people-elves': 'bg-elves', 'people-dwarves': 'bg-dwarves', 'people-goblins': 'bg-goblins', 'people-infernals': 'bg-peoples', classes: 'bg-classes', system: 'bg-rules', eloquence: 'bg-houses', forge: 'bg-forge', armor: 'bg-armor', craft: 'bg-forge', recycle: 'bg-armor', alchemy: 'bg-magic', cooking: 'bg-forge', healing: 'bg-faith', body: 'bg-forge', curses: 'bg-deck', factions: 'bg-houses', inventions: 'bg-forge', gathering: 'bg-armor', blueprints: 'bg-forge', inferno: 'bg-peoples' };
+const CH_BG = { start: 'bg-start', faq: 'bg-faq', modlist: 'bg-modlist', rules: 'bg-rules', discord: 'bg-discord', city: 'bg-city', history: 'bg-history', houses: 'bg-houses', lumerite: 'bg-lumerite', faith: 'bg-faith', magic: 'bg-magic', world: 'bg-world', limn: 'bg-world', map: 'bg-world', cursed: 'bg-deck', deck: 'bg-deck', races: 'bg-peoples', 'people-humans': 'bg-humans', 'people-elves': 'bg-elves', 'people-dwarves': 'bg-dwarves', 'people-goblins': 'bg-goblins', 'people-infernals': 'bg-peoples', classes: 'bg-classes', system: 'bg-rules', eloquence: 'bg-houses', forge: 'bg-forge', armor: 'bg-armor', craft: 'bg-forge', recycle: 'bg-armor', alchemy: 'bg-magic', cooking: 'bg-forge', healing: 'bg-faith', body: 'bg-forge', curses: 'bg-deck', factions: 'bg-houses', inventions: 'bg-forge', gathering: 'bg-armor', blueprints: 'bg-forge', inferno: 'bg-peoples' };
 const head = ({ eyebrow, title, lead, bg, crumbs }) => (bg = CH_BG[currentRoute] ? 'assets/art/' + CH_BG[currentRoute] + '.webp' : bg, `
 <section class="page-head"><div class="bg" style="background-image:url('${bg || 'assets/city-bg.webp'}')"></div>
 <div class="wrap reveal">${crumbs ? `<div class="crumbs"><a href="#home">Главная</a> / ${crumbs}</div>` : ''}<div class="eyebrow">${eyebrow || 'Хроники Меттенхейма'}</div><h1>${title}</h1>${lead ? `<p>${lead}</p>` : ''}</div><div class="ph-pipe" aria-hidden="true"></div></section>`);
 const subnav = (items, cur) => `<nav class="subnav" aria-label="Подразделы"><div class="wrap">${items.map(([r, t]) => `<a href="#${r}" ${r === cur ? 'aria-current="page"' : ''}>${t}</a>`).join('')}</div></nav>`;
-const LORE = [['city', 'Меттенхейм'], ['history', 'История города'], ['houses', 'Дома'], ['lumerite', 'Люмерит'], ['faith', 'Вера'], ['magic', 'Магия'], ['limn', 'Лимн'], ['world', 'История мира'], ['chronicle', 'Хроника'], ['cursed', 'Проклятые'], ['deck', 'Безделицы']];
+const LORE = [['city', 'Меттенхейм'], ['history', 'История города'], ['houses', 'Дома'], ['lumerite', 'Люмерит'], ['faith', 'Вера'], ['magic', 'Магия'], ['limn', 'Лимн'], ['map', 'Карта'], ['world', 'История мира'], ['chronicle', 'Хроника'], ['cursed', 'Проклятые'], ['deck', 'Безделицы']];
 const PEOPLE_NAV = [['races', 'Все народы'], ...M.peoples.map(p => ['people-' + p.id, p.name]), ['inferno', 'Инферно']];
 const CLS_NAV = [['classes', 'Классы'], ['tree', 'Древо талантов'], ['system', 'Ролевая система'], ['eloquence', 'Красноречие'], ['healing', 'Лекари'], ['curses', 'Проклятые'], ['factions', 'Фракции'], ['inventions', 'Изобретения'], ['forge', 'Оружейная'], ['armor', 'Бронник'], ['craft', 'Крафт-станция'], ['gathering', 'Добыча'], ['blueprints', 'Чертежи'], ['recycle', 'Переработчик'], ['alchemy', 'Алхимия'], ['cooking', 'Кулинария'], ['body', 'Протезы']];
 const START_NAV = [['start', 'Как начать'], ['faq', 'FAQ'], ['modlist', 'Модлист'], ['rules', 'Правила']];
@@ -665,6 +665,40 @@ ${(M.spells || []).map(s => { const sc = (M.schools || []).find(x => x.name === 
 <p style="margin-top:22px"><a class="btn" href="#tree-mage">Открыть древо мага</a></p>
 </div></section>`;
 }
+function pageMap() {
+  return head({ eyebrow: 'Лимн', title: 'Карта мира', lead: 'Двигай и приближай карту, нажимай на метки — откроется, что там находится.', bg: 'assets/codex/archive.webp', crumbs: 'Мир' }) + subnav(LORE, 'map') + `
+<section class="content"><div class="wrap">
+<div class="map-tabs" role="tablist">${M.maps.map((m, i) => `<button role="tab" data-map="${m.id}" aria-selected="${i === 0}">${m.name}</button>`).join('')}</div>
+<div class="map-wrap"><div class="map-view" id="mapView"><div class="map-layer" id="mapLayer"></div></div>
+  <div class="map-ctrl"><button data-z="1" aria-label="Приблизить">+</button><button data-z="-1" aria-label="Отдалить">−</button><button data-z="0" aria-label="Сбросить">⟲</button></div>
+  <aside class="panel map-info" id="mapInfo"></aside></div>
+<p class="note" style="margin-top:14px">Это временные карты регионов со старого сайта. Скоро здесь будет общая карта Лимна.</p>
+</div></section>`;
+}
+function mountMap() {
+  const view = $('#mapView'), layer = $('#mapLayer'), info = $('#mapInfo');
+  let cur = M.maps[0], s = 1, tx = 0, ty = 0, drag = null;
+  const apply = () => { layer.style.transform = `translate(${tx}px, ${ty}px) scale(${s})`; layer.style.setProperty('--inv', 1 / s); };
+  const fit = () => { const W = view.clientWidth, H = view.clientHeight, im = layer.querySelector('img'); if (!im || !im.naturalWidth) return; const k = Math.min(W / im.naturalWidth, H / im.naturalHeight); layer.style.width = im.naturalWidth * k + 'px'; layer.style.height = im.naturalHeight * k + 'px'; s = 1; tx = (W - im.naturalWidth * k) / 2; ty = (H - im.naturalHeight * k) / 2; apply(); };
+  const houseText = n => { const all = []; (M.peoples || []).forEach(p => (p.origins || []).forEach(o => ((o.lore || {}).houses || []).forEach(h => all.push(h)))); const h = all.find(x => x.name === n); return h ? h.text : ''; };
+  const showInfo = p => { info.innerHTML = p ? `<div class="eyebrow">${p.k || ''}</div><h3>${p.n}</h3><p>${p.t || houseText(p.h) || ''}</p>` : `<div class="eyebrow">Регион</div><h3>${cur.name}</h3><p>${cur.lead}</p><p class="map-kv"><b>Главные дома:</b> ${cur.houses}</p><p class="map-kv"><b>Особенности:</b> ${cur.feat}</p>`; };
+  const load = id => {
+    cur = M.maps.find(m => m.id === id) || M.maps[0];
+    $$('[data-map]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.map === cur.id)));
+    layer.innerHTML = `<img src="${cur.img}" alt="${cur.name}" draggable="false">${cur.pins.map((p, i) => `<button class="map-pin" data-pin="${i}" style="left:${p.x}%;top:${p.y}%"><i></i><span>${p.n}</span></button>`).join('')}`;
+    const im = layer.querySelector('img'); im.complete ? fit() : (im.onload = fit); showInfo(null);
+  };
+  const zoom = (f, cx, cy) => { const ns = Math.min(5, Math.max(1, s * f)); if (cx == null) { cx = view.clientWidth / 2; cy = view.clientHeight / 2; } tx = cx - (cx - tx) * ns / s; ty = cy - (cy - ty) * ns / s; s = ns; apply(); };
+  view.addEventListener('wheel', e => { e.preventDefault(); const r = view.getBoundingClientRect(); zoom(e.deltaY < 0 ? 1.2 : 1 / 1.2, e.clientX - r.left, e.clientY - r.top); }, { passive: false });
+  view.addEventListener('pointerdown', e => { if (e.target.closest('.map-pin')) return; drag = { x: e.clientX - tx, y: e.clientY - ty }; view.setPointerCapture(e.pointerId); view.classList.add('drag'); });
+  view.addEventListener('pointermove', e => { if (!drag) return; tx = e.clientX - drag.x; ty = e.clientY - drag.y; apply(); });
+  const up = () => { drag = null; view.classList.remove('drag'); }; view.addEventListener('pointerup', up); view.addEventListener('pointercancel', up);
+  layer.addEventListener('click', e => { const b = e.target.closest('[data-pin]'); if (!b) return; $$('.map-pin').forEach(x => x.classList.toggle('on', x === b)); showInfo(cur.pins[+b.dataset.pin]); play('click'); });
+  $$('[data-z]').forEach(b => b.addEventListener('click', () => { const z = +b.dataset.z; z ? zoom(z > 0 ? 1.4 : 1 / 1.4) : fit(); }));
+  $$('[data-map]').forEach(b => b.addEventListener('click', () => { play('card'); load(b.dataset.map); }));
+  window.addEventListener('resize', fit);
+  load(M.maps[0].id);
+}
 function pageLimn() {
   const L = M.limnOld, N = M.limn;
   return head({ eyebrow: 'Перекрёсток миров', title: 'Лимн', lead: 'Мир бесконечного Великого Леса, ставший перекрёстком миров. Его история до людей, его боги и миры, которые его касаются.', bg: 'assets/codex/archive.webp', crumbs: 'Мир' }) + subnav(LORE, 'limn') + `
@@ -698,7 +732,7 @@ function pageWorld() {
 ${sl ? `<div class="mg-intro"><div class="mg-lore"><p class="mg-drop">${sl[1]}</p><p>Что было до людей, Лимн помнит сам — об этом страница <a href="#limn">«Лимн»</a>. Люди же принесли с собой свою веру, Троединство, и свой счёт лет.</p></div>
 <aside class="mg-facts"><div><b>0 год</b><span>Слияние Лимна и Терры Валор</span></div><div><b>700</b><span>открытие Люмерита</span></div><div><b>702</b><span>падение Риверсайда и гибель последнего Тихого древа</span></div></aside></div>` : ''}
 <div class="sec-head" style="margin-top:56px"><div class="eyebrow">Летопись</div><h2>От Слияния до падения Риверсайда</h2><p>Годы считают от Слияния — дня, когда люди пришли в Лимн.</p></div>
-<ol class="wt">${M.worldTimeline.map(([y, t]) => `<li><b>${y}</b><p>${t}</p></li>`).join('')}</ol>
+<div class="we">${M.worldEras.map(e => `<article class="panel we-era"><div class="eyebrow">${e.y}</div><h3>${e.t}</h3><p class="we-lead">${e.lead}</p>${e.items.length ? `<div class="we-items">${e.items.map(([h, d]) => `<div><b>${h}</b><p>${d}</p></div>`).join('')}</div>` : ''}</article>`).join('')}</div>
 <p style="margin-top:26px"><a class="btn ghost" href="#limn">Лимн до людей</a> <a class="btn ghost" href="#history">История Меттенхейма</a></p>
 </div></section>`;
 }
@@ -1020,7 +1054,7 @@ const ROUTES = {
   inferno: [pageInferno],
   cabinet: [() => pageCabinet('player'), () => window.Cabinet.mount($('#cabMount'), 'player')], admin: [() => pageCabinet('admin'), () => window.Cabinet.mount($('#cabMount'), 'admin')],
   city: [pageCity], history: [pageHistory, mountChrono], houses: [pageHouses, () => { $$('[data-pick]').forEach(b => b.addEventListener('click', () => { if (b.dataset.pick !== house) applyHouse(b.dataset.pick, true); })); setVars(); MH.onHouse(hcards); }],
-  lumerite: [pageLumerite], faith: [pageFaith], magic: [pageMagic], limn: [pageLimn], world: [pageWorld], deck: [pageDeck, mountDeck],
+  lumerite: [pageLumerite], faith: [pageFaith], magic: [pageMagic], limn: [pageLimn], map: [pageMap, mountMap], world: [pageWorld], deck: [pageDeck, mountDeck],
   rules: [pageRules], discord: [pageDiscord], start: [pageStart], faq: [pageFaq], modlist: [pageModlist],
   races: [pageRaces, mountRaces], classes: [pageClasses, mountClasses], system: [pageSystem, () => mountDice($('[data-dice]').parentElement)], eloquence: [pageEloquence, () => window.Eloquence.mount($('#eloqMount'))], healing: [pageHealing, () => window.Healing.mount($('#healMount'))],
   tree: [pageTree], forge: [pageForge, () => window.Forge.mount($('#forgeMount'))], armor: [pageArmor, () => window.Armor.mount($('#armorMount'))], craft: [pageCraft, () => window.Craft.mount($('#craftMount'))], gathering: [pageGathering, () => window.Gathering.mount($('#gatherMount'))], blueprints: [pageBlueprints, () => window.Blueprints.mount($('#bpMount'))], recycle: [pageRecycle, () => window.Recycler.mount($('#recycleMount'))], alchemy: [pageAlchemy, () => window.Alchemy.mount($('#alchMount'))], cooking: [pageCooking, () => window.Cooking.mount($('#cookMount'))], body: [pageBody, () => window.BodyLab.mount($('#bodyMount'))], curses: [pageCurses, () => window.CurseLab.mount($('#curseMount'))], cursed: [pageCursed], factions: [pageFactions, () => window.Factions.mount($('#factionMount'))], inventions: [pageInventions, () => window.Inventor.mount($('#invMount'))]
@@ -1066,7 +1100,7 @@ function bookify(view, chapter) {
 }
 let lastRoute = null;
 /* тяжёлые арты (предметы ~5 МБ, иконки ~2 МБ) грузятся только для страниц, где они нужны */
-const LIGHT = new Set(['home', 'anketa', 'cabinet', 'admin', 'residents', 'chat', 'news', 'hero', 'glossary', 'chronicle', 'privacy', 'city', 'history', 'limn', 'houses', 'lumerite', 'faith', 'world', 'rules', 'discord', 'start', 'faq', 'modlist', 'inferno', 'races']);
+const LIGHT = new Set(['home', 'anketa', 'cabinet', 'admin', 'residents', 'chat', 'news', 'hero', 'glossary', 'chronicle', 'privacy', 'city', 'history', 'limn', 'map', 'houses', 'lumerite', 'faith', 'world', 'rules', 'discord', 'start', 'faq', 'modlist', 'inferno', 'races']);
 const ART_V = ((document.querySelector('script[src*="app.js"]') || {}).src || '').split('?')[1] || '';
 let artP = null;
 const loadArt = () => artP || (artP = Promise.all(['items-art.js', 'icons-art.js'].map(f => new Promise((res, rej) => {

@@ -2498,3 +2498,29 @@ body.tree-mode .pipe-side { display: none; }
 .wg.saga li p { white-space: pre-line; font-size: 17px; line-height: 1.75; }
 .saga-end { margin: 6px 0 0 76px; padding: 18px 24px; border-left: 2px solid var(--house); white-space: pre-line; font-size: 22px; line-height: 1.6; font-style: italic; color: var(--house-hi); background: rgba(15,11,8,.5); }
 @media (max-width: 700px) { .saga-end { margin-left: 0; font-size: 18px; } }
+.we { display: grid; gap: 16px; }
+.we-era h3 { margin: 4px 0 8px; font-size: 30px; text-transform: uppercase; letter-spacing: .02em; }
+.we-lead { margin: 0 0 14px; color: var(--parch); font-size: 15.5px; line-height: 1.6; max-width: 80ch; }
+.we-items { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
+.we-items div { padding: 12px 14px; border: 1px solid var(--rivet); background: rgba(15,11,8,.6); }
+.we-items b { display: block; margin-bottom: 6px; color: var(--house-hi); font-size: 14px; }
+.we-items p { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--smoke); }
+/* Карта мира */
+.map-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.map-tabs button { padding: 10px 18px; border: 1px solid var(--rivet); background: #120e0b; color: var(--smoke); font: inherit; font-size: 14px; letter-spacing: .06em; cursor: pointer; }
+.map-tabs button[aria-selected="true"] { border-color: var(--house); color: var(--parch); background: color-mix(in srgb, var(--house) 16%, #120e0b); }
+.map-wrap { position: relative; }
+.map-view { position: relative; height: min(72vh, 720px); overflow: hidden; border: 1px solid var(--rivet); background: #0b0907; cursor: grab; touch-action: none; user-select: none; }
+.map-view.drag { cursor: grabbing; }
+.map-layer { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.map-layer img { width: 100%; height: 100%; display: block; pointer-events: none; }
+.map-pin { position: absolute; transform: translate(-50%, -50%) scale(var(--inv, 1)); background: none; border: 0; padding: 0; cursor: pointer; display: grid; justify-items: center; gap: 4px; }
+.map-pin i { width: 18px; height: 18px; transform: rotate(45deg); background: var(--house); border: 2px solid #1a130e; box-shadow: 0 0 0 2px var(--house-hi), 0 0 14px var(--house); }
+.map-pin span { font-size: 12px; font-weight: 700; color: var(--parch); background: rgba(12,9,8,.82); padding: 2px 7px; white-space: nowrap; border: 1px solid var(--rivet); }
+.map-pin.on i, .map-pin:hover i { background: var(--house-hi); }
+.map-ctrl { position: absolute; left: 12px; top: 12px; display: grid; gap: 6px; z-index: 2; }
+.map-ctrl button { width: 36px; height: 36px; background: rgba(18,14,11,.92); border: 1px solid var(--rivet); color: var(--parch); font-size: 18px; cursor: pointer; }
+.map-info { position: absolute; right: 12px; top: 12px; width: 300px; max-height: calc(100% - 24px); overflow: auto; z-index: 2; background: rgba(23,18,14,.95); }
+.map-info h3 { margin: 4px 0 8px; font-size: 24px; } .map-info p { margin: 0 0 8px; font-size: 14px; line-height: 1.55; color: var(--parch); }
+.map-kv { color: var(--smoke) !important; } .map-kv b { color: var(--house-hi); }
+@media (max-width: 800px) { .map-info { position: static; width: auto; margin-top: 12px; } .map-view { height: 60vh; } }
