@@ -483,7 +483,7 @@ function fillSlots(root) {
 const liveSite = () => api().configured() && (!CFG.siteUrl || window.MH_CABINET_API || location.origin === new URL(CFG.siteUrl).origin);
 let headSess = null, headProf = null;
 function paintHeader(sess, prof) {
-  headSess = sess;
+  headSess = sess; bellInit(sess);
   if (prof !== undefined) headProf = prof;
   if (!sess) headProf = null;
   const b = document.getElementById('cabBtn'); if (!b) return;
@@ -498,6 +498,93 @@ function paintHeader(sess, prof) {
     b.classList.remove('in'); b.title = 'Личный кабинет';
     b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg><span>Войти</span>';
   }
+}
+/* ---------- колокольчик: статус квенты, ответы в чате, комментарии к артам ---------- */
+const BELL_SEEN = 'mh:bell-seen';
+const BELL_VERD = { submitted: ['📨', 'Квента ушла мастерам'], approved: ['✅', 'Квента принята'], revision: ['🛠️', 'Квента вернулась на доработку'], rejected: ['❌', 'Квента отклонена'], comment: ['💬', 'Мастер оставил комментарий'] };
+const bell = { uid: null, items: [], told: null, t: 0 };
+const seenAt = () => { try { return +localStorage.getItem(BELL_SEEN) || 0; } catch (_) { return 0; } };
+function bellInit(sess) {
+  if (!liveSite()) return;
+  let b = document.getElementById('bellBtn');
+  if (!sess) { if (b) b.remove(); bell.uid = null; clearInterval(bell.t); return; }
+  if (!b) {
+    b = document.createElement('button'); b.id = 'bellBtn'; b.type = 'button'; b.className = 'icon-btn bell-btn'; b.title = 'Уведомления'; b.setAttribute('aria-label', 'Уведомления'); b.setAttribute('aria-expanded', 'false');
+    b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 16V11a6 6 0 1 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg><i class="bell-n" hidden></i>';
+    const cab = document.getElementById('cabBtn'); if (cab) cab.before(b);
+    b.onclick = () => bellOpen(b);
+  }
+  if (bell.uid !== sess.user.id) { bell.uid = sess.user.id; bell.told = null; bellLoad(); clearInterval(bell.t); bell.t = setInterval(() => { if (!document.hidden) bellLoad(); }, 60000); }
+}
+async function bellLoad() {
+  const uid = bell.uid; if (!uid) return;
+  const c = await sb(), items = [];
+  try {
+    const ch = await c.from('characters').select('id,name').eq('owner', uid);
+    const names = new Map((ch.data || []).map(x => [x.id, x.name || 'Без имени']));
+    if (names.size) {
+      const rv = await c.from('reviews').select('id,character_id,verdict,body,created_at,author').in('character_id', [...names.keys()]).order('created_at', { ascending: false }).limit(25);
+      (rv.data || []).forEach(r => {
+        if (r.author === uid && r.verdict !== 'submitted') return;
+        const v = BELL_VERD[r.verdict]; if (!v) return;
+        items.push({ k: 'rv' + r.id, at: r.created_at, icon: v[0], kind: r.verdict, title: `${v[1]} · ${names.get(r.character_id)}`, text: (r.body || '').replace(/\s+/g, ' ').slice(0, 120), href: '#cabinet' });
+      });
+    }
+  } catch (_) {}
+  try {
+    const mine = await c.from('chat_messages').select('discord_id').eq('profile_id', uid).order('created_at', { ascending: false }).limit(60);
+    const dids = new Set((mine.data || []).map(m => m.discord_id).filter(Boolean));
+    if (dids.size) {
+      const rec = await c.from('chat_messages').select('id,discord_id,author,body,created_at,profile_id').like('body', '> ↪ %').order('created_at', { ascending: false }).limit(80);
+      (rec.data || []).forEach(m => {
+        const rp = splitReply(m.body); if (!rp.did || !dids.has(rp.did) || m.profile_id === uid) return;
+        items.push({ k: 'ch' + m.id, at: m.created_at, icon: '↩️', kind: 'reply', title: `${m.author || 'Житель'} ответил(а) тебе в чате`, text: rp.rest.replace(/\s+/g, ' ').slice(0, 120), href: '#chat-d' + (m.discord_id || rp.did) });
+      });
+    }
+  } catch (_) {}
+  try {
+    const arts = await c.from('gallery_arts').select('id,title').eq('owner', uid).limit(200);
+    const at = new Map((arts.data || []).map(a => [a.id, a.title]));
+    if (at.size) {
+      const cm = await c.from('gallery_comments').select('id,art_id,author,body,created_at,owner').in('art_id', [...at.keys()]).order('created_at', { ascending: false }).limit(25);
+      (cm.data || []).forEach(x => { if (x.owner !== uid) items.push({ k: 'gc' + x.id, at: x.created_at, icon: '🎨', kind: 'art', title: `${x.author} — комментарий к «${at.get(x.art_id)}»`, text: x.body.replace(/\s+/g, ' ').slice(0, 120), href: '#gallery-' + x.art_id }); });
+    }
+  } catch (_) {}
+  items.sort((a, b) => new Date(b.at) - new Date(a.at));
+  bell.items = items.slice(0, 30);
+  // всплывающее уведомление браузера — только о новом с прошлой проверки
+  if (bell.told) {
+    const fresh = bell.items.filter(i => !bell.told.has(i.k) && new Date(i.at).getTime() > seenAt());
+    fresh.slice(0, 3).forEach(i => { play('click'); try { if ('Notification' in window && Notification.permission === 'granted') { const n = new Notification(i.icon + ' ' + i.title, { body: i.text, icon: 'assets/logo-sm.webp', tag: i.k }); n.onclick = () => { focus(); location.hash = i.href; n.close(); }; } } catch (_) {} });
+  }
+  bell.told = new Set(bell.items.map(i => i.k));
+  bellBadge();
+}
+// новое сообщение в открытом чате — сразу проверить, не ответ ли это мне
+window.MH_BELL = { chat: m => { if (bell.uid && m.profile_id !== bell.uid && REPLY_RE.test(m.body || '')) bellLoad(); }, refresh: () => bellLoad() };
+function bellBadge() {
+  const n = bell.items.filter(i => new Date(i.at).getTime() > seenAt()).length, el = document.querySelector('#bellBtn .bell-n');
+  if (!el) return; el.hidden = !n; el.textContent = n > 9 ? '9+' : n;
+  document.getElementById('bellBtn').classList.toggle('has', !!n);
+}
+function bellOpen(btn) {
+  const old = document.querySelector('.bell-pop'); if (old) { old.remove(); btn.setAttribute('aria-expanded', 'false'); return; }
+  const seen = seenAt();
+  const pop = document.createElement('div'); pop.className = 'bell-pop'; pop.setAttribute('role', 'dialog'); pop.setAttribute('aria-label', 'Уведомления');
+  const perm = 'Notification' in window ? Notification.permission : 'unsupported';
+  pop.innerHTML = `<div class="bell-h"><b>Уведомления</b>${perm === 'default' ? '<button type="button" class="ch-link" id="bellPerm">Включить всплывающие</button>' : perm === 'granted' ? '<small>Всплывающие включены</small>' : ''}</div>
+    <div class="bell-l">${bell.items.length ? bell.items.map(i => `<a href="${i.href}" class="bell-i k-${i.kind}${new Date(i.at).getTime() > seen ? ' new' : ''}"><span class="bell-ic">${i.icon}</span><span><b>${esc(i.title)}</b>${i.text ? `<small>${esc(i.text)}</small>` : ''}<time>${chatTime(i.at)}</time></span></a>`).join('') : '<p class="muted bell-empty">Пока пусто. Сюда придут решения мастеров по квенте, ответы тебе в чате и комментарии к твоим артам.</p>'}</div>
+    <div class="bell-f">Решения по квенте бот также присылает в личку Discord.</div>`;
+  document.body.append(pop); btn.setAttribute('aria-expanded', 'true');
+  const r = btn.getBoundingClientRect();
+  pop.style.top = r.bottom + 10 + 'px'; pop.style.right = Math.max(8, innerWidth - r.right - 8) + 'px';
+  try { localStorage.setItem(BELL_SEEN, String(Date.now())); } catch (_) {}
+  setTimeout(bellBadge, 0);
+  const pb = pop.querySelector('#bellPerm'); if (pb) pb.onclick = async () => { try { await Notification.requestPermission(); } catch (_) {} pop.remove(); bellOpen(btn); };
+  const shut = () => { pop.remove(); btn.setAttribute('aria-expanded', 'false'); removeEventListener('pointerdown', close, true); };
+  const close = e => { if (pop.contains(e.target) || btn.contains(e.target)) return; shut(); };
+  pop.addEventListener('click', e => { if (e.target.closest('a')) setTimeout(shut, 0); });
+  setTimeout(() => addEventListener('pointerdown', close, true), 0);
 }
 function initHeader() {
   if (!liveSite()) return;
@@ -610,6 +697,36 @@ function chatText(t) {
 }
 const chatTime = d => { const t = new Date(d), now = new Date(); const hm = t.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }); return t.toDateString() === now.toDateString() ? hm : t.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }) + ', ' + hm; };
 // opts.dock — чат в плавающем облачке: живёт между страницами; opts.active() — открыто ли облачко; opts.onNew(msg) — новое сообщение
+/* ---------- смайлики: общий выбор для чата, реакций и витрины ---------- */
+const EMOJI = [
+  ['Лица', '😀 😄 😁 😂 🤣 😊 🙂 😉 😍 🥰 😘 😎 🤩 🥳 😏 🤔 🤨 😐 😶 🙄 😬 😴 😮 😯 😲 😳 🥺 😢 😭 😤 😠 😡 🤬 😱 😨 😰 🤯 🤪 😜 😇 🤗 🤭 🫡 🤫 😈 👿 💀 👻 🤡 🤖'],
+  ['Жесты', '👍 👎 👌 ✌️ 🤞 🤝 👏 🙌 🙏 💪 👋 🫶 ✊ 👊 🖐️ ☝️ 👀 🫠'],
+  ['Сердца', '❤️ 🧡 💛 💚 💙 💜 🖤 🤍 💔 ❣️ 💕 💯 ✨ ⭐ 🌟 🔥 💥 💫'],
+  ['Город', '⚙️ 🔩 🔧 🛠️ ⚒️ ⚔️ 🗡️ 🛡️ 🏹 🔫 💣 🧪 ⚗️ 💎 🪙 💰 📜 🗝️ 🕯️ 🎲 🍺 🍷 🥖 🍖 🚂 🏭 🌫️ 🌙 ☠️ 🩸 🌿 🍄'],
+  ['Дома', '🟡 🔴 👑 🏛️ ⚖️ 🗳️ 📯 🎭']
+];
+const QUICK = ['👍', '❤️', '😂', '😮', '😢', '🔥', '⚙️', '⚔️'];
+function emojiPicker(anchor, onPick, quick) {
+  qa('.emo-pop').forEach(p => p.remove());
+  const pop = document.createElement('div'); pop.className = 'emo-pop'; pop.setAttribute('role', 'dialog'); pop.setAttribute('aria-label', 'Смайлики');
+  pop.innerHTML = (quick ? `<div class="emo-quick">${QUICK.map(e => `<button type="button" data-e="${e}">${e}</button>`).join('')}</div>` : '')
+    + EMOJI.map(([t, s]) => `<div class="emo-k">${t}</div><div class="emo-grid">${s.split(' ').map(e => `<button type="button" data-e="${e}">${e}</button>`).join('')}</div>`).join('');
+  document.body.append(pop);
+  const r = anchor.getBoundingClientRect(), w = pop.offsetWidth, h = pop.offsetHeight;
+  pop.style.left = Math.max(8, Math.min(innerWidth - w - 8, r.right - w)) + 'px';
+  pop.style.top = (r.top - h - 8 > 8 ? r.top - h - 8 : Math.min(innerHeight - h - 8, r.bottom + 8)) + 'px';
+  const close = () => { pop.remove(); removeEventListener('pointerdown', out, true); removeEventListener('keydown', esc_); };
+  const out = e => { if (!pop.contains(e.target) && e.target !== anchor) close(); };
+  const esc_ = e => { if (e.key === 'Escape') close(); };
+  pop.addEventListener('click', e => { const b = e.target.closest('[data-e]'); if (b) { onPick(b.dataset.e); if (quick) close(); } });
+  setTimeout(() => { addEventListener('pointerdown', out, true); addEventListener('keydown', esc_); }, 0);
+  return pop;
+}
+// ответ как в Discord: первая строка-цитата со ссылкой на сообщение. Её же видят в канале Discord.
+const SITE_URL = (CFG.siteUrl || 'https://nacsu0102.github.io/mettenheim/').replace(/#.*$/, '');
+const REPLY_RE = /^> ↪ \[([^\]]*)\]\([^)\s]*#chat-d(\d+)\):? ?([^\n]*)\n?/;
+const splitReply = body => { const m = REPLY_RE.exec(body || ''); return m ? { name: m[1], did: m[2], quote: m[3], rest: (body || '').slice(m[0].length) } : { rest: body || '' }; };
+const replyLine = m => { const rp = splitReply(m.body); const cut = rp.rest.replace(/\s+/g, ' ').replace(/[[\]()<>*_`|~]/g, '').trim(); return `> ↪ [${String(m.author || 'Житель').replace(/[[\]]/g, '')}](${SITE_URL}#chat-d${m.discord_id}): ${cut.length > 70 ? cut.slice(0, 70) + '…' : cut || '📎 вложение'}\n`; };
 async function chatPage(el, opts = {}) {
   if (!el) return;
   if (!api().configured() || window.MH_CABINET_API || !liveSite()) {
@@ -623,37 +740,64 @@ async function chatPage(el, opts = {}) {
   const c = await sb();
   let sess = null, prof = null;
   try { sess = await api().session(); if (sess) prof = await api().myProfile(sess.user.id); } catch (_) {}
+  const me = sess ? sess.user.id : null;
   const staff = prof && ['master', 'admin'].includes(prof.role);
-  const msgs = new Map();
+  const msgs = new Map(), reacts = new Map();
+  let reactOk = true, replyTo = null;
   const atBottom = () => log.scrollHeight - log.scrollTop - log.clientHeight < 80;
+  const myDids = () => new Set([...msgs.values()].filter(m => me && m.profile_id === me && m.discord_id).map(m => m.discord_id));
+  function reactRow(m) {
+    const r = reacts.get(m.id); if (!r) return '';
+    const list = [...r].filter(([, s]) => s.size); if (!list.length) return '';
+    return `<div class="ch-reacts">${list.map(([e, s]) => `<button type="button" class="ch-rc${me && s.has(me) ? ' on' : ''}" data-rc="${m.id}" data-e="${esc(e)}" title="${s.size === 1 ? '1 реакция' : s.size + ' реакций'}"${me ? '' : ' disabled'}>${esc(e)}<b>${s.size}</b></button>`).join('')}${me ? `<button type="button" class="ch-rc add" data-react="${m.id}" title="Добавить реакцию" aria-label="Добавить реакцию">+</button>` : ''}</div>`;
+  }
   function draw(stick) {
     const list = [...msgs.values()].sort((a, b) => new Date(a.created_at) - new Date(b.created_at) || a.id - b.id);
     if (!list.length) { log.innerHTML = '<p class="muted ch-note">Пока тихо. Напиши первым — сообщение появится и в Discord.</p>'; return; }
-    const keep = stick || atBottom();
+    const keep = stick || atBottom(), mine = myDids();
     let prev = null;
     log.innerHTML = list.map(m => {
-      const cont = prev && prev.author === m.author && prev.source === m.source && new Date(m.created_at) - new Date(prev.created_at) < 5 * 60 * 1000;
+      const rp = splitReply(m.body);
+      const cont = !rp.did && prev && prev.author === m.author && prev.source === m.source && new Date(m.created_at) - new Date(prev.created_at) < 5 * 60 * 1000;
+      const ping = rp.did && mine.has(rp.did) && m.profile_id !== me;
       prev = m;
       const att = (m.attachments || []).map(a => a.image ? `<a href="${esc(a.url)}" target="_blank" rel="noopener"><img class="ch-img" src="${esc(a.url)}" alt="${esc(a.name)}" loading="lazy"></a>` : `<a class="ch-file" href="${esc(a.url)}" target="_blank" rel="noopener">📎 ${esc(a.name)}</a>`).join('');
-      return `<div class="ch-msg${cont ? ' cont' : ''}${m.profile_id && sess && m.profile_id === sess.user.id ? ' mine' : ''}" data-id="${m.id}">
+      const tools = (me ? `${reactOk ? `<button type="button" data-react="${m.id}" title="Реакция" aria-label="Поставить реакцию">😊</button>` : ''}${m.discord_id ? `<button type="button" data-reply="${m.id}" title="Ответить" aria-label="Ответить">↩</button>` : ''}` : '') + (staff ? `<button type="button" class="ch-del" data-del="${m.id}" title="Удалить сообщение" aria-label="Удалить сообщение">✕</button>` : '');
+      return `<div class="ch-msg${cont ? ' cont' : ''}${m.profile_id && m.profile_id === me ? ' mine' : ''}${ping ? ' ping' : ''}${rp.did ? ' is-reply' : ''}" data-id="${m.id}" data-did="${esc(m.discord_id || '')}">
+        ${rp.did ? `<button type="button" class="ch-ref" data-goto="${rp.did}"><i aria-hidden="true"></i><b>${esc(rp.name)}</b><span>${esc(rp.quote)}</span></button>` : ''}
         ${cont ? '<span class="ch-ava-sp"></span>' : (m.avatar ? `<img class="ch-ava" src="${esc(m.avatar)}" alt="" loading="lazy">` : `<span class="ch-ava cab-ava-empty">${esc((m.author || '?').slice(0, 1).toUpperCase())}</span>`)}
         <div class="ch-body">${cont ? '' : `<div class="ch-meta"><b>${esc(m.author || 'Без имени')}</b><span class="ch-src ${m.source}">${m.source === 'site' ? 'сайт' : 'discord'}</span><time>${chatTime(m.created_at)}</time></div>`}
-          ${m.body ? `<div class="ch-text">${chatText(m.body)}</div>` : ''}${att ? `<div class="ch-att">${att}</div>` : ''}</div>
-        ${staff ? `<button type="button" class="ch-del" data-del="${m.id}" title="Удалить сообщение" aria-label="Удалить сообщение">✕</button>` : ''}</div>`;
+          ${rp.rest ? `<div class="ch-text">${chatText(rp.rest)}</div>` : ''}${att ? `<div class="ch-att">${att}</div>` : ''}${reactRow(m)}</div>
+        ${tools ? `<div class="ch-tools">${tools}</div>` : ''}</div>`;
     }).join('');
     if (keep) log.scrollTop = log.scrollHeight;
   }
   const add = rows => rows.forEach(r => msgs.set(r.id, r));
+  const putReact = (r, on) => { let mm = reacts.get(r.message_id); if (!mm) reacts.set(r.message_id, mm = new Map()); let s = mm.get(r.emoji); if (!s) mm.set(r.emoji, s = new Set()); on ? s.add(r.profile_id) : s.delete(r.profile_id); };
   try {
     const r = await c.from('chat_messages').select('*').order('created_at', { ascending: false }).limit(80);
     if (r.error) throw r.error;
     add(r.data || []);
   } catch (e) { log.innerHTML = `<p class="muted ch-note">Чат пока не подключён: ${esc(errText(e))}</p>`; return; }
+  try {
+    const ids = [...msgs.keys()];
+    const r = ids.length ? await c.from('chat_reactions').select('message_id,profile_id,emoji').in('message_id', ids) : { data: [] };
+    if (r.error) reactOk = false; else (r.data || []).forEach(x => putReact(x, true));
+  } catch (_) { reactOk = false; }
   draw(true);
-  // мгновенно: новые строки из базы
-  const rt = c.channel('mh-chat').on('postgres_changes', { event: '*', schema: 'public', table: 'chat_messages' }, p => {
+  const goto = did => {
+    const t = q(`.ch-msg[data-did="${CSS.escape(did)}"]`, log);
+    if (!t) { toast(el, 'Это сообщение старше загруженных', true); return; }
+    t.scrollIntoView({ behavior: 'smooth', block: 'center' }); t.classList.remove('flash'); void t.offsetWidth; t.classList.add('flash');
+  };
+  const hm = /#chat-d(\d+)/.exec(location.hash); if (hm) setTimeout(() => goto(hm[1]), 300);
+  // мгновенно: новые строки из базы и реакции
+  const rt = c.channel('mh-chat-' + Math.random().toString(36).slice(2)).on('postgres_changes', { event: '*', schema: 'public', table: 'chat_messages' }, p => {
     if (p.eventType === 'DELETE') { msgs.delete(p.old.id); draw(); return; }
-    if (p.new && p.new.id) { const mine = atBottom(); msgs.set(p.new.id, p.new); draw(mine); if (p.new.source === 'discord') play('click'); if (p.eventType === 'INSERT' && opts.onNew) opts.onNew(p.new); }
+    if (p.new && p.new.id) { const mine = atBottom(); msgs.set(p.new.id, p.new); draw(mine); if (p.new.source === 'discord') play('click'); if (p.eventType === 'INSERT' && opts.onNew) opts.onNew(p.new); if (p.eventType === 'INSERT' && window.MH_BELL) window.MH_BELL.chat(p.new); }
+  }).on('postgres_changes', { event: '*', schema: 'public', table: 'chat_reactions' }, p => {
+    const row = p.eventType === 'DELETE' ? p.old : p.new; if (!row || !msgs.has(row.message_id)) return;
+    putReact(row, p.eventType !== 'DELETE'); draw();
   }).subscribe();
   // забираем новое из Discord, пока страница открыта (в облачке — пока оно развёрнуто)
   const sync = () => { if (document.hidden || (opts.active && !opts.active())) return; fetch(fnUrl('chat=sync'), { headers: { Authorization: 'Bearer ' + CFG.anonKey, apikey: CFG.anonKey } }).catch(() => {}); };
@@ -661,8 +805,20 @@ async function chatPage(el, opts = {}) {
   const stop = () => { clearInterval(timer); try { c.removeChannel(rt); } catch (_) {} window.removeEventListener('hashchange', stop); };
   if (!opts.dock) window.addEventListener('hashchange', stop);
 
-  if (staff) log.addEventListener('click', async ev => {
-    const b = ev.target.closest('[data-del]'); if (!b) return;
+  async function toggleReact(id, e) {
+    if (!me) return;
+    const s = reacts.get(id)?.get(e), had = !!(s && s.has(me));
+    putReact({ message_id: id, profile_id: me, emoji: e }, !had); draw();
+    const r = had ? await c.from('chat_reactions').delete().eq('message_id', id).eq('profile_id', me).eq('emoji', e)
+      : await c.from('chat_reactions').insert({ message_id: id, profile_id: me, emoji: e });
+    if (r.error) { putReact({ message_id: id, profile_id: me, emoji: e }, had); draw(); toast(el, 'Реакция не сохранилась: ' + errText(r.error), true); }
+  }
+  log.addEventListener('click', async ev => {
+    const g = ev.target.closest('[data-goto]'); if (g) { goto(g.dataset.goto); return; }
+    const rc = ev.target.closest('[data-rc]'); if (rc) { toggleReact(+rc.dataset.rc, rc.dataset.e); return; }
+    const ra = ev.target.closest('[data-react]'); if (ra) { emojiPicker(ra, e => toggleReact(+ra.dataset.react, e), true); return; }
+    const rp = ev.target.closest('[data-reply]'); if (rp) { setReply(msgs.get(+rp.dataset.reply)); return; }
+    const b = ev.target.closest('[data-del]'); if (!b || !staff) return;
     if (!b.dataset.sure) { b.dataset.sure = '1'; b.textContent = 'Удалить?'; setTimeout(() => { if (b.isConnected) { delete b.dataset.sure; b.textContent = '✕'; } }, 3000); return; }
     const s = await api().session();
     const r = await fetch(fnUrl('chat=del'), { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + s.access_token, apikey: CFG.anonKey }, body: JSON.stringify({ id: +b.dataset.del }) });
@@ -674,21 +830,30 @@ async function chatPage(el, opts = {}) {
     q('#chLogin', el).onclick = async () => { try { sessionStorage.setItem(AFTER_KEY, 'chat'); } catch (_) {} try { await api().signInDiscord(); } catch (e) { toast(el, errText(e), true); } };
     return;
   }
-  foot.innerHTML = `<form class="ch-form" id="chForm">${avaOf(prof) ? `<img class="ch-ava" src="${esc(avaOf(prof))}" alt="">` : ''}<textarea id="chIn" rows="1" maxlength="1500" placeholder="Сообщение в общий чат… Enter — отправить, Shift+Enter — новая строка" aria-label="Сообщение"></textarea><button class="btn small" type="submit">Отправить</button></form>`;
-  const form = q('#chForm', el), inp = q('#chIn', el);
+  foot.innerHTML = `<div class="ch-replybar" id="chReply" hidden></div><form class="ch-form" id="chForm">${avaOf(prof) ? `<img class="ch-ava" src="${esc(avaOf(prof))}" alt="">` : ''}<div class="ch-in"><textarea id="chIn" rows="1" maxlength="1500" placeholder="Сообщение в общий чат… Enter — отправить, Shift+Enter — новая строка" aria-label="Сообщение"></textarea><button type="button" class="ch-emo-btn" id="chEmo" title="Смайлики" aria-label="Смайлики">😊</button></div><button class="btn small" type="submit">Отправить</button></form>`;
+  const form = q('#chForm', el), inp = q('#chIn', el), bar = q('#chReply', el);
+  function setReply(m) {
+    replyTo = m && m.discord_id ? m : null;
+    if (!replyTo) { bar.hidden = true; bar.innerHTML = ''; return; }
+    const rp = splitReply(m.body);
+    bar.innerHTML = `<span>↩ Ответ <b>${esc(m.author || 'Житель')}</b>: ${esc(rp.rest.replace(/\s+/g, ' ').slice(0, 80)) || '📎 вложение'}</span><button type="button" aria-label="Отменить ответ" title="Отменить ответ">✕</button>`;
+    bar.hidden = false; q('button', bar).onclick = () => setReply(null); inp.focus();
+  }
   const grow = () => { inp.style.height = 'auto'; inp.style.height = Math.min(160, inp.scrollHeight) + 'px'; };
   inp.addEventListener('input', grow);
-  inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); form.requestSubmit(); } });
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); form.requestSubmit(); } if (e.key === 'Escape' && replyTo) setReply(null); });
+  q('#chEmo', el).onclick = e => emojiPicker(e.currentTarget, em => { const a = inp.selectionStart ?? inp.value.length, b = inp.selectionEnd ?? a; inp.value = inp.value.slice(0, a) + em + inp.value.slice(b); inp.selectionStart = inp.selectionEnd = a + em.length; inp.focus(); grow(); });
   form.onsubmit = async ev => {
     ev.preventDefault();
-    const text = inp.value.trim(); if (!text) return;
-    const btn = q('button', form); btn.disabled = true;
+    let text = inp.value.trim(); if (!text) return;
+    if (replyTo) text = (replyLine(replyTo) + text).slice(0, 1500);
+    const btn = q('button[type=submit]', form); btn.disabled = true;
     try {
       const s = await api().session();
       const r = await fetch(fnUrl('chat=send'), { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + s.access_token, apikey: CFG.anonKey }, body: JSON.stringify({ text }) });
       const j = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(j.error || 'Сообщение не ушло');
-      inp.value = ''; grow(); play('click');
+      inp.value = ''; grow(); setReply(null); play('click');
     } catch (e) { toast(el, errText(e), true); }
     btn.disabled = false; inp.focus();
   };
@@ -852,7 +1017,183 @@ function chatDock() {
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', chatDock); else chatDock();
 
-window.Cabinet = { mount, api: SupabaseApi, fillSlots, anketaStatus, initHeader, community, residentsPage, chat: chatPage, live: liveBlock, news: newsPage, hero: heroPage };
+/* ---------- витрина артов: игроки выкладывают арты, ставят лайки, комментируют ---------- */
+const GAL_DEMO = [
+  ['Меттенхейм на рассвете', 'assets/codex/city-v2.webp', 'Эльза Вермеер', 'talbot', 'Вид с крыши литейного цеха. Писала по памяти после ночной смены.', 24],
+  ['Мастерская Инженера', 'assets/classes/scene-engineer.webp', 'Ингрид Штоль', 'dorn', 'Мой верстак — со всеми его шрамами.', 17],
+  ['Плетение у котлов', 'assets/classes/scene-mage.webp', 'Лиара Тенн', 'talbot', 'Первое заклинание моего мага, нарисовала к квенте.', 31],
+  ['Тень на складах', 'assets/classes/scene-rogue.webp', 'Кассиан Мор', 'dorn', '', 12],
+  ['Архив Коллегии', 'assets/codex/archive.webp', 'Ансельм Грей', '', 'Скетч к ивенту в архиве.', 8],
+  ['Стрелок дозора', 'assets/classes/scene-shooter.webp', 'Ансельм Грей', 'talbot', 'Портрет персонажа — коммишн у друга.', 19],
+  ['Литейщик', 'assets/classes/scene-fighter.webp', 'Брандт Кессель', 'dorn', 'Перед боем на заводском ринге.', 22],
+  ['Вера Столпов', 'assets/codex/faith.webp', 'Вира Сольт', '', '', 6]
+].map(([title, image_url, author, house, body, likes], i) => ({ id: -1 - i, title, image_url, author, house, body, likes, comments: i % 3 ? 0 : 2, created_at: new Date(Date.now() - i * 864e5 * 1.7).toISOString(), demo: true }));
+const HOUSE_TAG = { talbot: '🟡 Жёлтые', dorn: '🔴 Красные' };
+async function shrinkImage(file) {
+  const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('Не удалось открыть картинку')); i.src = URL.createObjectURL(file); });
+  let max = 2000, q = .86, blob = null;
+  for (let k = 0; k < 5; k++) {
+    const s = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+    const cv = document.createElement('canvas'); cv.width = Math.round(img.naturalWidth * s); cv.height = Math.round(img.naturalHeight * s);
+    cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+    blob = await new Promise(r => cv.toBlob(r, 'image/webp', q));
+    if (!blob) blob = await new Promise(r => cv.toBlob(r, 'image/jpeg', q));
+    if (blob.size < 2.6e6) break;
+    max *= .8; q -= .06;
+  }
+  URL.revokeObjectURL(img.src);
+  return blob;
+}
+async function galleryPage(el, openId) {
+  if (!el) return;
+  const live = liveSite();
+  let c = null, sess = null, prof = null, me = null, staff = false;
+  let arts = [], liked = new Set(), demo = !live;
+  const f = { house: '', sort: 'new' };
+  if (live) {
+    c = await sb();
+    try { sess = await api().session(); if (sess) { me = sess.user.id; prof = await api().myProfile(me); } } catch (_) {}
+    staff = !!(prof && ['master', 'admin'].includes(prof.role));
+  }
+  el.innerHTML = `<div class="gl-bar panel"><div class="gl-chips" role="group" aria-label="Дом">${[['', 'Все'], ['talbot', '🟡 Жёлтые'], ['dorn', '🔴 Красные']].map(([k, t]) => `<button type="button" data-gh="${k}" aria-pressed="${k === ''}">${t}</button>`).join('')}</div>
+    <div class="gl-chips" role="group" aria-label="Порядок">${[['new', 'Новые'], ['top', 'Любимые']].map(([k, t]) => `<button type="button" data-gs="${k}" aria-pressed="${k === 'new'}">${t}</button>`).join('')}</div>
+    <span class="gl-count muted"></span><button type="button" class="btn small" id="glAdd">＋ Выложить арт</button></div>
+    <p class="gl-note" hidden></p><div class="gl-grid" id="glGrid"><p class="muted">Загружаю витрину…</p></div><p class="cab-toast" role="status" aria-live="polite"></p>`;
+  const grid = q('#glGrid', el), note = q('.gl-note', el);
+  async function load() {
+    if (!live) { arts = GAL_DEMO; return; }
+    const r = await c.from('gallery_arts').select('*').order('created_at', { ascending: false }).limit(300);
+    if (r.error) { demo = true; arts = GAL_DEMO; return; }
+    demo = false; arts = r.data || [];
+    if (me && arts.length) { const l = await c.from('gallery_likes').select('art_id').eq('profile_id', me); liked = new Set((l.data || []).map(x => x.art_id)); }
+  }
+  function draw() {
+    let list = arts.filter(a => !f.house || a.house === f.house);
+    if (f.sort === 'top') list = [...list].sort((a, b) => b.likes - a.likes || new Date(b.created_at) - new Date(a.created_at));
+    note.hidden = !demo;
+    note.innerHTML = demo ? (live ? '🛠️ Витрина откроется, когда мастера включат её в базе. Пока — образцы, чтобы было видно, как это будет.' : 'Это предпросмотр: здесь образцы. Выкладывать арты, ставить лайки и писать комментарии можно на основном сайте.') : '';
+    q('.gl-count', el).textContent = demo ? '' : `Артов: ${list.length}`;
+    grid.innerHTML = list.length ? list.map(a => `<figure class="gl-card${a.demo ? ' demo' : ''}" data-open="${a.id}" tabindex="0" role="button" aria-label="Открыть арт «${esc(a.title)}»">
+      <img src="${esc(a.image_url)}" alt="${esc(a.title)}" loading="lazy">${a.house ? `<span class="gl-house h-${a.house}">${HOUSE_TAG[a.house]}</span>` : ''}
+      <figcaption><b>${esc(a.title)}</b><span class="gl-by">${esc(a.author || 'Житель')}</span><span class="gl-stats"><button type="button" class="gl-like${liked.has(a.id) ? ' on' : ''}" data-like="${a.id}" aria-pressed="${liked.has(a.id)}" aria-label="Нравится">♥ <i>${a.likes || 0}</i></button><span>💬 ${a.comments || 0}</span></span></figcaption></figure>`).join('')
+      : `<article class="panel cab-empty"><h3>${f.house ? 'У этого Дома пока нет артов' : 'Витрина пуста'}</h3><p class="muted">Выложи первый — портрет персонажа, сцену с ивента или скетч города.</p></article>`;
+  }
+  async function like(id) {
+    const a = arts.find(x => x.id === id); if (!a) return;
+    if (a.demo) { a.likes += liked.has(id) ? -1 : 1; liked.has(id) ? liked.delete(id) : liked.add(id); draw(); return; }
+    if (!me) { toast(el, 'Войди через Discord, чтобы ставить лайки', true); return; }
+    const on = !liked.has(id);
+    on ? liked.add(id) : liked.delete(id); a.likes += on ? 1 : -1; draw(); refreshBox(a);
+    const r = on ? await c.from('gallery_likes').insert({ art_id: id, profile_id: me }) : await c.from('gallery_likes').delete().eq('art_id', id).eq('profile_id', me);
+    if (r.error) { on ? liked.delete(id) : liked.add(id); a.likes += on ? -1 : 1; draw(); refreshBox(a); toast(el, errText(r.error), true); }
+  }
+  let box = null;
+  function refreshBox(a) { if (!box || +box.dataset.id !== a.id) return; const b = q('.gb-like', box); b.classList.toggle('on', liked.has(a.id)); b.setAttribute('aria-pressed', liked.has(a.id)); q('i', b).textContent = a.likes; }
+  async function open(id) {
+    const a = arts.find(x => x.id === id); if (!a) return;
+    if (box) box.remove();
+    box = document.createElement('div'); box.className = 'gl-box'; box.dataset.id = a.id; box.setAttribute('role', 'dialog'); box.setAttribute('aria-modal', 'true'); box.setAttribute('aria-label', a.title);
+    const mine = me && a.owner === me;
+    box.innerHTML = `<div class="gb-in"><button type="button" class="gb-x" aria-label="Закрыть">✕</button>
+      <div class="gb-pic"><img src="${esc(a.image_url)}" alt="${esc(a.title)}"></div>
+      <aside class="gb-side"><div class="gb-head">${a.avatar ? `<img class="ch-ava" src="${esc(a.avatar)}" alt="">` : `<span class="ch-ava cab-ava-empty">${esc((a.author || '?').slice(0, 1))}</span>`}<div><b>${esc(a.author || 'Житель')}</b><small>${newsDate(a.created_at)}${a.house ? ' · ' + HOUSE_TAG[a.house] : ''}</small></div></div>
+        <h3>${esc(a.title)}</h3>${a.body ? `<p class="gb-body">${esc(a.body).replace(/\n/g, '<br>')}</p>` : ''}
+        <div class="gb-acts"><button type="button" class="gb-like gl-like${liked.has(a.id) ? ' on' : ''}" aria-pressed="${liked.has(a.id)}">♥ <i>${a.likes || 0}</i> <span>Нравится</span></button><a class="btn small ghost" href="${esc(a.image_url)}" target="_blank" rel="noopener">Оригинал</a>${(mine || staff) && !a.demo ? '<button type="button" class="btn small ghost gb-del">Удалить</button>' : ''}</div>
+        <div class="gb-k">Комментарии</div><div class="gb-cm"><p class="muted">Загружаю…</p></div>
+        ${me && !a.demo ? `<form class="gb-form"><div class="ch-in"><textarea rows="2" maxlength="500" placeholder="Что скажешь об арте?" aria-label="Комментарий"></textarea><button type="button" class="ch-emo-btn" title="Смайлики" aria-label="Смайлики">😊</button></div><button class="btn small" type="submit">Отправить</button></form>` : `<p class="muted gb-login">${a.demo ? 'Это образец — комментарии появятся у настоящих артов.' : 'Войди через Discord, чтобы комментировать.'}</p>`}
+      </aside></div>`;
+    document.body.append(box); document.body.classList.add('gl-lock');
+    const close = () => { box.remove(); box = null; document.body.classList.remove('gl-lock'); removeEventListener('keydown', key); if (/^#gallery-/.test(location.hash)) history.replaceState(null, '', '#gallery'); };
+    const key = e => { if (e.key === 'Escape' && !q('.emo-pop')) close(); };
+    addEventListener('keydown', key);
+    box.addEventListener('click', e => { if (e.target === box || e.target.closest('.gb-x')) close(); });
+    q('.gb-like', box).onclick = () => like(a.id);
+    const del = q('.gb-del', box);
+    if (del) del.onclick = async () => {
+      if (!del.dataset.sure) { del.dataset.sure = 1; del.textContent = 'Точно удалить?'; return; }
+      const r = await c.from('gallery_arts').delete().eq('id', a.id);
+      if (r.error) { toast(el, errText(r.error), true); return; }
+      if (a.path) c.storage.from('gallery').remove([a.path]).catch(() => {});
+      arts = arts.filter(x => x.id !== a.id); close(); draw();
+    };
+    const cmEl = q('.gb-cm', box);
+    const paintCm = list => { cmEl.innerHTML = list.length ? list.map(x => `<div class="gb-c"><b>${esc(x.author)}</b><time>${chatTime(x.created_at)}</time>${me && (x.owner === me || staff) && x.id > 0 ? `<button type="button" class="gb-cdel" data-cdel="${x.id}" aria-label="Удалить комментарий">✕</button>` : ''}<p>${chatText(x.body)}</p></div>`).join('') : '<p class="muted">Пока никто не написал. Будь первым.</p>'; };
+    let cms = [];
+    if (a.demo) { cms = a.comments ? [{ id: -1, author: 'Корвин Хальд', body: 'Вот это свет! ⚙️🔥', created_at: a.created_at }, { id: -2, author: 'Вира Сольт', body: 'Хочу такое в свой кабинет 😍', created_at: a.created_at }] : []; paintCm(cms); }
+    else { const r = await c.from('gallery_comments').select('*').eq('art_id', a.id).order('created_at', { ascending: true }).limit(200); cms = r.data || []; paintCm(cms); }
+    cmEl.addEventListener('click', async e => {
+      const b = e.target.closest('[data-cdel]'); if (!b) return;
+      const r = await c.from('gallery_comments').delete().eq('id', +b.dataset.cdel);
+      if (r.error) { toast(el, errText(r.error), true); return; }
+      cms = cms.filter(x => x.id !== +b.dataset.cdel); a.comments = cms.length; paintCm(cms); draw();
+    });
+    const form = q('.gb-form', box);
+    if (form) {
+      const ta = q('textarea', form);
+      q('.ch-emo-btn', form).onclick = e => emojiPicker(e.currentTarget, em => { const s = ta.selectionStart ?? ta.value.length; ta.value = ta.value.slice(0, s) + em + ta.value.slice(ta.selectionEnd ?? s); ta.selectionStart = ta.selectionEnd = s + em.length; ta.focus(); });
+      ta.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); form.requestSubmit(); } });
+      form.onsubmit = async e => {
+        e.preventDefault(); const body = ta.value.trim(); if (!body) return;
+        const btn = q('button[type=submit]', form); btn.disabled = true;
+        const r = await c.from('gallery_comments').insert({ art_id: a.id, body }).select().single();
+        btn.disabled = false;
+        if (r.error) { toast(el, errText(r.error), true); return; }
+        ta.value = ''; cms.push(r.data); a.comments = cms.length; paintCm(cms); cmEl.scrollTop = cmEl.scrollHeight; draw(); play('click');
+      };
+    }
+    q('.gb-x', box).focus();
+  }
+  function upload() {
+    if (!live) { toast(el, 'Выкладывать арты можно на основном сайте', true); return; }
+    if (!me) { try { sessionStorage.setItem(AFTER_KEY, 'gallery'); } catch (_) {} api().signInDiscord().catch(e => toast(el, errText(e), true)); return; }
+    if (demo) { toast(el, 'Витрина ещё не включена в базе — мастера скоро её откроют', true); return; }
+    const m = document.createElement('div'); m.className = 'gl-box'; m.setAttribute('role', 'dialog'); m.setAttribute('aria-modal', 'true'); m.setAttribute('aria-label', 'Выложить арт');
+    m.innerHTML = `<form class="gb-up panel"><button type="button" class="gb-x" aria-label="Закрыть">✕</button><div class="eyebrow">Витрина артов</div><h3>Выложить арт</h3>
+      <label class="gu-drop"><input type="file" accept="image/jpeg,image/png,image/webp" required><span class="gu-hint">Перетащи картинку сюда или нажми, чтобы выбрать<br><small>JPG, PNG или WEBP · большие картинки сожмём сами</small></span><img class="gu-prev" alt="" hidden></label>
+      <label>Название<input type="text" name="title" maxlength="80" required placeholder="Например: «Эльза у котлов»"></label>
+      <label>Пара слов об арте<textarea name="body" rows="3" maxlength="600" placeholder="Кто на арте, кто автор, к какому ивенту…"></textarea></label>
+      <label>Дом<select name="house"><option value="">Без Дома</option><option value="talbot">🟡 Жёлтые — Дом Талбот</option><option value="dorn">🔴 Красные — Дом Дорн</option></select></label>
+      <p class="muted gu-rule">Выкладывай свои работы или указывай автора. Без 18+ и без чужих артов без спроса — мастера удаляют такое.</p>
+      <div class="cab-acts"><button class="btn" type="submit">Выложить</button><button type="button" class="btn ghost gb-cancel">Отмена</button></div><p class="cab-toast" role="status"></p></form>`;
+    document.body.append(m); document.body.classList.add('gl-lock');
+    const close = () => { m.remove(); document.body.classList.remove('gl-lock'); };
+    m.addEventListener('click', e => { if (e.target === m || e.target.closest('.gb-x,.gb-cancel')) close(); });
+    const form = q('form', m), fi = q('input[type=file]', m), prev = q('.gu-prev', m), drop = q('.gu-drop', m);
+    let file = null;
+    const pick = fl => { if (!fl || !/^image\//.test(fl.type)) return; file = fl; prev.src = URL.createObjectURL(fl); prev.hidden = false; q('.gu-hint', m).hidden = true; if (!form.title.value) form.title.value = fl.name.replace(/\.[^.]+$/, '').slice(0, 80); };
+    fi.onchange = () => pick(fi.files[0]);
+    ['dragover', 'dragenter'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); }));
+    ['dragleave', 'drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); }));
+    drop.addEventListener('drop', e => pick(e.dataTransfer.files[0]));
+    form.onsubmit = async e => {
+      e.preventDefault(); if (!file) { toast(m, 'Выбери картинку', true); return; }
+      const btn = q('button[type=submit]', form); btn.disabled = true; btn.textContent = 'Загружаю…';
+      try {
+        const blob = await shrinkImage(file);
+        const ext = blob.type === 'image/webp' ? 'webp' : 'jpg', path = `${me}/${Date.now()}.${ext}`;
+        const up = await c.storage.from('gallery').upload(path, blob, { contentType: blob.type, upsert: false });
+        if (up.error) throw up.error;
+        const url = c.storage.from('gallery').getPublicUrl(path).data.publicUrl;
+        const r = await c.from('gallery_arts').insert({ title: form.title.value.trim(), body: form.body.value.trim(), house: form.house.value, image_url: url, path }).select().single();
+        if (r.error) { c.storage.from('gallery').remove([path]).catch(() => {}); throw r.error; }
+        arts.unshift(r.data); close(); draw(); play('click'); toast(el, 'Арт на витрине!');
+      } catch (er) { toast(m, errText(er), true); btn.disabled = false; btn.textContent = 'Выложить'; }
+    };
+  }
+  el.addEventListener('click', e => {
+    const lk = e.target.closest('[data-like]'); if (lk) { e.stopPropagation(); like(+lk.dataset.like); return; }
+    const op = e.target.closest('[data-open]'); if (op) { open(+op.dataset.open); return; }
+    const h = e.target.closest('[data-gh]'); if (h) { f.house = h.dataset.gh; qa('[data-gh]', el).forEach(b => b.setAttribute('aria-pressed', b === h)); draw(); return; }
+    const s = e.target.closest('[data-gs]'); if (s) { f.sort = s.dataset.gs; qa('[data-gs]', el).forEach(b => b.setAttribute('aria-pressed', b === s)); draw(); }
+  });
+  el.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('[data-open]')) open(+e.target.dataset.open); });
+  q('#glAdd', el).onclick = upload;
+  if (live && !me) q('#glAdd', el).textContent = 'Войти и выложить арт';
+  await load(); draw();
+  if (openId) open(+openId);
+}
+
+window.Cabinet = { gallery: galleryPage, residentsData, mount, api: SupabaseApi, fillSlots, anketaStatus, initHeader, community, residentsPage, chat: chatPage, live: liveBlock, news: newsPage, hero: heroPage };
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initHeader); else setTimeout(initHeader, 0);
 // после входа через Discord / почту вернуть игрока туда, откуда он пришёл
 if (CFG.url && CFG.anonKey && /[?&](code|error_description)=/.test(location.search)) {

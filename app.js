@@ -109,7 +109,7 @@ const BOOK = [
   ['Классы', [['classes', 'Классы'], ['tree', 'Древо талантов'], ['magic', 'Магия и заклинания'], ['curses', 'Развитие Проклятых'], ['inventions', 'Изобретения Инженера']]],
   ['Механики', [['system', 'Ролевая система'], ['eloquence', 'Красноречие'], ['healing', 'Лекари и травмы']]],
   ['Мастерская', [['forge', 'Оружейная'], ['armor', 'Бронник'], ['craft', 'Крафт-станция'], ['gathering', 'Инструменты добычи'], ['blueprints', 'Чертежи ремёсел'], ['recycle', 'Переработчик'], ['alchemy', 'Алхимия'], ['cooking', 'Кулинария'], ['body', 'Протезы и конструкты']]],
-  ['Сообщество', [['news', 'Новости и события'], ['residents', 'Жители города'], ['chat', 'Общий чат']]]
+  ['Сообщество', [['news', 'Новости и события'], ['gallery', 'Витрина артов'], ['residents', 'Жители города'], ['chat', 'Общий чат']]]
 ];
 const PART_NOTE = { 'Начало': 'Первые шаги и правила', 'Меттенхейм': 'Город, Дома и Люмерит', 'Лимн': 'Мир, боги и карта', 'Народы': 'Кем можно родиться', 'Классы': 'Пути развития и магия', 'Механики': 'Кубы, сцены и раны', 'Мастерская': 'Крафт, добыча и рецепты', 'Сообщество': 'Жизнь сервера' };
 const CHAPTERS = BOOK.flatMap(([part, ch]) => ch.map(([id, t]) => ({ id, t, part })));
@@ -138,7 +138,7 @@ $('#burger').addEventListener('click', () => { const o = drawer.hidden; drawer.h
 drawer.addEventListener('click', e => { if (e.target.closest('a')) { drawer.hidden = true; $('#burger').setAttribute('aria-expanded', 'false'); } });
 let currentRoute = 'home';
 function markNav(route) {
-  const part = route === 'anketa' ? 'anketa' : (route === 'cabinet' || route === 'admin') ? 'cabinet' : partOf(route.startsWith('class-') ? 'classes' : route.startsWith('tree-') ? 'tree' : route.startsWith('rules-') ? 'rules' : route);
+  const part = route === 'anketa' ? 'anketa' : (route === 'cabinet' || route === 'admin') ? 'cabinet' : partOf(route.startsWith('class-') ? 'classes' : route.startsWith('tree-') ? 'tree' : route.startsWith('rules-') ? 'rules' : route.startsWith('gallery-') ? 'gallery' : route.startsWith('chat-') ? 'chat' : route);
   $$('.nav-btn', nav).forEach(b => b.classList.toggle('current', b.dataset.part === part));
   $$('.mega a', nav).forEach(a => a.toggleAttribute('aria-current', a.getAttribute('href') === '#' + route));
 }
@@ -235,6 +235,8 @@ function pageHomeRaw() {
   <div class="engine-plate"><span class="eng-dot"></span><b>Conan Exiles</b><span class="eng-ue">Unreal Engine 5</span></div></div>
 
 <section class="section tight fx-sec"><div class="wrap"><div id="fxMount"></div></div></section>
+
+<section class="section tight faces-sec"><div class="wrap" id="facesMount"></div></section>
 
 <section class="section tight ev-sec"><div class="wrap" id="evMount"></div></section>
 
@@ -363,7 +365,39 @@ function mountHome() {
   MH.onHouse(hcards);
   hcards();
   mountBuilder();
+  mountFaces();
   mountDice($('[data-dice]').parentElement);
+}
+/* ---------- лица Домов: жители Жёлтых и Красных на главной ---------- */
+// образцы, пока на стороне мало принятых персонажей
+const FACE_DEMO = {
+  talbot: [['Эльза Вермеер', 'humans', 'mett', 'engineer', 'female', 'Мастер протезов, верит в машины для всех'], ['Корвин Хальд', 'dwarves', 'dwarf', 'fighter', 'male', 'Бригадир охраны цехов'], ['Лиара Тенн', 'elves', 'high', 'mage', 'female', 'Ткёт плетения у люмеритовых котлов'], ['Ансельм Грей', 'humans', 'west', 'shooter', 'male', 'Стрелок заводского дозора']],
+  dorn: [['Брандт Кессель', 'humans', 'east', 'fighter', 'male', 'Литейщик и кулачный боец'], ['Вира Сольт', 'infernals', 'fire', 'mage', 'female', 'Огненная кровь, служит Дому за долг'], ['Кассиан Мор', 'elves', 'dark', 'rogue', 'male', 'Тень на складах оружия'], ['Ингрид Штоль', 'dwarves', 'dwarf', 'engineer', 'female', 'Мастер стволов и затворов']]
+};
+async function mountFaces() {
+  const el = $('#facesMount'); if (!el) return;
+  const H = M.houses;
+  const card = (r, demo) => {
+    const p = M.peoples.find(x => x.id === r.p) || {}, o = (p.origins || []).find(x => x.id === r.o) || {}, cl = M.classes.find(x => x.id === r.c) || {};
+    const fig = r.portrait_url || (o.folder && r.c ? charImg(o.folder, r.g === 'male' ? 'male' : 'female', r.c) : '');
+    const inner = `<div class="fc-pic">${fig ? `<img src="${esc(fig)}" alt="" loading="lazy">` : ''}${demo ? '<span class="fc-demo">образец</span>' : `<span class="fc-num">№${String(r.number || 0).padStart(3, '0')}</span>`}</div>
+      <div class="fc-info"><b>${esc(r.name || 'Без имени')}</b><small>${esc([o.name || p.name, cl.name].filter(Boolean).join(' · '))}</small>${r.line ? `<p>${esc(r.line)}</p>` : ''}</div>`;
+    return demo ? `<div class="fc-card demo">${inner}</div>` : `<a class="fc-card" href="#hero-${r.number}">${inner}</a>`;
+  };
+  const paint = rs => {
+    el.innerHTML = `<div class="sec-head"><div class="eyebrow">Лица Домов</div><h2>Жёлтые и Красные</h2><p>Те, кто уже выбрал сторону. Принятые персонажи появляются здесь сами — по Дому из анкеты.</p></div>
+    <div class="faces">${['talbot', 'dorn'].map(k => {
+      const real = (rs || []).filter(r => (r.house || 'talbot') === k).slice(-4).reverse();
+      const demo = FACE_DEMO[k].slice(0, Math.max(0, 4 - real.length)).map(([name, p, o, c, g, line]) => ({ name, p, o, c, g, line }));
+      const total = (rs || []).filter(r => (r.house || 'talbot') === k).length;
+      return `<article class="face-col h-${k}"><header class="face-head" style="--ban:url('${H[k].banner}')"><img class="face-crest" src="assets/crests/${k}.webp" alt="Герб: ${esc(H[k].name)}"><div><div class="eyebrow">${esc(H[k].side)}</div><h3>${esc(H[k].name)}</h3><small>${total ? `${total} ${total % 10 === 1 && total % 100 !== 11 ? 'житель' : [2, 3, 4].includes(total % 10) && ![12, 13, 14].includes(total % 100) ? 'жителя' : 'жителей'}` : 'Пока ждут первых жителей'}</small></div></header>
+        <div class="face-grid">${real.map(r => card(r, false)).join('')}${demo.map(r => card(r, true)).join('')}</div>
+        <footer class="face-foot"><a class="btn small${k === 'dorn' ? ' red' : ''}" href="#anketa" data-face-pick="${k}">Встать за ${k === 'dorn' ? 'Красных' : 'Жёлтых'}</a><a class="hlink" href="#residents">Все жители →</a></footer></article>`;
+    }).join('')}</div>`;
+    $$('[data-face-pick]', el).forEach(b => b.addEventListener('click', () => { if (b.dataset.facePick !== house) applyHouse(b.dataset.facePick, true); }));
+  };
+  paint(null);
+  try { const rs = window.Cabinet && window.Cabinet.residentsData ? await window.Cabinet.residentsData() : null; if (rs && rs.length && el.isConnected) paint(rs); } catch (_) {}
 }
 function hcards() { $$('[data-hcard]').forEach(c => c.classList.toggle('lit', c.dataset.hcard === house)); }
 
@@ -1068,6 +1102,7 @@ function pagePrivacy() {
 <section class="content"><div class="wrap" style="max-width:860px"><div class="prose pv">${M.privacy.map(([h, ps]) => `<h2>${h}</h2>${ps.length > 1 ? `<ul>${ps.map(x => `<li>${x}</li>`).join('')}</ul>` : `<p>${ps[0]}</p>`}`).join('')}</div></div></section>`;
 }
 function pageChat() { return head({ eyebrow: 'Город · на связи', title: 'Общий чат', lead: 'Один чат на сайт и Discord: пиши отсюда — сообщение увидят на сервере, ответы с сервера появятся здесь.', bg: 'assets/codex/city-v2.webp', crumbs: 'Начало' }) + `<section class="content"><div class="wrap" id="chatMount"></div></section>`; }
+function pageGallery() { return head({ eyebrow: 'Город · мастерская художников', title: 'Витрина артов', lead: 'Портреты персонажей, сцены с ивентов, скетчи города. Выкладывай свои арты, ставь сердечки и пиши авторам.', bg: 'assets/codex/housing.webp' }) + `<section class="content"><div class="wrap" id="galMount"></div></section>`; }
 function pageResidents() { return head({ eyebrow: 'Город · перепись', title: 'Жители Меттенхейма', lead: 'Все персонажи, чьи квенты приняли мастера. Ищи соседей, союзников и врагов для своей истории.', bg: 'assets/codex/city-v2.webp', crumbs: 'Начало' }) + `<section class="content"><div class="wrap" id="rsMount"></div></section>`; }
 function pageCabinet(mode) { const adm = mode === 'admin'; return head({ eyebrow: adm ? 'Для мастеров' : 'Для игроков', title: adm ? 'Кабинет мастера' : 'Личный кабинет', lead: adm ? 'Очередь отправленных квент. Прочитай, оставь комментарий и вынеси решение — игрок увидит его у себя в кабинете.' : 'Твои персонажи и квенты в одном месте. Пиши черновик, отправляй на проверку и получай ответ мастеров прямо здесь.', bg: 'assets/codex/history.webp', crumbs: adm ? 'Кабинет мастера' : 'Кабинет' }) + `<section class="content"><div class="wrap" id="cabMount"></div></section>`; }
 const ROUTES = {
@@ -1076,6 +1111,7 @@ const ROUTES = {
   news: [pageNews, () => window.Cabinet.news($('#newsMount'))],
   hero: [pageHero, n => window.Cabinet.hero($('#heroMount'), n)],
   glossary: [pageGlossary, mountGlossary], chronicle: [pageChronicle], privacy: [pagePrivacy],
+  gallery: [pageGallery, arg => window.Cabinet.gallery($('#galMount'), arg)],
   residents: [pageResidents, () => window.Cabinet.residentsPage($('#rsMount'))],
   inferno: [pageInferno],
   cabinet: [() => pageCabinet('player'), () => window.Cabinet.mount($('#cabMount'), 'player')], admin: [() => pageCabinet('admin'), () => window.Cabinet.mount($('#cabMount'), 'admin')],
@@ -1087,7 +1123,7 @@ const ROUTES = {
 };
 function resolve(raw) {
   let key = raw, arg = null;
-  const m = raw.match(/^(rules|people|class|tree|hero)-(.+)$/);
+  const m = raw.match(/^(rules|people|class|tree|hero|chat|gallery)-(.+)$/);
   if (m) { key = m[1] === 'class' ? 'classes' : m[1]; arg = m[2]; }
   if (key === 'rules' && arg === 'discord') { key = 'discord'; arg = null; }
   const chapter = key === 'people' ? 'people-' + arg : key;
@@ -1126,7 +1162,7 @@ function bookify(view, chapter) {
 }
 let lastRoute = null;
 /* тяжёлые арты (предметы ~5 МБ, иконки ~2 МБ) грузятся только для страниц, где они нужны */
-const LIGHT = new Set(['home', 'anketa', 'cabinet', 'admin', 'residents', 'chat', 'news', 'hero', 'glossary', 'chronicle', 'privacy', 'city', 'history', 'limn', 'map', 'houses', 'lumerite', 'faith', 'world', 'rules', 'discord', 'start', 'faq', 'modlist', 'inferno', 'races']);
+const LIGHT = new Set(['home', 'anketa', 'cabinet', 'admin', 'residents', 'chat', 'news', 'gallery', 'hero', 'glossary', 'chronicle', 'privacy', 'city', 'history', 'limn', 'map', 'houses', 'lumerite', 'faith', 'world', 'rules', 'discord', 'start', 'faq', 'modlist', 'inferno', 'races']);
 const ART_V = ((document.querySelector('script[src*="app.js"]') || {}).src || '').split('?')[1] || '';
 let artP = null;
 const loadArt = () => artP || (artP = Promise.all(['items-art.js', 'icons-art.js'].map(f => new Promise((res, rej) => {

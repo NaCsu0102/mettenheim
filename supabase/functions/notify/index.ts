@@ -272,6 +272,13 @@ function plainBody(m: any) {
   t = t.replace(/<@&\d+>/g, '@роль').replace(/<#\d+>/g, '#канал');
   if (!t && m.sticker_items?.length) t = '[стикер] ' + m.sticker_items[0].name;
   if (!t && m.embeds?.length) t = [m.embeds[0].title, m.embeds[0].description].filter(Boolean).join('\n');
+  // ответ в Discord → та же строка-цитата, что ставит сайт: по ней сайт рисует «ответ на…»
+  const ref = m.referenced_message;
+  if (m.type === 19 && ref && ref.id) {
+    const who = String(ref.author?.global_name || ref.author?.username || 'Житель').replace(/ · сайт$/, '').replace(/[[\]]/g, '');
+    const cut = String(ref.content || '').replace(/^> ↪ [^\n]*\n?/, '').replace(/\s+/g, ' ').replace(/[[\]()<>*_`|~]/g, '').trim();
+    t = `> ↪ [${who}](${SITE}#chat-d${ref.id}): ${cut.length > 70 ? cut.slice(0, 70) + '…' : cut || '📎 вложение'}\n` + t;
+  }
   return t.slice(0, 4000);
 }
 // забрать новые сообщения из Discord (не чаще раза в 3 секунды на всех)
