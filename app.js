@@ -104,21 +104,32 @@ setVars();
 const BOOK = [
   ['Начало', [['start', 'Как начать играть'], ['faq', 'Частые вопросы'], ['rules', 'Правила сервера'], ['discord', 'Правила Discord'], ['modlist', 'Модлист'], ['glossary', 'Словарь терминов']]],
   ['Меттенхейм', [['city', 'Город'], ['history', 'История города'], ['houses', 'Дома Талбот и Дорн'], ['factions', 'Фракции и счёт Домов'], ['lumerite', 'Люмерит'], ['chronicle', 'Хроника сессии']]],
-  ['Лимн', [['limn', 'Лимн и его боги'], ['world', 'История мира'], ['faith', 'Вера'], ['magic', 'Магия'], ['cursed', 'Проклятые'], ['deck', 'Безделицы']]],
-  ['Карта', [['map', 'Карта мира']]],
+  ['Лимн', [['limn', 'Лимн и его боги'], ['world', 'История мира'], ['map', 'Карта мира'], ['faith', 'Вера'], ['cursed', 'Проклятые'], ['deck', 'Безделицы — проклятые вещицы']]],
   ['Народы', [['races', 'Народы и отношения'], ...M.peoples.map(p => ['people-' + p.id, p.name]), ['inferno', 'Инферно и Короли']]],
-  ['Классы', [['classes', 'Классы'], ['system', 'Ролевая система'], ['eloquence', 'Красноречие'], ['healing', 'Лекари и травмы'], ['curses', 'Развитие Проклятых'], ['inventions', 'Изобретения Инженера']]],
-  ['Древо', [['tree', 'Древо талантов']]],
+  ['Классы', [['classes', 'Классы'], ['tree', 'Древо талантов'], ['magic', 'Магия и заклинания'], ['curses', 'Развитие Проклятых'], ['inventions', 'Изобретения Инженера']]],
+  ['Механики', [['system', 'Ролевая система'], ['eloquence', 'Красноречие'], ['healing', 'Лекари и травмы']]],
   ['Мастерская', [['forge', 'Оружейная'], ['armor', 'Бронник'], ['craft', 'Крафт-станция'], ['gathering', 'Инструменты добычи'], ['blueprints', 'Чертежи ремёсел'], ['recycle', 'Переработчик'], ['alchemy', 'Алхимия'], ['cooking', 'Кулинария'], ['body', 'Протезы и конструкты']]],
   ['Сообщество', [['news', 'Новости и события'], ['residents', 'Жители города'], ['chat', 'Общий чат']]]
 ];
+const PART_NOTE = { 'Начало': 'Первые шаги и правила', 'Меттенхейм': 'Город, Дома и Люмерит', 'Лимн': 'Мир, боги и карта', 'Народы': 'Кем можно родиться', 'Классы': 'Пути развития и магия', 'Механики': 'Кубы, сцены и раны', 'Мастерская': 'Крафт, добыча и рецепты', 'Сообщество': 'Жизнь сервера' };
 const CHAPTERS = BOOK.flatMap(([part, ch]) => ch.map(([id, t]) => ({ id, t, part })));
 const partOf = id => { const c = CHAPTERS.find(x => x.id === id); return c ? c.part : null; };
 const nav = $('#nav');
-nav.innerHTML = BOOK.map(([part, ch]) => `<a class="nav-btn" href="#${ch[0][0]}" data-part="${part}">${part}</a>`).join('') + `<a class="nav-btn" href="#anketa" data-part="anketa">Анкета</a>`;
+nav.innerHTML = BOOK.map(([part, ch], i) => `<div class="nav-item${i >= BOOK.length - 3 ? ' r' : ''}"><a class="nav-btn" href="#${ch[0][0]}" data-part="${part}"${ch.length > 1 ? ' aria-haspopup="true"' : ''}>${part}${ch.length > 1 ? '<i class="nav-caret" aria-hidden="true"></i>' : ''}</a>${ch.length > 1 ? `<div class="mega${ch.length > 7 ? ' two' : ''}"><div class="mega-k">${PART_NOTE[part] || part}</div><div class="mega-l">${ch.map(([id, t]) => `<a href="#${id}">${t}</a>`).join('')}</div></div>` : ''}</div>`).join('') + `<div class="nav-item"><a class="nav-btn nav-cta" href="#anketa" data-part="anketa">Анкета</a></div>`;
+// после выбора пункта меню закрывается, пока мышь не уйдёт с раздела
+$$('.nav-item', nav).forEach(it => {
+  it.addEventListener('click', e => { if (e.target.closest('a')) { it.classList.add('shut'); document.activeElement?.blur?.(); } });
+  it.addEventListener('mouseleave', () => it.classList.remove('shut'));
+});
+const tocPart = (part, ch, cur) => `<div class="rail-part${partOf(cur) === part ? ' on' : ''}"><h5>${part}</h5>${ch.map(([id, t]) => `<a href="#${id}"${id === cur ? ' aria-current="page"' : ''}>${t}</a>`).join('')}</div>`;
 function bookTOC(cur) {
-  return BOOK.map(([part, ch]) => `<div class="rail-part${partOf(cur) === part ? ' on' : ''}"><h5>${part}</h5>${ch.map(([id, t]) => `<a href="#${id}"${id === cur ? ' aria-current="page"' : ''}>${t}</a>`).join('')}</div>`).join('')
+  return BOOK.map(([part, ch]) => tocPart(part, ch, cur)).join('')
     + `<div class="rail-part"><h5>Игроку</h5><a href="#anketa">Анкета персонажа</a><a href="#cabinet">Личный кабинет</a><a href="#home">Главная</a></div>`;
+}
+/* боковое оглавление показывает только текущий раздел — остальное в верхнем меню */
+function partTOC(cur) {
+  const p = BOOK.find(([part]) => part === partOf(cur)); if (!p) return bookTOC(cur);
+  return tocPart(p[0], p[1], cur);
 }
 // мобильное оглавление
 const drawer = document.createElement('div'); drawer.className = 'drawer'; drawer.hidden = true; drawer.id = 'drawer'; document.body.append(drawer);
@@ -129,6 +140,7 @@ let currentRoute = 'home';
 function markNav(route) {
   const part = route === 'anketa' ? 'anketa' : (route === 'cabinet' || route === 'admin') ? 'cabinet' : partOf(route.startsWith('class-') ? 'classes' : route.startsWith('tree-') ? 'tree' : route.startsWith('rules-') ? 'rules' : route);
   $$('.nav-btn', nav).forEach(b => b.classList.toggle('current', b.dataset.part === part));
+  $$('.mega a', nav).forEach(a => a.toggleAttribute('aria-current', a.getAttribute('href') === '#' + route));
 }
 
 /* ---------- поиск по книге (Ctrl K) ---------- */
@@ -177,17 +189,18 @@ addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && (e.key === 'k
 
 /* ================= ОБЩИЕ КУСКИ ================= */
 const CH_BG = { start: 'bg-start', faq: 'bg-faq', modlist: 'bg-modlist', rules: 'bg-rules', discord: 'bg-discord', city: 'bg-city', history: 'bg-history', houses: 'bg-houses', lumerite: 'bg-lumerite', faith: 'bg-faith', magic: 'bg-magic', world: 'bg-world', limn: 'bg-world', map: 'bg-world', cursed: 'bg-deck', deck: 'bg-deck', races: 'bg-peoples', 'people-humans': 'bg-humans', 'people-elves': 'bg-elves', 'people-dwarves': 'bg-dwarves', 'people-goblins': 'bg-goblins', 'people-infernals': 'bg-peoples', classes: 'bg-classes', system: 'bg-rules', eloquence: 'bg-houses', forge: 'bg-forge', armor: 'bg-armor', craft: 'bg-forge', recycle: 'bg-armor', alchemy: 'bg-magic', cooking: 'bg-forge', healing: 'bg-faith', body: 'bg-forge', curses: 'bg-deck', factions: 'bg-houses', inventions: 'bg-forge', gathering: 'bg-armor', blueprints: 'bg-forge', inferno: 'bg-peoples' };
-const head = ({ eyebrow, title, lead, bg, crumbs }) => (bg = CH_BG[currentRoute] ? 'assets/art/' + CH_BG[currentRoute] + '.webp' : bg, `
+const head = ({ eyebrow, title, lead, bg, crumbs }) => (bg = CH_BG[currentRoute] ? 'assets/art/' + CH_BG[currentRoute] + '.webp' : bg, crumbs = (p => p ? `<a href="#${navOf(p)[0][0]}">${p}</a>` : crumbs)(partOf(currentRoute)), `
 <section class="page-head"><div class="bg" style="background-image:url('${bg || 'assets/city-bg.webp'}')"></div>
 <div class="wrap reveal">${crumbs ? `<div class="crumbs"><a href="#home">Главная</a> / ${crumbs}</div>` : ''}<div class="eyebrow">${eyebrow || 'Хроники Меттенхейма'}</div><h1>${title}</h1>${lead ? `<p>${lead}</p>` : ''}</div><div class="ph-pipe" aria-hidden="true"></div></section>`);
 const subnav = (items, cur) => `<nav class="subnav" aria-label="Подразделы"><div class="wrap">${items.map(([r, t]) => `<a href="#${r}" ${r === cur ? 'aria-current="page"' : ''}>${t}</a>`).join('')}</div></nav>`;
-const CITY_NAV = [['city', 'Город'], ['history', 'История'], ['houses', 'Дома'], ['factions', 'Фракции'], ['lumerite', 'Люмерит'], ['chronicle', 'Хроника']];
-const LIMN_NAV = [['limn', 'Лимн'], ['map', 'Карта'], ['world', 'История мира'], ['faith', 'Вера'], ['magic', 'Магия'], ['cursed', 'Проклятые'], ['deck', 'Безделицы']];
+const navOf = part => BOOK.find(([p]) => p === part)[1];
+const CITY_NAV = navOf('Меттенхейм');
+const LIMN_NAV = navOf('Лимн');
 const LORE = LIMN_NAV;
-const PEOPLE_NAV = [['races', 'Все народы'], ...M.peoples.map(p => ['people-' + p.id, p.name]), ['inferno', 'Инферно']];
-const CLS_NAV = [['classes', 'Классы'], ['tree', 'Древо талантов'], ['system', 'Ролевая система'], ['eloquence', 'Красноречие'], ['healing', 'Лекари'], ['curses', 'Развитие Проклятых'], ['inventions', 'Изобретения']];
-const WORK_NAV = [['forge', 'Оружейная'], ['armor', 'Бронник'], ['craft', 'Крафт-станция'], ['gathering', 'Добыча'], ['blueprints', 'Чертежи'], ['recycle', 'Переработчик'], ['alchemy', 'Алхимия'], ['cooking', 'Кулинария'], ['body', 'Протезы']];
-const START_NAV = [['start', 'Как начать'], ['faq', 'FAQ'], ['rules', 'Правила'], ['discord', 'Discord'], ['modlist', 'Модлист'], ['glossary', 'Словарь']];
+const PEOPLE_NAV = navOf('Народы');
+const CLS_NAV = [...navOf('Классы'), ...navOf('Механики')];
+const WORK_NAV = navOf('Мастерская');
+const START_NAV = navOf('Начало');
 const ul = a => `<ul>${a.map(x => `<li>${esc(x)}</li>`).join('')}</ul>`;
 const charImg = (folder, g, c) => `assets/characters/${folder}/${g}-${c}.webp`;
 
@@ -1092,7 +1105,7 @@ function bookify(view, chapter) {
   const inner = content.firstElementChild; inner.classList.remove('wrap');
   const k = CHAPTERS.findIndex(c => c.id === chapter), prev = CHAPTERS[k - 1], next = CHAPTERS[k + 1];
   const doc = document.createElement('div'); doc.className = 'doc wrap';
-  doc.innerHTML = `<aside class="rail" aria-label="Оглавление">${bookTOC(chapter)}</aside><article class="doc-main"></article><aside class="doc-toc" aria-label="На странице"></aside>`;
+  doc.innerHTML = `<aside class="rail" aria-label="Оглавление раздела">${partTOC(chapter)}</aside><article class="doc-main"></article><aside class="doc-toc" aria-label="На странице"></aside>`;
   const main = $('.doc-main', doc); main.append(inner);
   const pager = document.createElement('nav'); pager.className = 'pager';
   pager.innerHTML = `${prev ? `<a href="#${prev.id}"><small>‹ Назад · ${prev.part}</small><b>${prev.t}</b></a>` : '<span></span>'}${next ? `<a class="nx" href="#${next.id}"><small>${next.part} · Дальше ›</small><b>${next.t}</b></a>` : `<a class="nx" href="#anketa"><small>Готов? ›</small><b>Анкета персонажа</b></a>`}`;
