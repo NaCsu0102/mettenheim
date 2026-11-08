@@ -226,7 +226,8 @@ function pageHomeRaw() {
     <div class="caption"><small>${H.talbot.side.toUpperCase()}</small><h2>${H.talbot.name}</h2><div class="hc-btns"><button type="button" class="hbtn" data-pick="talbot" aria-pressed="false"><span>Встать на сторону</span></button><a class="hlink" href="#houses">Подробнее</a></div></div></div>
   <div class="hero-core"><div class="ring"><img class="gear" src="assets/gear-md.webp" alt=""><img class="logo" src="assets/logo-md.webp" alt="Хроники Меттенхейма"></div>
     <h1 class="sr-only">Хроники Меттенхейма — ролевой сервер Conan Exiles, RP 21+</h1>
-    <div class="core-plate"><div class="motto">ГОРОД ПАРА, СТАЛИ И АМБИЦИЙ</div><div class="status" id="heroStatus"></div></div></div>
+    <div class="core-plate"><div class="motto">ГОРОД ПАРА, СТАЛИ И АМБИЦИЙ</div><div class="status" id="heroStatus"></div></div>
+    <button type="button" class="hero-scroll" id="heroScroll" aria-label="Листай вниз — к разделам сайта"><span>Листай вниз</span><i aria-hidden="true"></i></button></div>
   <div class="side dorn" data-side="dorn"><div class="art"></div>
     <div class="caption"><small>${H.dorn.side.toUpperCase()}</small><h2>${H.dorn.name}</h2><div class="hc-btns"><button type="button" class="hbtn" data-pick="dorn" aria-pressed="false"><span>Встать на сторону</span></button><a class="hlink" href="#houses">Подробнее</a></div></div></div>
 </section>
@@ -1169,6 +1170,21 @@ const loadArt = () => artP || (artP = Promise.all(['items-art.js', 'icons-art.js
   const sc = document.createElement('script'); sc.src = f + (ART_V ? '?' + ART_V : ''); sc.onload = res; sc.onerror = () => { artP = null; rej(); }; document.head.appendChild(sc);
 }))));
 MH.loadArt = loadArt;
+/* ---------- заставка главной: сначала логотип и две стороны, навигация появляется при прокрутке ---------- */
+function introSync() {
+  const on = document.body.classList.contains('home-mode') && innerWidth > 760;
+  const hero = on && $('.hero');
+  document.body.classList.toggle('intro', !!hero && scrollY < hero.offsetHeight * 0.45);
+}
+addEventListener('scroll', () => requestAnimationFrame(introSync), { passive: true });
+addEventListener('resize', introSync);
+function homeReveal() {
+  const btn = $('#heroScroll'); if (btn) btn.onclick = () => { const h = $('.hero'); scrollTo({ top: h.offsetTop + h.offsetHeight - 64, behavior: 'smooth' }); };
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) return;
+  const secs = $$('#view > section:not(.hero), #view > .pipe-run');
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -12% 0px' });
+  secs.forEach(s => { s.classList.add('rv'); io.observe(s); });
+}
 function route() {
   const raw = (location.hash || '#home').slice(1) || 'home';
   const { key, arg, chapter } = resolve(raw);
@@ -1193,6 +1209,7 @@ function route() {
   const cb = $('#cabBtn'); if (cb) { if (key === 'cabinet' || key === 'admin') cb.setAttribute('aria-current', 'page'); else cb.removeAttribute('aria-current'); }
   document.body.classList.toggle('tree-mode', key === 'tree');
   document.body.classList.toggle('map-mode', key === 'map');
+  document.body.classList.toggle('home-mode', key === 'home'); introSync(); if (key === 'home') homeReveal();
   if (key === 'tree') window.Tree.mount($('#treeMount'), arg || 'fighter');
   if (key === 'anketa') setTimeout(() => $('#builder').scrollIntoView({ behavior: 'smooth' }), 60);
   else if (!(lastRoute === 'tree' && key === 'tree')) scrollTo({ top: 0, behavior: 'instant' });

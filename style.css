@@ -2841,3 +2841,29 @@ body.gl-lock { overflow: hidden; }
 .gu-hint small { color: var(--ash); } .gu-prev { max-height: 280px; max-width: 100%; object-fit: contain; }
 .gu-rule { font-size: 12.5px; margin: 0; }
 @media (max-width: 900px) { .gb-in { grid-template-columns: 1fr; grid-template-rows: 50vh auto; height: 92vh; overflow-y: auto; } .gb-side { border-left: 0; border-top: 1px solid var(--rivet); overflow: visible; } .gb-cm { overflow: visible; } .gl-box { padding: 8px; } }
+
+/* ---------- заставка главной ---------- */
+@media (min-width: 761px) {
+  body.home-mode .topbar { position: fixed; left: 0; right: 0; top: 0; transition: transform .55s var(--ease), opacity .4s; }
+  body.home-mode #view { padding-top: 0; }
+  body.home-mode .hero { height: 100svh; min-height: 560px; max-height: none; }
+  body.home-mode .hero-core { top: 46%; }
+  body.intro .topbar { transform: translateY(-115%); opacity: 0; pointer-events: none; }
+  body.intro .chd-fab, body.intro .chd-panel { opacity: 0; pointer-events: none; transform: translateY(20px); }
+  .chd-fab { transition: opacity .4s, transform .4s; }
+  body.intro .hero-core .ring { animation: introPulse 3.2s ease-in-out infinite; }
+}
+@keyframes introPulse { 50% { filter: drop-shadow(0 0 26px rgba(242,190,90,.45)); } }
+.hero-scroll { display: none; }
+@media (min-width: 761px) {
+  .hero-scroll { display: flex; flex-direction: column; align-items: center; gap: 8px; position: relative; margin: 22px auto 0; z-index: 6; pointer-events: auto; background: none; border: 0; cursor: pointer; color: var(--parch); font: 600 11px var(--f-mono); letter-spacing: .32em; text-transform: uppercase; text-shadow: 0 2px 10px #000; opacity: .85; transition: opacity .3s; }
+  .hero-scroll:hover { opacity: 1; }
+  .hero-scroll i { width: 26px; height: 40px; border: 2px solid currentColor; border-radius: 14px; position: relative; }
+  .hero-scroll i::after { content: ""; position: absolute; left: 50%; top: 7px; width: 4px; height: 8px; margin-left: -2px; border-radius: 2px; background: var(--house-hi); animation: scrollDot 1.8s ease-in-out infinite; }
+  body:not(.intro) .hero-scroll { opacity: 0; pointer-events: none; }
+}
+@keyframes scrollDot { 0% { transform: translateY(0); opacity: 1; } 70% { transform: translateY(14px); opacity: 0; } 100% { opacity: 0; } }
+/* разделы проявляются по мере прокрутки */
+.rv { opacity: 0; transform: translateY(36px); transition: opacity .8s var(--ease), transform .9s var(--ease); }
+.rv.in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .rv { opacity: 1; transform: none; transition: none; } body.home-mode .topbar { transition: none; } .hero-scroll i::after { animation: none; } }
