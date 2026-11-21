@@ -692,12 +692,12 @@ function pageMagic() {
 <div class="mg-flow">
   <div class="mg-step"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 4 36 16 30 44H18L12 16Z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 16h24M24 4l-6 12 6 28 6-28Z" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".6"/></svg><span class="mg-k">1 · Кристалл</span><p>Маг берёт кристалл Люмерита и напитывает его — в нём сила для плетения.</p></div>
   <div class="mg-step"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 30c6-14 12 14 18 0s12 14 18 0" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 20c6-10 12 10 18 0s12 10 18 0" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".6"/><circle cx="24" cy="25" r="3" fill="currentColor"/></svg><span class="mg-k">2 · Плетение</span><p>Прямо в моменте он создаёт из кристалла одно из заклинаний своего пула.</p></div>
-  <div class="mg-step"><svg viewBox="0 0 48 48" aria-hidden="true">${[0, 1, 2, 3, 4].map(i => `<rect x="${5 + i * 8}" y="14" width="6" height="20" rx="1" fill="${i < 3 ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.5"/>`).join('')}</svg><span class="mg-k">3 · Ячейки плетения</span><p>За плетение маг платит своей внутренней силой: простое — 1 ячейка, среднее — 3, сложное — 5.</p></div>
+  <div class="mg-step"><svg viewBox="0 0 48 48" aria-hidden="true">${[0, 1, 2, 3, 4].map(i => `<rect x="${5 + i * 8}" y="14" width="6" height="20" rx="1" fill="${i < 3 ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.5"/>`).join('')}</svg><span class="mg-k">3 · Ячейки плетения</span><p>Своей магии у мага нет, но пропустить Люмерит через себя стоит выдержки тела: простое — 1 ячейка, среднее — 3, сложное — 5.</p></div>
 </div>
 <div class="panel mg-res">
   <div><div class="eyebrow">Резервуар</div><b>10 ячеек плетения</b><span>с ростом в классе — до 20</span></div>
   <div class="mg-pips" aria-hidden="true">${Array.from({ length: 20 }, (_, i) => `<i class="${i < 10 ? 'on' : ''}"></i>`).join('')}</div>
-  <ul><li><b>Восстанавливаются</b> со временем: 2 за час покоя, все — за ночь сна, быстрее — Зелье внутренней силы.</li><li><b>Исчерпал все</b> — Истощение.</li><li><b>Сверх резервуара</b> — только своей жизнью: Сильное истощение.</li></ul>
+  <ul><li><b>Восстанавливаются</b> со временем: 2 за час покоя, все — за ночь сна, быстрее — Зелье выдержки.</li><li><b>Исчерпал все</b> — Истощение.</li><li><b>Сверх резервуара</b> — только ценой тела: Сильное истощение.</li></ul>
 </div>
 <p class="note">Учёт резервуара и кристаллов — в <a href="#cabinet">личном кабинете</a>, вкладка «Дневники».</p>
 <div class="grid2" style="margin-top:22px">
@@ -1022,7 +1022,7 @@ function statsHTML() {
 function pageSystem() {
   return head({ eyebrow: 'Справочник сцены', title: 'Ролевая система', lead: 'Кубы, характеристики, ход и состояния. Найди нужное правило прямо во время сцены.', bg: 'assets/codex/deck.webp', crumbs: 'Классы' }) + subnav(CLS_NAV, 'system') + `
 <section class="content"><div class="wrap">
-<div class="sec-head"><div class="eyebrow">Как бросаем</div><h2>Кубы и проверки</h2><p>Основной кубик один — d20 с плюсами. Сверху — только 1d4 и 1d6 урона, а для случая — Удача и рулетка 1d100.</p></div>
+<div class="sec-head"><div class="eyebrow">Как бросаем</div><h2>Кубы и проверки</h2><p>Основной кубик один — d20 с плюсами. Сверху — только 1d4 и 1d6 урона, а для случая — Удача и рулетка 1d100. Место травмы бросают на d5.</p></div>
 <div class="cards-list">${DICE_RULES.map(([n, d]) => `<div class="cardrow"><b>${n}</b><p>${d}</p></div>`).join('')}</div>
 <div class="sec-head" style="margin-top:60px"><div class="eyebrow">Броня и урон</div><h2>Сталь и магия</h2><p>Броня держит сталь, но не магию. Танка в латах вскрывают заклинания, яды и огонь.</p></div>
 <div class="cards-list">${ARMOR_RULES.map(([n, d]) => `<div class="cardrow"><b>${n}</b><p>${d}</p></div>`).join('')}</div>
