@@ -2867,3 +2867,99 @@ body.gl-lock { overflow: hidden; }
 .rv { opacity: 0; transform: translateY(36px); transition: opacity .8s var(--ease), transform .9s var(--ease); }
 .rv.in { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) { .rv { opacity: 1; transform: none; transition: none; } body.home-mode .topbar { transition: none; } .hero-scroll i::after { animation: none; } }
+
+/* ---------- Гильдии и цеха ---------- */
+.gd-rule { padding: 14px 18px; margin-bottom: 14px; font-size: 15px; color: var(--smoke); }
+.gd-rule b { color: var(--parch); }
+.gd-search { flex: 1 1 200px; min-width: 0; background: #0f0b08; border: 1px solid var(--rivet); color: var(--parch); font: 15px var(--f-body); padding: 8px 12px; }
+.gd-open { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: var(--smoke); cursor: pointer; }
+.gd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+.gd-card { display: flex; flex-direction: column; gap: 10px; padding: 18px; color: inherit; text-decoration: none; border-top: 3px solid var(--rivet); transition: border-color .2s, transform .2s; }
+.gd-card:hover { border-top-color: var(--brass); transform: translateY(-2px); }
+.gd-card.gd-official { border-top-color: #7fa36a; }
+.gd-card h3 { margin: 4px 0 2px; font-size: 20px; line-height: 1.2; }
+.gd-card p { margin: 0; font-size: 15px; color: var(--smoke); }
+.gd-card-top { display: flex; gap: 14px; align-items: flex-start; }
+.gd-meta { font-size: 13px; color: var(--ash); letter-spacing: .03em; }
+.gd-badges { display: flex; flex-wrap: wrap; gap: 6px; }
+.gd-recruit { font-size: 14px; } .gd-recruit b { color: var(--parch); }
+.gd-foot { margin-top: auto; display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--smoke); border-top: 1px solid var(--rivet); padding-top: 10px; }
+.gd-on { color: #a9d391; }
+.gd-emb { flex: 0 0 auto; width: 64px; height: 64px; object-fit: cover; border: 1px solid var(--rivet); background: var(--iron-2); }
+.gd-emb-empty { display: grid; place-items: center; font: 700 28px var(--f-display, inherit); color: var(--brass); }
+.gd-emb-empty.h-talbot { color: #f0c96a; border-color: #d6a23f; } .gd-emb-empty.h-dorn { color: #ee6a52; border-color: #c2523f; }
+.gd-head { display: flex; gap: 22px; align-items: flex-start; padding: 22px; margin-bottom: 14px; }
+.gd-head .gd-emb { width: 120px; height: 120px; } .gd-head .gd-emb-empty { font-size: 54px; }
+.gd-head-main { flex: 1; min-width: 0; display: grid; gap: 10px; }
+.gd-head h2 { margin: 0; font-size: clamp(26px, 4vw, 36px); line-height: 1.1; }
+.gd-short { margin: 0; font-size: 17px; color: var(--smoke); }
+.gd-facts { display: flex; flex-wrap: wrap; gap: 8px 28px; margin: 0; }
+.gd-facts dt { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--ash); } .gd-facts dd { margin: 2px 0 0; color: var(--parch); }
+.gd-acts { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.gd-tabs { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }
+.gd-tabs button { padding: 9px 16px; background: none; border: 1px solid var(--rivet); color: var(--smoke); font-size: 15px; cursor: pointer; }
+.gd-tabs button[aria-selected="true"] { color: var(--parch); border-color: var(--house); background: var(--iron-2); }
+.gd-body { padding: 22px; }
+.gd-body h2 { font-size: 20px; margin: 18px 0 8px; } .gd-body h2:first-child { margin-top: 0; }
+.gd-post { padding: 12px 0; border-bottom: 1px solid var(--rivet); } .gd-post:last-child { border-bottom: 0; }
+.gd-post-h { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; } .gd-post-h small { color: var(--ash); }
+.gd-post p { margin: 6px 0 0; color: var(--smoke); }
+.gd-mem { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding: 9px 0; border-bottom: 1px solid var(--rivet); }
+.gd-mem a { color: var(--parch); text-decoration: none; } .gd-mem a:hover { text-decoration: underline; }
+.gd-mem small { color: var(--ash); } .gd-mem p { flex-basis: 100%; margin: 2px 0 0; color: var(--smoke); font-size: 14px; }
+.gd-mem-acts { margin-left: auto; display: flex; gap: 6px; }
+.gd-rank { font-size: 12px; letter-spacing: .06em; padding: 2px 8px; border: 1px solid var(--rivet); color: var(--smoke); }
+.gd-rank.r-leader { border-color: var(--brass); color: #f0c96a; } .gd-rank.r-officer { border-color: #7fa36a; color: #a9d391; }
+.gd-form label { display: grid; gap: 6px; margin-bottom: 12px; font-size: 14px; color: var(--smoke); }
+.gd-form label.gd-open { display: inline-flex; }
+.gd-form input:not([type=checkbox]), .gd-form select, .gd-form textarea { width: 100%; box-sizing: border-box; background: #0f0b08; border: 1px solid var(--rivet); color: var(--parch); font: 15px var(--f-body); padding: 9px 11px; }
+.gd-form { max-height: 90vh; overflow: auto; }
+@media (max-width: 640px) { .gd-head { flex-direction: column; } .gd-head .gd-emb { width: 84px; height: 84px; } .gd-mem-acts { margin-left: 0; } }
+
+/* ---------- Общая витрина жителей на главной: сторона — флажок-пряжка ---------- */
+.fc-card.h-talbot { --hc: #d6a23f; --hc2: #f0c96a; } .fc-card.h-dorn { --hc: #c2523f; --hc2: #f07a62; }
+.fc-card { position: relative; }
+.face-all { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); padding: 0; margin-top: 8px; }
+.face-foot-all { flex-wrap: wrap; justify-content: flex-start; padding: 18px 0 0; }
+.face-foot-all .muted { margin-right: auto; }
+.fc-flag { position: absolute; top: -2px; right: 12px; z-index: 2; width: 22px; height: 34px; background: var(--hc); clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 76%, 0 100%); box-shadow: 0 2px 6px rgba(0,0,0,.5); }
+.fc-flag::after { content: ""; position: absolute; left: 50%; top: 8px; width: 8px; height: 8px; margin-left: -4px; border-radius: 50%; background: var(--hc2); box-shadow: inset 0 0 0 2px rgba(0,0,0,.35); }
+.fc-key { display: inline-block; width: 10px; height: 14px; vertical-align: -2px; clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 76%, 0 100%); }
+.fc-key.h-talbot { background: #d6a23f; } .fc-key.h-dorn { background: #c2523f; }
+.rs-tile { position: relative; }
+.rs-tile::before { display: block; content: ""; position: absolute; top: -3px; right: 14px; z-index: 2; width: 20px; height: 30px; background: #d6a23f; clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 76%, 0 100%); }
+.rs-tile.h-dorn::before { background: #c2523f; }
+
+/* ---------- Главная: счёт Домов в шапке вместо карточек «Встать на сторону» ---------- */
+.hero-fx { position: absolute; z-index: 4; left: clamp(12px, 3vw, 48px); right: clamp(12px, 3vw, 48px); bottom: 22px; pointer-events: none; }
+.hero-fx > * { pointer-events: auto; }
+.fx-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, 420px) minmax(0, 1fr); align-items: end; gap: 14px; }
+.fxh-side { display: flex; align-items: center; gap: 14px; padding: 12px 18px; background: rgba(10,8,6,.78); border: 1px solid rgba(116,85,47,.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 14px 40px rgba(0,0,0,.55); justify-self: start; }
+.fxh-side.d { justify-self: end; flex-direction: row-reverse; border-color: rgba(109,42,39,.8); text-align: right; }
+.fxh-name { display: grid; gap: 2px; }
+.fxh-name small { font-family: var(--f-mono); font-size: 11px; letter-spacing: .28em; text-transform: uppercase; }
+.fxh-side.t small { color: #f0c96a; } .fxh-side.d small { color: #ee6a52; }
+.fxh-name b { font-size: clamp(18px, 2vw, 24px); color: var(--parch); white-space: nowrap; }
+.fx-hero .fx-odo { display: inline-flex; gap: 3px; font: 700 clamp(18px, 2.2vw, 26px)/1 var(--f-mono, ui-monospace, monospace); }
+.fx-hero .fxh-side.t .fx-odo i:not(.z) { color: #f0c96a; } .fx-hero .fxh-side.d .fx-odo i:not(.z) { color: #ee6a52; }
+.fx-hero.lead-t .fxh-side.t .fx-odo i:not(.z) { box-shadow: 0 0 14px rgba(240,201,106,.45); } .fx-hero.lead-d .fxh-side.d .fx-odo i:not(.z) { box-shadow: 0 0 14px rgba(238,106,82,.45); }
+.fxh-mid { display: grid; justify-items: center; gap: 4px; padding-bottom: 4px; }
+.fxh-cap { font-family: var(--f-mono); font-size: 11px; letter-spacing: .3em; text-transform: uppercase; color: var(--parch); text-shadow: 0 2px 8px #000; }
+.fx-hero .fx-tube { width: 100%; margin: 0; filter: drop-shadow(0 6px 14px rgba(0,0,0,.6)); }
+.fx-hero .fx-plate { font-size: 11px; padding: 5px 14px; text-decoration: none; }
+.fx-hero .fx-plate:hover { color: var(--parch); border-color: var(--brass); }
+@media (max-width: 860px) {
+  .hero-fx { position: relative; left: auto; right: auto; bottom: auto; padding: 14px 12px 18px; }
+  .fx-hero { grid-template-columns: 1fr 1fr; }
+  .fxh-mid { grid-column: 1 / -1; order: 3; }
+  .fxh-side, .fxh-side.d { justify-self: stretch; padding: 10px 12px; gap: 10px; }
+}
+/* ---------- Добро пожаловать ---------- */
+.welcome { padding: clamp(22px, 4vw, 40px); text-align: center; max-width: 900px; margin: 0 auto; }
+.welcome h2 { margin: 6px 0 12px; font-size: clamp(28px, 4vw, 40px); }
+.welcome p { margin: 0 auto; max-width: 720px; font-size: 17px; line-height: 1.6; color: var(--smoke); }
+.welcome-btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 22px; }
+/* ---------- Гильдии на главной ---------- */
+.gd-home-foot { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+/* ---------- Анкета — своя страница ---------- */
+.anketa-page .app-banner { margin-top: 0; }

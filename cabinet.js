@@ -901,9 +901,22 @@ function eventCard(e) {
 }
 // Пустые блоки главной не показываем: секция появляется, когда в ней есть что показать
 const hideSec = (node, hide) => { const s = node && node.closest('section'); if (s) s.hidden = hide; };
+// Счёт Домов в шапке главной: слева Жёлтые, справа Красные, между ними — колба перевеса
+function fxHTML(t, d) {
+  t = Math.max(0, t | 0); d = Math.max(0, d | 0);
+  const sum = t + d, pt = sum ? Math.round(t / sum * 100) : 50, lead = t > d ? 't' : d > t ? 'd' : '', diff = Math.abs(t - d);
+  const odo = n => { const s = String(n).padStart(4, '0'), f = s.search(/[1-9]/); return s.split('').map((c, i) => `<i${f < 0 ? (i < s.length - 1 ? ' class="z"' : '') : i < f ? ' class="z"' : ''}>${c}</i>`).join(''); };
+  const side = (k, name, small, n) => `<div class="fxh-side ${k}"><div class="fxh-name"><small>${small}</small><b>${name}</b></div><span class="fx-odo" aria-label="${n} очков">${odo(n)}</span></div>`;
+  return `<div class="fx-hero fx2 ${lead ? 'lead-' + lead : 'even'}" aria-label="Счёт Домов">
+    ${side('t', 'Дом Талбот', 'Жёлтые', t)}
+    <div class="fxh-mid"><div class="fxh-cap">Счёт Домов</div>
+      <div class="fx-tube"><div class="fx-bar" role="img" aria-label="Талбот ${t}, Дорн ${d}"><i class="t" style="width:${pt}%"></i><i class="d" style="width:${100 - pt}%"></i></div><i class="fx-mid" aria-hidden="true"></i></div>
+      <a class="fx-plate" href="#factions">${sum ? (lead === 't' ? `◀ Жёлтые впереди на ${diff}` : lead === 'd' ? `Красные впереди на ${diff} ▶` : 'Равновесие') : 'Сезон открыт — первые очки решат перевес'}</a></div>
+    ${side('d', 'Дом Дорн', 'Красные', d)}</div>`;
+}
 async function liveBlock(el) {
   if (!el) return;
-  if (!liveOk()) { el.innerHTML = ''; [el, q('#fxMount'), q('#evMount')].forEach(x => hideSec(x, true)); return; }
+  if (!liveOk()) { el.innerHTML = ''; [el, q('#evMount')].forEach(x => hideSec(x, true)); return; }
   const c = await sb();
   const draw = async () => {
     const [nw, ep, ev, fx] = await Promise.all([
@@ -913,18 +926,7 @@ async function liveBlock(el) {
       c.from('faction_score').select('*')
     ]);
     const F = Object.fromEntries(((fx.data) || []).map(r => [r.house, r.points]));
-    const t = F.talbot || 0, d = F.dorn || 0, sum = t + d, pt = sum ? Math.round(t / sum * 100) : 50;
-    // Счётчик-одометр: барабаны цифр, ведущие нули приглушены
-    const odo = n => { const s = String(Math.max(0, n | 0)).padStart(4, '0'), f = s.search(/[1-9]/); return s.split('').map((c, i) => `<i${f < 0 ? (i < s.length - 1 ? ' class="z"' : '') : i < f ? ' class="z"' : ''}>${c}</i>`).join(''); };
-    const lead = t > d ? 't' : d > t ? 'd' : '', diff = Math.abs(t - d), HS = (window.M && M.houses) || {};
-    const fxEl = q('#fxMount'); if (fxEl) fxEl.innerHTML = `<div class="panel fx-board fx2 ${lead ? 'lead-' + lead : 'even'}"><div class="eyebrow">Счёт Домов · общий пул очков фракции</div>
-      <div class="fx-h t">${HS.talbot ? `<img class="fx-flag" src="${HS.talbot.flag}" alt="">` : ''}<small>Жёлтые</small><b>Дом Талбот</b><span class="fx-n fx-odo" aria-label="${t} очков">${odo(t)}</span></div>
-      <div class="fx-gauge" role="img" aria-label="Перевес: ${sum ? (t > d ? 'Талбот' : d > t ? 'Дорн' : 'равенство') : 'пока равенство'}"><span class="fx-steam" aria-hidden="true"></span><div class="fx-needle" style="--fx-a:${((50 - pt) / 50 * -110).toFixed(1)}deg"></div><b>Перевес</b></div>
-      <div class="fx-h d">${HS.dorn ? `<img class="fx-flag" src="${HS.dorn.flag}" alt="">` : ''}<small>Красные</small><b>Дом Дорн</b><span class="fx-n fx-odo" aria-label="${d} очков">${odo(d)}</span></div>
-      <div class="fx-vs"><span class="fx-plate">${sum ? (lead === 't' ? `◀ Жёлтые впереди на ${diff}` : lead === 'd' ? `Красные впереди на ${diff} ▶` : 'Равновесие') : 'Сезон открыт — первые очки решат перевес'}</span></div>
-      <div class="fx-tube"><div class="fx-bar" role="img" aria-label="Талбот ${t}, Дорн ${d}"><i class="t" style="width:${pt}%"></i><i class="d" style="width:${100 - pt}%"></i></div><i class="fx-mid" aria-hidden="true"></i></div>
-      <p class="muted">Очки приносят ивенты, задания и победы в сюжете. Уровни пула открывают Дому бонусы — подробнее в главе <a href="#factions">Фракции</a>.</p></div>`;
-    hideSec(fxEl, false);
+    const fxEl = q('#fxMount'); if (fxEl) fxEl.innerHTML = fxHTML(F.talbot || 0, F.dorn || 0);
     const news = (nw.data || []).filter(n => n.body || (n.images || []).length), evs = (ev.data || []).filter(e => e.status !== 3 && e.status !== 4);
     const posts = (ep.data || []).filter(n => n.body || (n.images || []).length);
     const evEl = q('#evMount');
@@ -1193,7 +1195,7 @@ async function galleryPage(el, openId) {
   if (openId) open(+openId);
 }
 
-window.Cabinet = { gallery: galleryPage, residentsData, mount, api: SupabaseApi, fillSlots, anketaStatus, initHeader, community, residentsPage, chat: chatPage, live: liveBlock, news: newsPage, hero: heroPage };
+window.Cabinet = { client: sb, liveSite, fxHTML, gallery: galleryPage, residentsData, mount, api: SupabaseApi, fillSlots, anketaStatus, initHeader, community, residentsPage, chat: chatPage, live: liveBlock, news: newsPage, hero: heroPage };
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initHeader); else setTimeout(initHeader, 0);
 // после входа через Discord / почту вернуть игрока туда, откуда он пришёл
 if (CFG.url && CFG.anonKey && /[?&](code|error_description)=/.test(location.search)) {

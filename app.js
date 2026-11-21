@@ -109,7 +109,7 @@ const BOOK = [
   ['Классы', [['classes', 'Классы'], ['tree', 'Древо талантов'], ['magic', 'Магия и заклинания'], ['curses', 'Развитие Проклятых'], ['inventions', 'Изобретения Инженера']]],
   ['Механики', [['system', 'Ролевая система'], ['eloquence', 'Красноречие'], ['healing', 'Лекари и травмы']]],
   ['Мастерская', [['forge', 'Оружейная'], ['armor', 'Бронник'], ['craft', 'Крафт-станция'], ['gathering', 'Инструменты добычи'], ['blueprints', 'Чертежи ремёсел'], ['recycle', 'Переработчик'], ['alchemy', 'Алхимия'], ['cooking', 'Кулинария'], ['body', 'Протезы и конструкты']]],
-  ['Сообщество', [['news', 'Новости и события'], ['gallery', 'Витрина артов'], ['residents', 'Жители города'], ['chat', 'Общий чат']]]
+  ['Сообщество', [['news', 'Новости и события'], ['gallery', 'Витрина артов'], ['residents', 'Жители города'], ['guilds', 'Гильдии и цеха']]]
 ];
 const PART_NOTE = { 'Начало': 'Первые шаги и правила', 'Меттенхейм': 'Город, Дома и Люмерит', 'Лимн': 'Мир, боги и карта', 'Народы': 'Кем можно родиться', 'Классы': 'Пути развития и магия', 'Механики': 'Кубы, сцены и раны', 'Мастерская': 'Крафт, добыча и рецепты', 'Сообщество': 'Жизнь сервера' };
 const CHAPTERS = BOOK.flatMap(([part, ch]) => ch.map(([id, t]) => ({ id, t, part })));
@@ -222,22 +222,27 @@ function pageHomeRaw() {
   ];
   return `
 <section class="hero" aria-label="Выбор стороны">
-  <div class="side talbot" data-side="talbot"><div class="art"></div>
-    <div class="caption"><small>${H.talbot.side.toUpperCase()}</small><h2>${H.talbot.name}</h2><div class="hc-btns"><button type="button" class="hbtn" data-pick="talbot" aria-pressed="false"><span>Встать на сторону</span></button><a class="hlink" href="#houses">Подробнее</a></div></div></div>
+  <div class="side talbot" data-side="talbot"><div class="art"></div></div>
   <div class="hero-core"><div class="ring"><img class="gear" src="assets/gear-md.webp" alt=""><img class="logo" src="assets/logo-md.webp" alt="Хроники Меттенхейма"></div>
     <h1 class="sr-only">Хроники Меттенхейма — ролевой сервер Conan Exiles, RP 21+</h1>
     <div class="core-plate"><div class="motto">ГОРОД ПАРА, СТАЛИ И АМБИЦИЙ</div><div class="status" id="heroStatus"></div></div>
     <button type="button" class="hero-scroll" id="heroScroll" aria-label="Листай вниз — к разделам сайта"><span>Листай вниз</span><i aria-hidden="true"></i></button></div>
-  <div class="side dorn" data-side="dorn"><div class="art"></div>
-    <div class="caption"><small>${H.dorn.side.toUpperCase()}</small><h2>${H.dorn.name}</h2><div class="hc-btns"><button type="button" class="hbtn" data-pick="dorn" aria-pressed="false"><span>Встать на сторону</span></button><a class="hlink" href="#houses">Подробнее</a></div></div></div>
+  <div class="side dorn" data-side="dorn"><div class="art"></div></div>
+  <div class="hero-fx" id="fxMount">${window.Cabinet && window.Cabinet.fxHTML ? window.Cabinet.fxHTML(0, 0) : ''}</div>
 </section>
 
 <div class="pipe-run hero-run" aria-hidden="false"><span class="pr-pipe"></span><i class="pr-joint a"></i><i class="pr-joint b"><img class="pr-valve" src="assets/pipes/valve.webp" alt=""></i><i class="pr-steam"></i>
   <div class="engine-plate"><span class="eng-dot"></span><b>Conan Exiles</b><span class="eng-ue">Unreal Engine 5</span></div></div>
 
-<section class="section tight fx-sec"><div class="wrap"><div id="fxMount"></div></div></section>
+<section class="section tight welcome-sec"><div class="wrap"><div class="welcome panel">
+  <div class="eyebrow">Добро пожаловать</div><h2>Меттенхейм ждёт</h2>
+  <p>Ролевой сервер Conan Exiles о городе пара, стали и Люмерита. Два Дома спорят о будущем: Талбот хочет отдать машины всему Лимну, Дорн — удержать их силой. А за стенами расползается Гниль. Придумай персонажа, выбери сторону и напиши квенту — мастера прочитают её и впустят тебя в город.</p>
+  <div class="welcome-btns"><a class="btn" href="#anketa">Создать персонажа</a><a class="btn ghost" href="#start">Как начать играть</a><a class="btn ghost" href="#city">О городе</a></div>
+</div></div></section>
 
 <section class="section tight faces-sec"><div class="wrap" id="facesMount"></div></section>
+
+<section class="section tight guilds-sec"><div class="wrap" id="gdHome"></div></section>
 
 <section class="section tight ev-sec"><div class="wrap" id="evMount"></div></section>
 
@@ -267,11 +272,16 @@ function pageHomeRaw() {
   </div>
 </div></section>
 
-<div class="pipe-run" aria-hidden="true"><span class="pr-pipe"></span><i class="pr-joint a"></i><i class="pr-joint b"><img class="pr-valve" src="assets/pipes/valve.webp" alt=""></i><i class="pr-steam"></i></div>
-
-<section class="section" id="builder"><div class="wrap">
+<section class="section tight"><div class="wrap">
+  <div class="sec-head"><div class="eyebrow">Механизм случая</div><h2>Кубики игрока</h2></div>
+  ${diceHTML()}
+</div></section>`;
+}
+function pageAnketa() {
+  return head({ eyebrow: 'Анкета игрока', title: 'Создать персонажа', lead: 'Выбери сторону, народ, класс и предысторию, напиши квенту. Черновик сохраняется в этом браузере, а когда всё готово — отправь его мастерам через личный кабинет.', bg: 'assets/codex/history.webp', crumbs: 'Анкета' }) + `
+<section class="content anketa-page" id="builder"><div class="wrap">
   <div class="app-banner" id="aBanner"><img id="aBannerImg" alt=""><div class="shade"></div><div class="cap"><span id="aBannerSide"></span><strong id="aBannerName"></strong></div></div>
-  <div class="sec-head" style="margin-top:34px"><div class="eyebrow">Анкета игрока</div><h2>Создать персонажа</h2><p>Выбранный Дом переносится в анкету, черновик сохраняется в этом браузере. Когда всё готово — войди в личный кабинет через Discord и отправь квенту мастерам: решение придёт в кабинет и в личку.</p></div>
+  <div class="sec-head" style="margin-top:34px"><div class="eyebrow">Досье</div><h2>Собери персонажа</h2><p>Выбранный Дом переносится в анкету, черновик сохраняется в этом браузере. Когда всё готово — войди в личный кабинет через Discord и отправь квенту мастерам: решение придёт в кабинет и в личку.</p></div>
   <form id="aForm" class="app-form" autocomplete="off">
     <div class="ornament"><span></span><b>ДОСЬЕ ПЕРСОНАЖА</b><span></span></div>
     <div class="app-layout">
@@ -333,12 +343,12 @@ function pageHomeRaw() {
     <textarea id="bExport" hidden readonly style="margin-top:12px;min-height:200px"></textarea>
     <div id="bStatus" style="margin-top:18px"></div>
   </form>
-</div></section>
-
-<section class="section tight"><div class="wrap">
-  <div class="sec-head"><div class="eyebrow">Механизм случая</div><h2>Кубики игрока</h2></div>
-  ${diceHTML()}
 </div></section>`;
+}
+function mountAnketa() {
+  setVars();
+  MH.onHouse(hcards);
+  mountBuilder();
 }
 function diceHTML() {
   const img = n => n === 20 || n === 100 ? n : 5;
@@ -365,8 +375,8 @@ function mountHome() {
   setVars();
   MH.onHouse(hcards);
   hcards();
-  mountBuilder();
   mountFaces();
+  if (window.Guilds && Guilds.mini) Guilds.mini($('#gdHome'));
   mountDice($('[data-dice]').parentElement);
 }
 /* ---------- лица Домов: жители Жёлтых и Красных на главной ---------- */
@@ -383,18 +393,23 @@ async function mountFaces() {
     const fig = r.portrait_url || (o.folder && r.c ? charImg(o.folder, r.g === 'male' ? 'male' : 'female', r.c) : '');
     const inner = `<div class="fc-pic">${fig ? `<img src="${esc(fig)}" alt="" loading="lazy">` : ''}${demo ? '<span class="fc-demo">образец</span>' : `<span class="fc-num">№${String(r.number || 0).padStart(3, '0')}</span>`}</div>
       <div class="fc-info"><b>${esc(r.name || 'Без имени')}</b><small>${esc([o.name || p.name, cl.name].filter(Boolean).join(' · '))}</small>${r.line ? `<p>${esc(r.line)}</p>` : ''}</div>`;
-    return demo ? `<div class="fc-card demo">${inner}</div>` : `<a class="fc-card" href="#hero-${r.number}">${inner}</a>`;
+    const hk = (r.house || 'talbot') === 'dorn' ? 'dorn' : 'talbot';
+    const flag = `<span class="fc-flag h-${hk}" title="${esc(H[hk].name)}" aria-label="${esc(H[hk].name)}"></span>`;
+    return demo ? `<div class="fc-card demo h-${hk}">${flag}${inner}</div>` : `<a class="fc-card h-${hk}" href="#hero-${r.number}">${flag}${inner}</a>`;
   };
+  const SHOW = 8;
+  const count = (rs, k) => (rs || []).filter(r => (r.house || 'talbot') === k).length;
+  const word = n => n % 10 === 1 && n % 100 !== 11 ? 'житель' : [2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100) ? 'жителя' : 'жителей';
   const paint = rs => {
-    el.innerHTML = `<div class="sec-head"><div class="eyebrow">Лица Домов</div><h2>Жёлтые и Красные</h2><p>Те, кто уже выбрал сторону. Принятые персонажи появляются здесь сами — по Дому из анкеты.</p></div>
-    <div class="faces">${['talbot', 'dorn'].map(k => {
-      const real = (rs || []).filter(r => (r.house || 'talbot') === k).slice(-4).reverse();
-      const demo = FACE_DEMO[k].slice(0, Math.max(0, 4 - real.length)).map(([name, p, o, c, g, line]) => ({ name, p, o, c, g, line }));
-      const total = (rs || []).filter(r => (r.house || 'talbot') === k).length;
-      return `<article class="face-col h-${k}"><header class="face-head" style="--ban:url('${H[k].banner}')"><img class="face-crest" src="assets/crests/${k}.webp" alt="Герб: ${esc(H[k].name)}"><div><div class="eyebrow">${esc(H[k].side)}</div><h3>${esc(H[k].name)}</h3><small>${total ? `${total} ${total % 10 === 1 && total % 100 !== 11 ? 'житель' : [2, 3, 4].includes(total % 10) && ![12, 13, 14].includes(total % 100) ? 'жителя' : 'жителей'}` : 'Пока ждут первых жителей'}</small></div></header>
-        <div class="face-grid">${real.map(r => card(r, false)).join('')}${demo.map(r => card(r, true)).join('')}</div>
-        <footer class="face-foot"><a class="btn small${k === 'dorn' ? ' red' : ''}" href="#anketa" data-face-pick="${k}">Встать за ${k === 'dorn' ? 'Красных' : 'Жёлтых'}</a><a class="hlink" href="#residents">Все жители →</a></footer></article>`;
-    }).join('')}</div>`;
+    const real = (rs || []).slice(-SHOW).reverse();
+    // образцы по очереди от двух Домов, пока принятых мало
+    const mix = []; for (let i = 0; i < 4; i++) mix.push(['talbot', FACE_DEMO.talbot[i]], ['dorn', FACE_DEMO.dorn[i]]);
+    const demo = mix.slice(0, Math.max(0, SHOW - real.length)).map(([house, [name, p, o, c, g, line]]) => ({ name, p, o, c, g, line, house }));
+    const t = count(rs, 'talbot'), d = count(rs, 'dorn');
+    el.innerHTML = `<div class="sec-head"><div class="eyebrow">Жители города</div><h2>Лица Меттенхейма</h2><p>Принятые персонажи появляются здесь сами. Флажок на карточке — сторона из анкеты: <span class="fc-key h-talbot"></span> Жёлтые, <span class="fc-key h-dorn"></span> Красные.</p></div>
+    <div class="face-grid face-all">${real.map(r => card(r, false)).join('')}${demo.map(r => card(r, true)).join('')}</div>
+    <footer class="face-foot face-foot-all"><span class="muted">${t || d ? `🟡 ${t} ${word(t)} · 🔴 ${d} ${word(d)}` : 'Город ждёт первых жителей'}</span>
+      <a class="btn small" href="#anketa" data-face-pick="talbot">Встать за Жёлтых</a><a class="btn small red" href="#anketa" data-face-pick="dorn">Встать за Красных</a><a class="hlink" href="#residents">Все жители →</a></footer>`;
     $$('[data-face-pick]', el).forEach(b => b.addEventListener('click', () => { if (b.dataset.facePick !== house) applyHouse(b.dataset.facePick, true); }));
   };
   paint(null);
@@ -1121,15 +1136,19 @@ function pagePrivacy() {
 function pageChat() { return head({ eyebrow: 'Город · на связи', title: 'Общий чат', lead: 'Один чат на сайт и Discord: пиши отсюда — сообщение увидят на сервере, ответы с сервера появятся здесь.', bg: 'assets/codex/city-v2.webp', crumbs: 'Начало' }) + `<section class="content"><div class="wrap" id="chatMount"></div></section>`; }
 function pageGallery() { return head({ eyebrow: 'Город · мастерская художников', title: 'Витрина артов', lead: 'Портреты персонажей, сцены с ивентов, скетчи города. Выкладывай свои арты, ставь сердечки и пиши авторам.', bg: 'assets/codex/housing.webp' }) + `<section class="content"><div class="wrap" id="galMount"></div></section>`; }
 function pageResidents() { return head({ eyebrow: 'Город · перепись', title: 'Жители Меттенхейма', lead: 'Все персонажи, чьи квенты приняли мастера. Ищи соседей, союзников и врагов для своей истории.', bg: 'assets/codex/city-v2.webp', crumbs: 'Начало' }) + `<section class="content"><div class="wrap" id="rsMount"></div></section>`; }
+function pageGuilds() { return head({ eyebrow: 'Город · цеха и общества', title: 'Гильдии и цеха', lead: 'Цеха, артели, ордена, службы и тайные общества Меттенхейма. Их ведут сами игроки: цели, устав, состав, объявления и летопись. Основать свою может любой, чей персонаж принят.', bg: 'assets/codex/city-v2.webp', crumbs: 'Сообщество' }) + `<section class="content"><div class="wrap" id="gdMount"></div></section>`; }
+function pageGuild() { return head({ eyebrow: 'Город · гильдия', title: 'Гильдия', lead: 'Цели, устав, состав и летопись — всё, что гильдия сделала в игре.', bg: 'assets/codex/city-v2.webp', crumbs: 'Сообщество' }) + `<section class="content"><div class="wrap" id="gdMount"></div></section>`; }
 function pageCabinet(mode) { const adm = mode === 'admin'; return head({ eyebrow: adm ? 'Для мастеров' : 'Для игроков', title: adm ? 'Кабинет мастера' : 'Личный кабинет', lead: adm ? 'Очередь отправленных квент. Прочитай, оставь комментарий и вынеси решение — игрок увидит его у себя в кабинете.' : 'Твои персонажи и квенты в одном месте. Пиши черновик, отправляй на проверку и получай ответ мастеров прямо здесь.', bg: 'assets/codex/history.webp', crumbs: adm ? 'Кабинет мастера' : 'Кабинет' }) + `<section class="content"><div class="wrap" id="cabMount"></div></section>`; }
 const ROUTES = {
-  home: [pageHome, mountHome], anketa: [pageHome, mountHome],
+  home: [pageHome, mountHome], anketa: [pageAnketa, mountAnketa],
   chat: [pageChat, () => window.Cabinet.chat($('#chatMount'))],
   news: [pageNews, () => window.Cabinet.news($('#newsMount'))],
   hero: [pageHero, n => window.Cabinet.hero($('#heroMount'), n)],
   glossary: [pageGlossary, mountGlossary], chronicle: [pageChronicle], privacy: [pagePrivacy],
   gallery: [pageGallery, arg => window.Cabinet.gallery($('#galMount'), arg)],
   residents: [pageResidents, () => window.Cabinet.residentsPage($('#rsMount'))],
+  guilds: [pageGuilds, () => window.Guilds.list($('#gdMount'))],
+  guild: [pageGuild, arg => window.Guilds.page($('#gdMount'), arg)],
   inferno: [pageInferno],
   cabinet: [() => pageCabinet('player'), () => window.Cabinet.mount($('#cabMount'), 'player')], admin: [() => pageCabinet('admin'), () => window.Cabinet.mount($('#cabMount'), 'admin')],
   city: [pageCity], history: [pageHistory, mountChrono], houses: [pageHouses, () => { $$('[data-pick]').forEach(b => b.addEventListener('click', () => { if (b.dataset.pick !== house) applyHouse(b.dataset.pick, true); })); setVars(); MH.onHouse(hcards); }],
@@ -1140,7 +1159,7 @@ const ROUTES = {
 };
 function resolve(raw) {
   let key = raw, arg = null;
-  const m = raw.match(/^(rules|people|class|tree|hero|chat|gallery)-(.+)$/);
+  const m = raw.match(/^(rules|people|class|tree|hero|chat|gallery|guild)-(.+)$/);
   if (m) { key = m[1] === 'class' ? 'classes' : m[1]; arg = m[2]; }
   if (key === 'rules' && arg === 'discord') { key = 'discord'; arg = null; }
   const chapter = key === 'people' ? 'people-' + arg : key;
@@ -1179,7 +1198,7 @@ function bookify(view, chapter) {
 }
 let lastRoute = null;
 /* тяжёлые арты (предметы ~5 МБ, иконки ~2 МБ) грузятся только для страниц, где они нужны */
-const LIGHT = new Set(['home', 'anketa', 'cabinet', 'admin', 'residents', 'chat', 'news', 'gallery', 'hero', 'glossary', 'chronicle', 'privacy', 'city', 'history', 'limn', 'map', 'houses', 'lumerite', 'faith', 'world', 'rules', 'discord', 'start', 'faq', 'modlist', 'inferno', 'races']);
+const LIGHT = new Set(['home', 'anketa', 'cabinet', 'admin', 'residents', 'guilds', 'guild', 'chat', 'news', 'gallery', 'hero', 'glossary', 'chronicle', 'privacy', 'city', 'history', 'limn', 'map', 'houses', 'lumerite', 'faith', 'world', 'rules', 'discord', 'start', 'faq', 'modlist', 'inferno', 'races']);
 const ART_V = ((document.querySelector('script[src*="app.js"]') || {}).src || '').split('?')[1] || '';
 let artP = null;
 const loadArt = () => artP || (artP = Promise.all(['items-art.js', 'icons-art.js'].map(f => new Promise((res, rej) => {
@@ -1221,14 +1240,13 @@ function route() {
   if (chapter === 'curses') { const m = $('.doc-main', view); if (m) m.insertAdjacentHTML('afterbegin', '<div class="slot-box" data-slot="curse"></div>'); }
   window.Cabinet && window.Cabinet.fillSlots(view);
   if ((key === 'home' || key === 'anketa') && window.Cabinet) window.Cabinet.anketaStatus($('#bStatus'));
-  if ((key === 'home' || key === 'anketa') && window.Cabinet) { window.Cabinet.community($('#commMount')); window.Cabinet.live($('#liveMount')); }
+  if (key === 'home' && window.Cabinet) { window.Cabinet.community($('#commMount')); window.Cabinet.live($('#liveMount')); }
   const cb = $('#cabBtn'); if (cb) { if (key === 'cabinet' || key === 'admin') cb.setAttribute('aria-current', 'page'); else cb.removeAttribute('aria-current'); }
   document.body.classList.toggle('tree-mode', key === 'tree');
   document.body.classList.toggle('map-mode', key === 'map');
   document.body.classList.toggle('home-mode', key === 'home'); introSync(); if (key === 'home') homeReveal();
   if (key === 'tree') window.Tree.mount($('#treeMount'), arg || 'fighter');
-  if (key === 'anketa') setTimeout(() => $('#builder').scrollIntoView({ behavior: 'smooth' }), 60);
-  else if (!(lastRoute === 'tree' && key === 'tree')) scrollTo({ top: 0, behavior: 'instant' });
+  if (!(lastRoute === 'tree' && key === 'tree')) scrollTo({ top: 0, behavior: 'instant' });
   markNav(raw);
   document.title = key === 'home' ? 'Хроники Меттенхейма' : ($('h1', view)?.textContent || '') + ' · Хроники Меттенхейма';
   $('#drawer').hidden = true; $('.pal')?.remove();
