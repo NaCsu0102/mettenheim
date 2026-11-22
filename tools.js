@@ -49,7 +49,7 @@ const CLS_HERO = {
   fighter: ['assets/art/hero-fighter.webp', '#e2643c', '#ffb37a', 'Дворф-боец с паровым молотом'],
   rogue: ['assets/art/hero-rogue.webp', '#a46cff', '#e2c6ff', 'Тёмный полуэльф-плут'],
   mage: ['assets/art/hero-mage.webp', '#7fa8ff', '#e3ecff', 'Высшая полуэльфийка-маг с кристаллом Люмерита'],
-  shooter: ['assets/art/hero-shooter.webp', '#2fd1bd', '#c8fff6', 'Южанка-стрелок с винтовкой'],
+  shooter: ['assets/art/hero-shooter.webp', '#2fd1bd', '#c8fff6', 'Южанка-стрелок с винтовкой', [26, 22, .9]],
   engineer: ['assets/art/hero-engineer.webp', '#7cc95e', '#f3d27a', 'Гоблинша-инженер с ключом']
 };
 // Созвездие: звёзды и линии между ними, раскладка своя у каждого класса
@@ -418,7 +418,7 @@ const Tree = {
       // в центре — герой выбранного класса в его цвете
       let coreHero = '';
       { const H = CLS_HERO[cid];
-        coreHero = H ? `<circle r="150" fill="#0b0a12" opacity=".96"/>${gearSvg}<circle r="175" fill="url(#thalo-${cid})"/><image class="tcore-hero" href="${H[0]}" x="-172" y="-190" width="344" height="344" preserveAspectRatio="xMidYMid meet"/>`
+        coreHero = H ? `<circle r="150" fill="#0b0a12" opacity=".96"/>${gearSvg}<circle r="175" fill="url(#thalo-${cid})"/><image class="tcore-hero" href="${H[0]}" x="${(-172 * (H[4] || [0, 0, 1])[2] + (H[4] || [0])[0]).toFixed(0)}" y="${(-190 * (H[4] || [0, 0, 1])[2] + (H[4] || [0, 0])[1]).toFixed(0)}" width="${(344 * (H[4] || [0, 0, 1])[2]).toFixed(0)}" height="${(344 * (H[4] || [0, 0, 1])[2]).toFixed(0)}" preserveAspectRatio="xMidYMid meet"/>`
           : gearSvg + `<text y="6" text-anchor="middle" fill="#a7967c" font-family="Montserrat, Arial, sans-serif" font-weight="700" font-size="28" letter-spacing="3" stroke="#120e0b" stroke-width="5" paint-order="stroke">МЕТТЕНХЕЙМ</text>`; }
       for (const [a, b] of links) {
         const A = byId[a], B = byId[b], on = got.has(a) && got.has(b), can = (got.has(a) && canTake(b)) || (got.has(b) && canTake(a));
