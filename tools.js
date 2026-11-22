@@ -61,6 +61,13 @@ function constellation(cid) {
   const stars = pts.map(([x, y, r], i) => `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(2)}" style="animation-delay:${(i * .37).toFixed(2)}s"/>`).join('');
   return `<svg class="th-stars" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><g class="th-lines">${lines}</g><g class="th-dots">${stars}</g></svg>`;
 }
+// Ночное небо древа: северное сияние, мерцающие звёзды и созвездия (раскладка постоянная)
+function skyHTML() {
+  let seed = 20261122; const rnd = () => (seed = (seed * 1103515245 + 12345) >>> 0) / 4294967296;
+  const stars = Array.from({ length: 170 }, () => { const x = rnd() * 100, y = rnd() * 100, r = rnd() < .9 ? .06 + rnd() * .1 : .16 + rnd() * .12; return `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${r.toFixed(3)}" style="animation-duration:${(2.6 + rnd() * 5).toFixed(1)}s;animation-delay:-${(rnd() * 6).toFixed(1)}s"/>`; }).join('');
+  const cons = Array.from({ length: 7 }, () => { const cx = 6 + rnd() * 88, cy = 6 + rnd() * 88, n = 4 + Math.floor(rnd() * 4); let x = cx, y = cy; const pts = []; for (let i = 0; i < n; i++) { pts.push([x, y]); x += (rnd() - .5) * 9; y += (rnd() - .5) * 9; } return `<polyline points="${pts.map(q => q.map(v => v.toFixed(1)).join(',')).join(' ')}"/>${pts.map(q => `<circle class="cs" cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r=".22"/>`).join('')}`; }).join('');
+  return `<div class="tree-sky" aria-hidden="true"><i class="aur a"></i><i class="aur b"></i><i class="aur c"></i><svg viewBox="0 0 100 100" preserveAspectRatio="none"><g class="sky-stars">${stars}</g><g class="sky-cons">${cons}</g></svg></div>`;
+}
 function heroHTML(cid) {
   const h = CLS_HERO[cid]; if (!h) return '';
   return `<div class="tree-hero" style="--hc:${h[1]};--hc2:${h[2]}" aria-hidden="true"><i class="th-smoke a"></i><i class="th-smoke b"></i><i class="th-smoke c"></i>${constellation(cid)}<img src="${h[0]}" alt="" title="${esc(h[3])}"></div>`;
@@ -352,7 +359,7 @@ const Tree = {
     const TYPE = { core: 'Центр древа', gap: 'Мастерство · оружие и ремесло', root: 'Класс', ability: 'Приём ветви', upgrade: 'Вершина ветви', minor: 'Малый узел', fork: 'Развилка · выбери одно', school: 'Школа магии', bridge: 'Перекрёсток' };
     let view = { x: 0, y: 0, k: 1 };
 
-    el.innerHTML = `<div class="tree-full has-hero" id="tBox">${heroHTML(cid)}
+    el.innerHTML = `<div class="tree-full night" id="tBox">${skyHTML()}
       <svg id="tSvg" role="img" aria-label="Древо талантов"><defs>
         ${Object.entries(CLS_HERO).map(([k, h]) => `<radialGradient id="tgc-${k}" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="1100"><stop offset=".15" stop-color="${h[1]}" stop-opacity="0"/><stop offset=".4" stop-color="${h[1]}" stop-opacity=".6"/><stop offset=".72" stop-color="${h[1]}" stop-opacity=".22"/><stop offset="1" stop-color="${h[1]}" stop-opacity="0"/></radialGradient>`).join('')}<filter id="tsmoke" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence type="fractalNoise" baseFrequency=".0055" numOctaves="3" seed="7"/><feDisplacementMap in="SourceGraphic" scale="150" xChannelSelector="R" yChannelSelector="G"/><feGaussianBlur stdDeviation="16"/></filter><radialGradient id="tg1"><stop offset="0" stop-color="#3a2d22"/><stop offset="1" stop-color="#150f0b"/></radialGradient>
         ${Object.keys(window.ICON_ART_DATA || {}).filter(k => k.startsWith('skill-')).map(k => `<symbol id="sy-${k}" viewBox="0 0 144 144"><image href="${ICON(k)}" width="144" height="144"/></symbol>`).join('')}
@@ -405,11 +412,12 @@ const Tree = {
       { const wedge = (a, r1, r2, w) => { const p = (r, d) => { const g = (a + d) * Math.PI / 180; return (r * Math.cos(g)).toFixed(0) + ',' + (r * Math.sin(g)).toFixed(0); }; return `M${p(r1, -w)} L${p(r2, -w)} A${r2} ${r2} 0 0 1 ${p(r2, w)} L${p(r1, w)} A${r1} ${r1} 0 0 0 ${p(r1, -w)}Z`; };
         s += `<g class="tsect" filter="url(#tsmoke)">${Object.keys(CLS_HERO).map(k => `<path d="${wedge(SECTOR[k], 170, 1080, 34)}" fill="url(#tgc-${k})" opacity="${k === cid ? .85 : .35}"/>`).join('')}</g>`; }
       Object.values(RADII).forEach(r => { s += `<circle r="${r}" fill="none" stroke="#2a211a" stroke-width="1" stroke-dasharray="2 9"/>`; });
-      s += `<circle r="180" fill="none" stroke="#3a2e23" stroke-width="2"/><image href="assets/gear-md.webp" x="-150" y="-150" width="300" height="300" opacity=".35"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="80s" repeatCount="indefinite"/></image>`;
+      const gearSvg = `<circle r="180" fill="none" stroke="#3a2e23" stroke-width="2"/><image href="assets/gear-md.webp" x="-150" y="-150" width="300" height="300" opacity=".35"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="80s" repeatCount="indefinite"/></image>`;
       // в центре — герой выбранного класса в его цвете
+      let coreHero = '';
       { const H = CLS_HERO[cid];
-        s += H ? `<circle r="128" fill="${H[1]}" opacity=".16" filter="url(#tglow)"/><circle r="104" fill="none" stroke="${H[2]}" stroke-width="1.2" opacity=".35" stroke-dasharray="2 7"/><image class="tcore-hero" href="${H[0]}" x="-128" y="-142" width="256" height="256" preserveAspectRatio="xMidYMid meet"/>`
-          : `<text y="6" text-anchor="middle" fill="#a7967c" font-family="Montserrat, Arial, sans-serif" font-weight="700" font-size="28" letter-spacing="3" stroke="#120e0b" stroke-width="5" paint-order="stroke">МЕТТЕНХЕЙМ</text>`; }
+        coreHero = H ? `<circle r="150" fill="#0b0a12" opacity=".96"/>${gearSvg}<circle r="128" fill="${H[1]}" opacity=".16" filter="url(#tglow)"/><circle r="104" fill="none" stroke="${H[2]}" stroke-width="1.2" opacity=".35" stroke-dasharray="2 7"/><image class="tcore-hero" href="${H[0]}" x="-128" y="-142" width="256" height="256" preserveAspectRatio="xMidYMid meet"/>`
+          : gearSvg + `<text y="6" text-anchor="middle" fill="#a7967c" font-family="Montserrat, Arial, sans-serif" font-weight="700" font-size="28" letter-spacing="3" stroke="#120e0b" stroke-width="5" paint-order="stroke">МЕТТЕНХЕЙМ</text>`; }
       for (const [a, b] of links) {
         const A = byId[a], B = byId[b], on = got.has(a) && got.has(b), can = (got.has(a) && canTake(b)) || (got.has(b) && canTake(a));
         const mine = (A.cls === cid || B.cls === cid);
@@ -422,6 +430,7 @@ const Tree = {
         s += `<line x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}" stroke="${on ? house : can ? '#7a5f3a' : mine ? '#3b2f24' : '#2a211a'}" stroke-width="${on ? 6 : 4}" stroke-linecap="round"/>`;
         if (on) s += `<line x1="${A.x}" y1="${A.y}" x2="${B.x}" y2="${B.y}" stroke="${hi}" stroke-width="1.5" opacity=".7"/>`;
       }
+      s += coreHero; // герой в центре поверх линий связей
       for (const n of nodes) {
         const r = R[n.type], on = got.has(n.id), can = canTake(n.id), dim = n.cls && !got.has(n.cls) && !on && !can;
         if (n.type === 'core') { s += `<g class="tnode" data-id="core" tabindex="0" role="button" aria-label="Центр древа" style="cursor:pointer"><circle r="${r}" fill="transparent" stroke="${hi}" stroke-width="2" opacity=".6"/>${sel === 'core' ? `<circle r="${r + 12}" fill="none" stroke="${hi}" stroke-width="1.5" stroke-dasharray="4 5"/>` : ''}</g>`; continue; }

@@ -3033,3 +3033,31 @@ body.gl-lock { overflow: hidden; }
 .hero-core .core-plate .motto::after { transform: scaleX(-1); }
 .hero-core .core-plate .status { margin-top: 6px; font: italic 400 16px var(--f-body); color: var(--house-hi); letter-spacing: .04em; opacity: .9; text-shadow: 0 2px 12px #000; }
 .hero-core .core-plate .status, .hero-core .core-plate .motto { text-shadow: 0 0 6px #000, 0 0 14px #000, 0 2px 18px rgba(0,0,0,.9); }
+
+/* ---------- Шапка: по центру и без выезда за край ---------- */
+.topbar .wrap { max-width: none; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: clamp(8px, 1.2vw, 18px); padding-inline: clamp(12px, 2vw, 32px); }
+.topbar .nav { margin: 0; justify-content: center; min-width: 0; flex-wrap: nowrap; }
+.topbar .tools { justify-self: end; display: flex; align-items: center; gap: clamp(4px, .5vw, 8px); flex: none; }
+.nav-btn { font-size: clamp(13px, .95vw, 15px); padding: 10px clamp(6px, .6vw, 12px); white-space: nowrap; }
+@media (max-width: 1500px) { .brand span { display: none; } }
+@media (max-width: 1180px) {
+  .topbar .nav { display: none !important; }
+  .burger { display: grid !important; }
+  .topbar .wrap { grid-template-columns: auto 1fr auto; }
+}
+
+/* ---------- Древо: ночное небо с северным сиянием ---------- */
+.tree-full.night { background: radial-gradient(ellipse 120% 80% at 50% 110%, #0d1a36 0%, #070c1d 45%, #04060f 100%); }
+.tree-full.night svg#tSvg { position: absolute; z-index: 1; }
+.tree-sky { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.tree-sky svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.tree-sky .aur { position: absolute; left: -20%; right: -20%; height: 46%; filter: blur(42px); opacity: .5; mix-blend-mode: screen; border-radius: 50%; animation: aurWave 22s ease-in-out infinite alternate; }
+.tree-sky .aur.a { top: -6%; background: linear-gradient(100deg, transparent 8%, rgba(44,210,160,.55) 30%, rgba(60,140,255,.35) 52%, transparent 72%); transform: rotate(-6deg); }
+.tree-sky .aur.b { top: 12%; background: linear-gradient(80deg, transparent 18%, rgba(120,80,230,.42) 42%, rgba(40,200,190,.3) 62%, transparent 82%); animation-duration: 30s; animation-delay: -9s; transform: rotate(5deg); opacity: .38; }
+.tree-sky .aur.c { bottom: -14%; height: 40%; background: linear-gradient(95deg, transparent 10%, rgba(30,120,200,.3) 40%, rgba(90,60,190,.28) 70%, transparent 90%); animation-duration: 26s; animation-delay: -4s; opacity: .32; }
+@keyframes aurWave { 0% { translate: -6% 0; scale: 1 1; } 50% { translate: 4% 3%; scale: 1.08 .9; } 100% { translate: 8% -2%; scale: .96 1.12; } }
+.sky-stars circle { fill: #e8f1ff; animation: skyTw ease-in-out infinite; }
+@keyframes skyTw { 0%, 100% { opacity: .18; } 50% { opacity: .95; } }
+.sky-cons polyline { fill: none; stroke: #b9d4ff; stroke-width: 1; opacity: .28; vector-effect: non-scaling-stroke; }
+.sky-cons .cs { fill: #f2f7ff; filter: drop-shadow(0 0 .4px #9cc4ff); animation: skyTw 4.5s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .tree-sky .aur, .sky-stars circle, .sky-cons .cs { animation: none; } }
