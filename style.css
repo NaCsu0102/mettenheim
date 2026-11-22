@@ -3007,3 +3007,4 @@ body.gl-lock { overflow: hidden; }
 .th-smoke { opacity: .78; }
 .th-lines line { opacity: .65; stroke-width: .25; }
 .th-stars { inset: 4% 2% 10%; }
+.tcore-hero { pointer-events: none; filter: drop-shadow(0 0 10px rgba(0,0,0,.6)); }

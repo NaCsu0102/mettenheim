@@ -404,7 +404,10 @@ const Tree = {
       let s = '';
       Object.values(RADII).forEach(r => { s += `<circle r="${r}" fill="none" stroke="#2a211a" stroke-width="1" stroke-dasharray="2 9"/>`; });
       s += `<circle r="180" fill="none" stroke="#3a2e23" stroke-width="2"/><image href="assets/gear-md.webp" x="-150" y="-150" width="300" height="300" opacity=".35"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="80s" repeatCount="indefinite"/></image>`;
-      s += `<text y="6" text-anchor="middle" fill="#a7967c" font-family="Montserrat, Arial, sans-serif" font-weight="700" font-size="28" letter-spacing="3" stroke="#120e0b" stroke-width="5" paint-order="stroke">МЕТТЕНХЕЙМ</text>`;
+      // в центре — герой выбранного класса в его цвете
+      { const H = CLS_HERO[cid];
+        s += H ? `<circle r="128" fill="${H[1]}" opacity=".16" filter="url(#tglow)"/><circle r="104" fill="none" stroke="${H[2]}" stroke-width="1.2" opacity=".35" stroke-dasharray="2 7"/><image class="tcore-hero" href="${H[0]}" x="-128" y="-142" width="256" height="256" preserveAspectRatio="xMidYMid meet"/>`
+          : `<text y="6" text-anchor="middle" fill="#a7967c" font-family="Montserrat, Arial, sans-serif" font-weight="700" font-size="28" letter-spacing="3" stroke="#120e0b" stroke-width="5" paint-order="stroke">МЕТТЕНХЕЙМ</text>`; }
       for (const [a, b] of links) {
         const A = byId[a], B = byId[b], on = got.has(a) && got.has(b), can = (got.has(a) && canTake(b)) || (got.has(b) && canTake(a));
         const mine = (A.cls === cid || B.cls === cid);
