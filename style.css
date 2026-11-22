@@ -3208,3 +3208,14 @@ body.intro .hero-core .ring { animation: none !important; }
 .rule-sec .rs-dim { display: none; }
 .rule-sec .rs-hit { background: rgba(201,161,91,.07); box-shadow: inset 2px 0 0 var(--house); padding-left: 10px; }
 .rule-sec mark { background: color-mix(in srgb, var(--house) 45%, transparent); color: #fff6e2; padding: 0 2px; border-radius: 2px; }
+/* шапка: циферблат «Перевес» над колбой */
+.fx-hero .fx-gauge { grid-column: auto; grid-row: auto; width: clamp(96px, 9vw, 132px); margin: 0 auto -4px; }
+.fx-hero .fx-gauge b { font-size: 8px; }
+@media (max-width: 860px) { .fx-hero .fx-gauge { width: 96px; } }
+/* шапка: счёт внутри циферблата, без боковых блоков */
+.fx-hero { grid-template-columns: minmax(0, 360px); justify-content: center; }
+.fx-hero .fx-gauge { width: clamp(130px, 11vw, 168px); margin-bottom: -2px; }
+.fx-hero .fx-gauge b { bottom: 18%; font-size: 8px; }
+.fxg-score { position: absolute; left: 0; right: 0; top: 58%; display: flex; justify-content: center; align-items: baseline; gap: 4px; font: 700 clamp(15px, 1.4vw, 20px)/1 var(--f-display); z-index: 2; }
+.fxg-score i { font-style: normal; } .fxg-score i.t { color: #8a5d0c; } .fxg-score i.d { color: #8e1c12; } .fxg-score em { font-style: normal; color: #5a4630; }
+@media (max-width: 860px) { .fx-hero { grid-template-columns: minmax(0, 320px); } .fxh-mid { order: 0; } }

@@ -913,11 +913,10 @@ function fxHTML(t, d) {
   t = Math.max(0, t | 0); d = Math.max(0, d | 0);
   const sum = t + d, pt = sum ? Math.round(t / sum * 100) : 50, lead = t > d ? 't' : d > t ? 'd' : '', diff = Math.abs(t - d);
   const side = (k, name, small, n) => `<div class="fxh-side ${k}"><small>${small}</small><b>${name}</b><span class="fxh-num" aria-label="${n} очков">${n}</span></div>`;
-  return `<div class="fx-hero ${lead ? 'lead-' + lead : 'even'}" aria-label="Счёт Домов">
-    ${side('t', 'Дом Талбот', 'Жёлтые', t)}
-    <div class="fxh-mid"><div class="fx-tube"><div class="fx-bar" role="img" aria-label="Талбот ${t}, Дорн ${d}"><i class="t" style="width:${pt}%"></i><i class="d" style="width:${100 - pt}%"></i></div><i class="fx-mid" aria-hidden="true"></i></div>
+  return `<div class="fx-hero fx2 ${lead ? 'lead-' + lead : 'even'}" aria-label="Счёт Домов">
+    <div class="fxh-mid"><div class="fx-gauge" role="img" aria-label="Перевес: ${sum ? (t > d ? 'Талбот' : d > t ? 'Дорн' : 'равенство') : 'пока равенство'}"><div class="fx-needle" style="--fx-a:${((50 - pt) / 50 * -110).toFixed(1)}deg"></div><span class="fxg-score" aria-label="Талбот ${t}, Дорн ${d}"><i class="t">${t}</i><em>:</em><i class="d">${d}</i></span><b>Перевес</b></div><div class="fx-tube"><div class="fx-bar" role="img" aria-label="Талбот ${t}, Дорн ${d}"><i class="t" style="width:${pt}%"></i><i class="d" style="width:${100 - pt}%"></i></div><i class="fx-mid" aria-hidden="true"></i></div>
       <a class="fxh-note" href="#factions">${sum ? (lead === 't' ? `Жёлтые впереди на ${diff}` : lead === 'd' ? `Красные впереди на ${diff}` : 'Равновесие') : 'Счёт Домов · сезон открыт'}</a></div>
-    ${side('d', 'Дом Дорн', 'Красные', d)}</div>`;
+  </div>`;
 }
 async function liveBlock(el) {
   if (!el) return;
