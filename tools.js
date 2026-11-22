@@ -354,7 +354,7 @@ const Tree = {
 
     el.innerHTML = `<div class="tree-full has-hero" id="tBox">${heroHTML(cid)}
       <svg id="tSvg" role="img" aria-label="Древо талантов"><defs>
-        <radialGradient id="tg1"><stop offset="0" stop-color="#3a2d22"/><stop offset="1" stop-color="#150f0b"/></radialGradient>
+        ${Object.entries(CLS_HERO).map(([k, h]) => `<radialGradient id="tgc-${k}" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="1100"><stop offset=".15" stop-color="${h[1]}" stop-opacity="0"/><stop offset=".4" stop-color="${h[1]}" stop-opacity=".6"/><stop offset=".72" stop-color="${h[1]}" stop-opacity=".22"/><stop offset="1" stop-color="${h[1]}" stop-opacity="0"/></radialGradient>`).join('')}<filter id="tsmoke" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence type="fractalNoise" baseFrequency=".0055" numOctaves="3" seed="7"/><feDisplacementMap in="SourceGraphic" scale="150" xChannelSelector="R" yChannelSelector="G"/><feGaussianBlur stdDeviation="16"/></filter><radialGradient id="tg1"><stop offset="0" stop-color="#3a2d22"/><stop offset="1" stop-color="#150f0b"/></radialGradient>
         ${Object.keys(window.ICON_ART_DATA || {}).filter(k => k.startsWith('skill-')).map(k => `<symbol id="sy-${k}" viewBox="0 0 144 144"><image href="${ICON(k)}" width="144" height="144"/></symbol>`).join('')}
         <filter id="tglow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="7"/></filter></defs><g id="tWorld"></g></svg>
       <div class="tree-top">
@@ -402,6 +402,8 @@ const Tree = {
     function draw() {
       const house = css.getPropertyValue('--house').trim() || '#d6a23f', hi = css.getPropertyValue('--house-hi').trim() || '#f2cc72';
       let s = '';
+      { const wedge = (a, r1, r2, w) => { const p = (r, d) => { const g = (a + d) * Math.PI / 180; return (r * Math.cos(g)).toFixed(0) + ',' + (r * Math.sin(g)).toFixed(0); }; return `M${p(r1, -w)} L${p(r2, -w)} A${r2} ${r2} 0 0 1 ${p(r2, w)} L${p(r1, w)} A${r1} ${r1} 0 0 0 ${p(r1, -w)}Z`; };
+        s += `<g class="tsect" filter="url(#tsmoke)">${Object.keys(CLS_HERO).map(k => `<path d="${wedge(SECTOR[k], 170, 1080, 34)}" fill="url(#tgc-${k})" opacity="${k === cid ? .85 : .35}"/>`).join('')}</g>`; }
       Object.values(RADII).forEach(r => { s += `<circle r="${r}" fill="none" stroke="#2a211a" stroke-width="1" stroke-dasharray="2 9"/>`; });
       s += `<circle r="180" fill="none" stroke="#3a2e23" stroke-width="2"/><image href="assets/gear-md.webp" x="-150" y="-150" width="300" height="300" opacity=".35"><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="80s" repeatCount="indefinite"/></image>`;
       // в центре — герой выбранного класса в его цвете
