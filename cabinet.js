@@ -905,13 +905,11 @@ const hideSec = (node, hide) => { const s = node && node.closest('section'); if 
 function fxHTML(t, d) {
   t = Math.max(0, t | 0); d = Math.max(0, d | 0);
   const sum = t + d, pt = sum ? Math.round(t / sum * 100) : 50, lead = t > d ? 't' : d > t ? 'd' : '', diff = Math.abs(t - d);
-  const odo = n => { const s = String(n).padStart(4, '0'), f = s.search(/[1-9]/); return s.split('').map((c, i) => `<i${f < 0 ? (i < s.length - 1 ? ' class="z"' : '') : i < f ? ' class="z"' : ''}>${c}</i>`).join(''); };
-  const side = (k, name, small, n) => `<div class="fxh-side ${k}"><div class="fxh-name"><small>${small}</small><b>${name}</b></div><span class="fx-odo" aria-label="${n} очков">${odo(n)}</span></div>`;
-  return `<div class="fx-hero fx2 ${lead ? 'lead-' + lead : 'even'}" aria-label="Счёт Домов">
+  const side = (k, name, small, n) => `<div class="fxh-side ${k}"><small>${small}</small><b>${name}</b><span class="fxh-num" aria-label="${n} очков">${n}</span></div>`;
+  return `<div class="fx-hero ${lead ? 'lead-' + lead : 'even'}" aria-label="Счёт Домов">
     ${side('t', 'Дом Талбот', 'Жёлтые', t)}
-    <div class="fxh-mid"><div class="fxh-cap">Счёт Домов</div>
-      <div class="fx-tube"><div class="fx-bar" role="img" aria-label="Талбот ${t}, Дорн ${d}"><i class="t" style="width:${pt}%"></i><i class="d" style="width:${100 - pt}%"></i></div><i class="fx-mid" aria-hidden="true"></i></div>
-      <a class="fx-plate" href="#factions">${sum ? (lead === 't' ? `◀ Жёлтые впереди на ${diff}` : lead === 'd' ? `Красные впереди на ${diff} ▶` : 'Равновесие') : 'Сезон открыт — первые очки решат перевес'}</a></div>
+    <div class="fxh-mid"><div class="fx-tube"><div class="fx-bar" role="img" aria-label="Талбот ${t}, Дорн ${d}"><i class="t" style="width:${pt}%"></i><i class="d" style="width:${100 - pt}%"></i></div><i class="fx-mid" aria-hidden="true"></i></div>
+      <a class="fxh-note" href="#factions">${sum ? (lead === 't' ? `Жёлтые впереди на ${diff}` : lead === 'd' ? `Красные впереди на ${diff}` : 'Равновесие') : 'Счёт Домов · сезон открыт'}</a></div>
     ${side('d', 'Дом Дорн', 'Красные', d)}</div>`;
 }
 async function liveBlock(el) {

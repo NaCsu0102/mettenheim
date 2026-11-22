@@ -3008,3 +3008,28 @@ body.gl-lock { overflow: hidden; }
 .th-lines line { opacity: .65; stroke-width: .25; }
 .th-stars { inset: 4% 2% 10%; }
 .tcore-hero { pointer-events: none; filter: drop-shadow(0 0 10px rgba(0,0,0,.6)); }
+
+/* ---------- Шапка: счёт Домов без подложки, цифры вместо барабанов ---------- */
+.fx-hero { background: none; border: 0; box-shadow: none; grid-template-columns: minmax(0, 1fr) minmax(200px, 360px) minmax(0, 1fr); align-items: end; }
+.fx-hero .fxh-side { display: grid; gap: 0; padding: 0; background: none; border: 0; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; text-shadow: 0 2px 14px #000, 0 0 3px #000; }
+.fx-hero .fxh-side.d { flex-direction: initial; text-align: right; }
+.fx-hero .fxh-side small { font-family: var(--f-mono); font-size: 11px; letter-spacing: .32em; text-transform: uppercase; }
+.fx-hero .fxh-side.t small { color: #f0c96a; } .fx-hero .fxh-side.d small { color: #ee6a52; }
+.fx-hero .fxh-side b { font: 600 clamp(18px, 1.9vw, 24px)/1.1 var(--f-display); color: var(--parch); }
+.fxh-num { font: 300 clamp(40px, 5vw, 64px)/1 var(--f-display); letter-spacing: .02em; margin-top: 2px; }
+.fxh-side.t .fxh-num { color: #f6d78a; text-shadow: 0 0 22px rgba(240,201,106,.55), 0 2px 10px #000; }
+.fxh-side.d .fxh-num { color: #f48a72; text-shadow: 0 0 22px rgba(238,106,82,.55), 0 2px 10px #000; }
+.fx-hero.lead-t .fxh-side.t .fxh-num, .fx-hero.lead-d .fxh-side.d .fxh-num { font-weight: 500; }
+.fx-hero .fxh-mid { gap: 2px; padding-bottom: 8px; }
+.fx-hero .fx-tube { width: 86%; }
+.fxh-note { font-family: var(--f-mono); font-size: 11px; letter-spacing: .26em; text-transform: uppercase; color: #d8c8a8; text-decoration: none; text-shadow: 0 2px 10px #000; }
+.fxh-note:hover { color: var(--parch); }
+@media (max-width: 860px) { .fx-hero { grid-template-columns: 1fr 1fr; } .fxh-num { font-size: 38px; } }
+/* ---------- Шапка: подпись в центре без коробки ---------- */
+.core-plate { background: none !important; border: 0 !important; box-shadow: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; padding: 0 !important; }
+.core-plate::before, .core-plate::after { display: none !important; }
+.hero-core .core-plate .motto { display: flex; align-items: center; justify-content: center; gap: 14px; font-size: 11px; letter-spacing: .38em; color: #e8dcc4; text-shadow: 0 2px 12px #000, 0 0 2px #000; }
+.hero-core .core-plate .motto::before, .hero-core .core-plate .motto::after { content: ""; width: 42px; height: 1px; background: linear-gradient(90deg, transparent, #c9a15b); }
+.hero-core .core-plate .motto::after { transform: scaleX(-1); }
+.hero-core .core-plate .status { margin-top: 6px; font: italic 400 16px var(--f-body); color: var(--house-hi); letter-spacing: .04em; opacity: .9; text-shadow: 0 2px 12px #000; }
+.hero-core .core-plate .status, .hero-core .core-plate .motto { text-shadow: 0 0 6px #000, 0 0 14px #000, 0 2px 18px rgba(0,0,0,.9); }
