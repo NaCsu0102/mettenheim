@@ -819,7 +819,7 @@ function pageLimn() {
 <ol class="wg saga">${N.saga.map(([t, d], i) => `<li><span class="wg-n">${['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'][i]}</span><div><h3>${t}</h3><p>${d}</p></div></li>`).join('')}</ol>
 <blockquote class="saga-end">${N.sagaEnd}</blockquote>
 <div class="sec-head" style="margin-top:48px"><div class="eyebrow">Что было дальше</div><h2>Конец эпохи</h2></div>
-<div class="grid2">${N.after.map(([t, d]) => `<article class="panel"><h3 style="margin:0 0 8px;font-size:22px">${t}</h3><p class="muted" style="margin:0">${d}</p></article>`).join('')}</div>
+<div class="${N.after.length > 1 ? 'grid2' : ''}">${N.after.map(([t, d]) => `<article class="panel"><h3 style="margin:0 0 8px;font-size:22px">${t}</h3><p class="muted" style="margin:0">${d}</p></article>`).join('')}</div>
 <article class="panel noct"><div class="eyebrow">Вечное проклятие</div><h2>Нокторн</h2>${N.noctorn.map(x => `<p>${x}</p>`).join('')}</article>
 <div class="grid2" style="margin-top:18px">${N.terms.map(([n, d]) => `<article class="panel"><h3 style="margin:0 0 8px;font-size:22px">${n}</h3><p class="muted" style="margin:0">${d}</p></article>`).join('')}</div>
 <div class="sec-head" style="margin-top:64px"><div class="eyebrow">Перекрёстки миров</div><h2>Миры, касающиеся Лимна</h2><p>Мироздание состоит из бесконечного числа миров, соединённых перекрёстками лей-линий. Вот ближайшие к Лимну.</p></div>
