@@ -3061,3 +3061,4 @@ body.gl-lock { overflow: hidden; }
 .sky-cons polyline { fill: none; stroke: #b9d4ff; stroke-width: 1; opacity: .28; vector-effect: non-scaling-stroke; }
 .sky-cons .cs { fill: #f2f7ff; filter: drop-shadow(0 0 .4px #9cc4ff); animation: skyTw 4.5s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .tree-sky .aur, .sky-stars circle, .sky-cons .cs { animation: none; } }
+@media (max-width: 560px) { .topbar .house-gears { display: none !important; } .topbar .tools .icon-btn { width: 40px; height: 40px; } .topbar .wrap { gap: 6px; padding-inline: 10px; } }
