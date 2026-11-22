@@ -253,9 +253,23 @@ function pageHomeRaw() {
   <div class="eyebrow">Добро пожаловать</div><h2>Меттенхейм ждёт</h2>
   <p>Ролевой сервер Conan Exiles о городе пара, стали и Люмерита. Два Дома спорят о будущем: Талбот хочет отдать машины всему Лимну, Дорн — удержать их силой. А за стенами расползается Гниль. Придумай персонажа, выбери сторону и напиши квенту — мастера прочитают её и впустят тебя в город.</p>
   <div class="welcome-btns"><a class="btn" href="#anketa">Создать персонажа</a><a class="btn ghost" href="#start">Как начать играть</a><a class="btn ghost" href="#city">О городе</a></div>
+  <p class="city-line" id="statsMount"></p>
 </div></div></section>
 
-<section class="section tight stats-sec"><div class="wrap" id="statsMount"></div></section>
+<section class="section tight" ><div class="wrap">
+  <div class="comm-layout">
+    <div id="commMount"></div>
+    <div class="comm-right">
+      <div class="community">
+        <a href="https://wargm.ru/server/61449" target="_blank" rel="noopener"><img src="assets/community/wargm-3d.webp" alt=""><span><strong>WARGM</strong><small>Поддержать голосом</small></span></a>
+        <a href="https://boosty.to/riverside" target="_blank" rel="noopener"><img src="assets/community/boosty-3d.webp" alt=""><span><strong>BOOSTY</strong><small>Поддержать проект</small></span></a>
+        <a href="https://wargm.ru/server/61449/connect" target="_blank" rel="noopener"><img src="assets/community/connect-3d.webp" alt=""><span><strong>ПОДКЛЮЧИТЬСЯ</strong><small>145.239.130.3:7790</small></span></a>
+      </div>
+      <div id="rsMini"></div>
+    </div>
+  </div>
+</div></section>
+
 
 <section class="section tight ev-sec"><div class="wrap" id="evMount"></div></section>
 
@@ -271,19 +285,7 @@ function pageHomeRaw() {
 
 <section class="section tight live-sec"><div class="wrap" id="liveMount"></div></section>
 
-<section class="section tight" style="padding-top:0"><div class="wrap">
-  <div class="comm-layout">
-    <div id="commMount"></div>
-    <div class="comm-right">
-      <div class="community">
-        <a href="https://wargm.ru/server/61449" target="_blank" rel="noopener"><img src="assets/community/wargm-3d.webp" alt=""><span><strong>WARGM</strong><small>Поддержать голосом</small></span></a>
-        <a href="https://boosty.to/riverside" target="_blank" rel="noopener"><img src="assets/community/boosty-3d.webp" alt=""><span><strong>BOOSTY</strong><small>Поддержать проект</small></span></a>
-        <a href="https://wargm.ru/server/61449/connect" target="_blank" rel="noopener"><img src="assets/community/connect-3d.webp" alt=""><span><strong>ПОДКЛЮЧИТЬСЯ</strong><small>145.239.130.3:7790</small></span></a>
-      </div>
-      <div id="rsMini"></div>
-    </div>
-  </div>
-</div></section>
+
 
 <section class="section tight"><div class="wrap">
   <div class="sec-head"><div class="eyebrow">Механизм случая</div><h2>Кубики игрока</h2></div>
@@ -394,10 +396,15 @@ function mountHome() {
 /* ---------- счётчики города на главной ---------- */
 async function mountStats() {
   const el = $('#statsMount'); if (!el) return;
-  const cell = (k, n, label, href) => `<a class="st-cell" href="${href}" data-st="${k}"><b>${n}</b><span>${label}</span></a>`;
-  const paint = v => { el.innerHTML = `<div class="city-stats" aria-label="Город в цифрах">
-    ${cell('residents', v.residents, 'жителей в городе', '#residents')}${cell('quents', v.quents, 'квент подано', '#anketa')}${cell('players', v.players, 'игроков на сайте', '#cabinet')}${cell('guilds', v.guilds, 'гильдий и цехов', '#guilds')}</div>`; };
-  const v = { residents: '—', quents: '—', players: '—', guilds: '—' };
+  const plural = (n, a, b, c) => n % 10 === 1 && n % 100 !== 11 ? a : [2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100) ? b : c;
+  const paint = v => {
+    const parts = [];
+    if (v.residents > 0) parts.push(`в городе <b>${v.residents}</b> ${plural(v.residents, 'житель', 'жителя', 'жителей')}`);
+    if (v.quents > 0) parts.push(`подано <b>${v.quents}</b> ${plural(v.quents, 'квента', 'квенты', 'квент')}`);
+    if (v.guilds > 0) parts.push(`<b>${v.guilds}</b> ${plural(v.guilds, 'гильдия', 'гильдии', 'гильдий')}`);
+    el.innerHTML = parts.length ? parts.join(' <i>·</i> ') : 'Город ждёт первых жителей — <a href="#anketa">стань первым</a>';
+  };
+  const v = { residents: 0, quents: 0, guilds: 0 };
   paint(v);
   const cab = window.Cabinet; if (!cab || !cab.liveSite || !cab.liveSite()) return;
   try {

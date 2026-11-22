@@ -3174,3 +3174,6 @@ body.intro .hero-core .ring { animation: none !important; }
 .st-cell span { font: 600 11px var(--f-mono); letter-spacing: .26em; text-transform: uppercase; color: var(--smoke); text-align: center; }
 .st-cell:hover span { color: var(--parch); }
 @media (max-width: 640px) { .city-stats { grid-template-columns: 1fr 1fr; } .st-cell:nth-child(3)::before { display: none; } }
+.city-line { margin: 18px 0 0; font: 600 12px var(--f-mono); letter-spacing: .18em; text-transform: uppercase; color: var(--smoke); }
+.city-line b { color: var(--house-hi); font-weight: 700; } .city-line i { font-style: normal; color: #6b5132; margin: 0 6px; }
+.city-line a { color: var(--house-hi); }
