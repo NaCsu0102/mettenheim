@@ -3137,3 +3137,40 @@ body.gl-lock { overflow: hidden; }
 @media (min-width: 900px) { .face-all { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .tree-sky svg.sky-canvas { inset: auto; left: 50%; top: 50%; width: 2600px; height: 1500px; transform: translate(-50%, -50%); }
 .sky-cons polyline { stroke-width: .8; opacity: .3; }
+
+/* ---------- Облегчение: меньше бесконечных анимаций и тяжёлых фильтров ---------- */
+.machinery .mg.l2, .machinery .mg.r2 { display: none; }
+.pr-valve, .pr-steam, .eng-dot, .tree-full, .fx2 .fx-needle, .fx-steam::before, .fx-steam::after, .fx2 .fx-bar::after { animation: none !important; }
+body.intro .hero-core .ring { animation: none !important; }
+.bell-btn.has svg { animation-iteration-count: 2; }
+.sky-stars circle { animation: none; opacity: .65; }
+.sky-stars circle.tw { animation: skyTw ease-in-out infinite; }
+.tree-sky .aur.b, .tree-sky .aur.c { animation: none; }
+.tree-sky .aur.a { animation-duration: 40s; }
+.sky-cons .cs { animation: none; opacity: .9; }
+
+/* ---------- Тёмная гамма вместо белой бумаги ---------- */
+.fc-card, .rs-tile { background: linear-gradient(180deg, #211913, #16110d) !important; color: var(--parch) !important; border: 1px solid #4a3b2d !important; box-shadow: 0 10px 22px rgba(0,0,0,.45), inset 0 1px 0 rgba(201,161,91,.12) !important; transform: none !important; }
+.fc-card:hover, .rs-tile:hover { border-color: #8d6c3c !important; transform: translateY(-3px) !important; }
+.fc-card .fc-pic, .rs-tile .rs-portrait, .rs-tile .rs-fig { border: 1px solid #5a4630 !important; background: radial-gradient(circle at 50% 35%, #2c2119, #0f0b08 75%) !important; box-shadow: inset 0 0 0 3px #120d0a !important; }
+.fc-card .fc-pic img, .rs-tile img.rs-portrait, .rs-tile img.rs-fig { filter: sepia(.25) brightness(.95); }
+.fc-card .fc-info b, .rs-tile h3 { color: var(--parch) !important; }
+.fc-card .fc-info small, .fc-card .fc-info p, .rs-tile p { color: var(--smoke) !important; }
+.fc-num, .rs-num { color: #c9a15b !important; border-color: rgba(201,161,91,.6) !important; }
+.fc-stamp { color: rgba(201,161,91,.8); border-color: rgba(201,161,91,.55); mix-blend-mode: normal; }
+.fc-gem { box-shadow: 0 0 0 2px #120d0a, 0 0 10px rgba(0,0,0,.5); }
+.rs-tile.demo { opacity: .9; }
+.gd-charter { background: linear-gradient(180deg, #241a12, #18120d) !important; color: var(--parch) !important; border: 1px solid #5a4630; box-shadow: 0 16px 30px rgba(0,0,0,.45), inset 0 0 0 4px #120d0a, inset 0 0 0 5px rgba(201,161,91,.25) !important; }
+.gd-charter .prose h2 { color: #e8cf98 !important; } .gd-charter .prose p, .gd-charter .prose li { color: var(--parch) !important; } .gd-charter .muted { color: var(--smoke) !important; }
+.gd-board-notes .gd-post { background: #2a2017 !important; color: var(--parch) !important; border: 1px solid #4a3b2d !important; box-shadow: 0 4px 10px rgba(0,0,0,.4) !important; }
+.gd-board-notes .gd-post p, .gd-board-notes .gd-post small { color: var(--smoke) !important; }
+.gd-tag { background: #2a2017 !important; color: #e8dcc4 !important; border: 1px solid #5a4630; clip-path: none; }
+
+/* ---------- Главная: город в цифрах ---------- */
+.city-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); max-width: 980px; margin: 0 auto; }
+.st-cell { display: grid; justify-items: center; gap: 4px; padding: 18px 10px; text-decoration: none; position: relative; }
+.st-cell + .st-cell::before { content: ""; position: absolute; left: 0; top: 22%; bottom: 22%; width: 1px; background: linear-gradient(180deg, transparent, #8d6c3c, transparent); }
+.st-cell b { font: 300 clamp(38px, 5vw, 60px)/1 var(--f-display); color: var(--house-hi); text-shadow: 0 0 22px var(--house-glow); }
+.st-cell span { font: 600 11px var(--f-mono); letter-spacing: .26em; text-transform: uppercase; color: var(--smoke); text-align: center; }
+.st-cell:hover span { color: var(--parch); }
+@media (max-width: 640px) { .city-stats { grid-template-columns: 1fr 1fr; } .st-cell:nth-child(3)::before { display: none; } }

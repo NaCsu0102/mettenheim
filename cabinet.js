@@ -662,7 +662,15 @@ async function residentsPage(el) {
   if (!el) return;
   el.innerHTML = '<p class="muted">Загружаю жителей…</p>';
   const rs = await residentsData();
-  if (!rs) { el.innerHTML = '<article class="panel cab-empty"><h3>Список жителей — на основном сайте</h3><p class="muted">Он берётся из базы кабинета.</p>' + (CFG.siteUrl ? `<a class="btn" href="${esc(CFG.siteUrl)}#residents" target="_blank" rel="noopener">Открыть</a>` : '') + '</article>'; return; }
+  if (!rs || !rs.length) {
+    // картотека пуста или недоступна — показываем образцы досье
+    const FD = (window.MH && MH.faceDemo && MH.faceDemo()) || {};
+    const demo = []; for (let i = 0; i < 4; i++) ['talbot', 'dorn'].forEach(h => { const d = (FD[h] || [])[i]; if (d) demo.push({ name: d[0], p: d[1], o: d[2], c: d[3], g: d[4], house: h }); });
+    el.innerHTML = `<p class="gl-note">${rs ? 'Картотека ждёт первых жителей — пока здесь образцы досье. Принятые персонажи появятся сами.' : 'Это предпросмотр: здесь образцы досье.'}</p><div class="rs-grid">${demo.map(r => { const o = origin(r.p, r.o), fig = figureOf(r);
+      return `<div class="panel rs-tile demo h-${r.house}"><span class="fc-gem h-${r.house}" aria-hidden="true"></span>${fig ? `<img class="rs-fig" src="${fig}" alt="" loading="lazy">` : ''}<div class="rs-info"><span class="rs-num">образец</span><h3>${esc(r.name)}</h3><p>${esc([nameOf(peoples(), r.p), o.name].filter(Boolean).join(' · '))}</p><p>${esc(nameOf(classes(), r.c))}</p></div></div>`; }).join('')}</div>
+      <p style="margin-top:18px"><a class="btn" href="#anketa">Завести досье</a></p>`;
+    return;
+  }
   let f = { q: '', house: '', p: '', c: '' };
   const draw = () => {
     const qq = f.q.toLowerCase();
@@ -677,7 +685,6 @@ async function residentsPage(el) {
     <select id="rsP" aria-label="Народ"><option value="">Все народы</option>${peoples().map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('')}</select>
     <select id="rsC" aria-label="Класс"><option value="">Все классы</option>${classes().map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select>
     <span class="rs-count muted"></span></div><div class="rs-grid"></div>`;
-  if (!rs.length) { q('.rs-grid', el).innerHTML = '<article class="panel cab-empty"><h3>Город ещё пуст</h3><p class="muted">Первые жители появятся здесь, как только мастера примут их квенты.</p><a class="btn" href="#anketa">Создать персонажа</a></article>'; q('.rs-count', el).textContent = ''; return; }
   q('#rsQ', el).oninput = e => { f.q = e.target.value; draw(); };
   q('#rsH', el).onchange = e => { f.house = e.target.value; draw(); };
   q('#rsP', el).onchange = e => { f.p = e.target.value; draw(); };

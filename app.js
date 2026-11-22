@@ -55,7 +55,7 @@ document.addEventListener('click', e => {
 });
 
 /* ======= шестерни по краям: крутятся вместе со страницей и звучат ======= */
-const gearsImgs = $$('.machinery img');
+const gearsImgs = $$('.machinery .l1 img, .machinery .r1 img'); // крутим только видимые шестерни
 let lastY = scrollY, lastT = performance.now(), stopT, fadeI, raf = false;
 function rotate() { gearsImgs.forEach((g, i) => g.style.setProperty('--rot', (scrollY * parseFloat(g.dataset.speed) + i * 17) + 'deg')); raf = false; }
 function gearFade(target, ms) {
@@ -255,9 +255,7 @@ function pageHomeRaw() {
   <div class="welcome-btns"><a class="btn" href="#anketa">Создать персонажа</a><a class="btn ghost" href="#start">Как начать играть</a><a class="btn ghost" href="#city">О городе</a></div>
 </div></div></section>
 
-<section class="section tight faces-sec"><div class="wrap" id="facesMount"></div></section>
-
-<section class="section tight guilds-sec"><div class="wrap" id="gdHome"></div></section>
+<section class="section tight stats-sec"><div class="wrap" id="statsMount"></div></section>
 
 <section class="section tight ev-sec"><div class="wrap" id="evMount"></div></section>
 
@@ -390,9 +388,29 @@ function mountHome() {
   setVars();
   MH.onHouse(hcards);
   hcards();
-  mountFaces();
-  if (window.Guilds && Guilds.mini) Guilds.mini($('#gdHome'));
+  mountStats();
   mountDice($('[data-dice]').parentElement);
+}
+/* ---------- счётчики города на главной ---------- */
+async function mountStats() {
+  const el = $('#statsMount'); if (!el) return;
+  const cell = (k, n, label, href) => `<a class="st-cell" href="${href}" data-st="${k}"><b>${n}</b><span>${label}</span></a>`;
+  const paint = v => { el.innerHTML = `<div class="city-stats" aria-label="Город в цифрах">
+    ${cell('residents', v.residents, 'жителей в городе', '#residents')}${cell('quents', v.quents, 'квент подано', '#anketa')}${cell('players', v.players, 'игроков на сайте', '#cabinet')}${cell('guilds', v.guilds, 'гильдий и цехов', '#guilds')}</div>`; };
+  const v = { residents: '—', quents: '—', players: '—', guilds: '—' };
+  paint(v);
+  const cab = window.Cabinet; if (!cab || !cab.liveSite || !cab.liveSite()) return;
+  try {
+    const c = await cab.client();
+    const st = await c.rpc('site_stats');
+    if (!st.error && st.data && st.data[0]) Object.assign(v, st.data[0]);
+    else {
+      const [rs, gl] = await Promise.all([c.rpc('residents'), c.rpc('guild_list')]);
+      if (!rs.error) v.residents = (rs.data || []).length;
+      if (!gl.error) v.guilds = (gl.data || []).filter(g => g.status !== 'archived').length;
+    }
+    if (el.isConnected) paint(v);
+  } catch (_) {}
 }
 /* ---------- лица Домов: жители Жёлтых и Красных на главной ---------- */
 // образцы, пока на стороне мало принятых персонажей
@@ -400,6 +418,7 @@ const FACE_DEMO = {
   talbot: [['Эльза Вермеер', 'humans', 'mett', 'engineer', 'female', 'Мастер протезов, верит в машины для всех'], ['Корвин Хальд', 'dwarves', 'dwarf', 'fighter', 'male', 'Бригадир охраны цехов'], ['Лиара Тенн', 'elves', 'high', 'mage', 'female', 'Ткёт плетения у люмеритовых котлов'], ['Ансельм Грей', 'humans', 'west', 'shooter', 'male', 'Стрелок заводского дозора']],
   dorn: [['Брандт Кессель', 'humans', 'east', 'fighter', 'male', 'Литейщик и кулачный боец'], ['Вира Сольт', 'infernals', 'fire', 'mage', 'female', 'Огненная кровь, служит Дому за долг'], ['Кассиан Мор', 'elves', 'dark', 'rogue', 'male', 'Тень на складах оружия'], ['Ингрид Штоль', 'dwarves', 'dwarf', 'engineer', 'female', 'Мастер стволов и затворов']]
 };
+MH.faceDemo = () => FACE_DEMO;
 async function mountFaces() {
   const el = $('#facesMount'); if (!el) return;
   const H = M.houses;
