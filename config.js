@@ -5,8 +5,8 @@
 window.MH_SUPABASE = {
   // Адрес настоящего сайта. С других адресов (например, предпросмотр на Claude) кабинет ведёт сюда.
   siteUrl: 'https://nacsu0102.github.io/mettenheim/',
-  url: 'https://ioksfvdjcknokcgxnpop.supabase.co',
-  anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlva3NmdmRqY2tub2tjZ3hucG9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1MTI5ODEsImV4cCI6MjEwODA4ODk4MX0.Na9-UIlP4iXEjsA7yTQ_hl4wb2ewqnJHkcM8H9mImQE',
+  url: 'https://wsciwjslwmfkwwywsyda.supabase.co',
+  anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndzY2l3anNsd21ma3d3eXdzeWRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUyOTgxNzIsImV4cCI6MjExMDg3NDE3Mn0.aGwy08zAQQNZGE49cTomcaoCG1omjBK4PjEUsrCrXBw',
   // Входы, которые включены в Supabase → Authentication → Providers
   discord: true,
   email: true

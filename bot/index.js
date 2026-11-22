@@ -6,8 +6,8 @@ import { Client, GatewayIntentBits, ActivityType, Events, Partials } from 'disco
 const TOKEN = process.env.DISCORD_BOT_TOKEN;
 if (!TOKEN) { console.error('Нет DISCORD_BOT_TOKEN в /opt/mettenheim-bot/.env'); process.exit(1); }
 
-const SB_URL = 'https://ioksfvdjcknokcgxnpop.supabase.co';
-const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlva3NmdmRqY2tub2tjZ3hucG9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1MTI5ODEsImV4cCI6MjEwODA4ODk4MX0.Na9-UIlP4iXEjsA7yTQ_hl4wb2ewqnJHkcM8H9mImQE';
+const SB_URL = 'https://wsciwjslwmfkwwywsyda.supabase.co';
+const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndzY2l3anNsd21ma3d3eXdzeWRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUyOTgxNzIsImV4cCI6MjExMDg3NDE3Mn0.aGwy08zAQQNZGE49cTomcaoCG1omjBK4PjEUsrCrXBw';
 const GUILD = '1467559507721982075';
 const CHAT = '1564605532524908666';                       // общий чат сайта
 const LIVE = ['1471498060625477856', '1470110267416379502']; // новости, мероприятия

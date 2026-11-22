@@ -44,6 +44,27 @@ const BRANCH_ICON = {
   'Школа Стихий': 'school-elements', 'Школа Материи': 'school-matter', 'Школа Теней': 'school-shadow', 'Школа Крови': 'school-blood', 'Школа Исцеления': 'school-healing'
 };
 const CLS_ICON = id => `assets/art/class-${id}.webp`;
+/* Герой класса рядом с древом: арт и дымка-созвездие цвета класса (как в Скайриме — звёзды на дыму) */
+const CLS_HERO = {
+  fighter: ['assets/art/hero-fighter.webp', '#e2643c', '#ffb37a', 'Дворф-боец с паровым молотом'],
+  rogue: ['assets/art/hero-rogue.webp', '#a46cff', '#e2c6ff', 'Тёмный полуэльф-плут'],
+  mage: ['assets/art/hero-mage.webp', '#7fa8ff', '#e3ecff', 'Высшая полуэльфийка-маг с кристаллом Люмерита'],
+  shooter: ['assets/art/hero-shooter.webp', '#2fd1bd', '#c8fff6', 'Южанка-стрелок с винтовкой'],
+  engineer: ['assets/art/hero-engineer.webp', '#7cc95e', '#f3d27a', 'Гоблинша-инженер с ключом']
+};
+// Созвездие: звёзды и линии между ними, раскладка своя у каждого класса
+function constellation(cid) {
+  let seed = [...cid].reduce((a, ch) => a * 31 + ch.charCodeAt(0), 7) >>> 0;
+  const rnd = () => (seed = (seed * 1103515245 + 12345) >>> 0) / 4294967296;
+  const pts = Array.from({ length: 11 }, (_, i) => [8 + rnd() * 84, 6 + (i / 10) * 86 + (rnd() - .5) * 10, 0.9 + rnd() * 1.9]);
+  const lines = pts.slice(1).map((p, i) => i % 4 === 3 ? '' : `<line x1="${pts[i][0].toFixed(1)}" y1="${pts[i][1].toFixed(1)}" x2="${p[0].toFixed(1)}" y2="${p[1].toFixed(1)}"/>`).join('');
+  const stars = pts.map(([x, y, r], i) => `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(2)}" style="animation-delay:${(i * .37).toFixed(2)}s"/>`).join('');
+  return `<svg class="th-stars" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><g class="th-lines">${lines}</g><g class="th-dots">${stars}</g></svg>`;
+}
+function heroHTML(cid) {
+  const h = CLS_HERO[cid]; if (!h) return '';
+  return `<div class="tree-hero" style="--hc:${h[1]};--hc2:${h[2]}" aria-hidden="true"><i class="th-smoke a"></i><i class="th-smoke b"></i><i class="th-smoke c"></i>${constellation(cid)}<img src="${h[0]}" alt="" title="${esc(h[3])}"></div>`;
+}
 const NODE_COST = { minor: 40, fork: 50, ability: 60, school: 60, upgrade: 90, bridge: 30, root: 0, gap: 40, core: 0 };
 const NODE_BONUS = { minor: 1, fork: 1, ability: 1, school: 1, upgrade: 2, bridge: 0, root: 0, gap: 1, core: 0 };
 const STAT_CAP = 10;
@@ -331,7 +352,7 @@ const Tree = {
     const TYPE = { core: 'Центр древа', gap: 'Мастерство · оружие и ремесло', root: 'Класс', ability: 'Приём ветви', upgrade: 'Вершина ветви', minor: 'Малый узел', fork: 'Развилка · выбери одно', school: 'Школа магии', bridge: 'Перекрёсток' };
     let view = { x: 0, y: 0, k: 1 };
 
-    el.innerHTML = `<div class="tree-full" id="tBox">
+    el.innerHTML = `<div class="tree-full has-hero" id="tBox">${heroHTML(cid)}
       <svg id="tSvg" role="img" aria-label="Древо талантов"><defs>
         <radialGradient id="tg1"><stop offset="0" stop-color="#3a2d22"/><stop offset="1" stop-color="#150f0b"/></radialGradient>
         ${Object.keys(window.ICON_ART_DATA || {}).filter(k => k.startsWith('skill-')).map(k => `<symbol id="sy-${k}" viewBox="0 0 144 144"><image href="${ICON(k)}" width="144" height="144"/></symbol>`).join('')}
@@ -344,7 +365,7 @@ const Tree = {
       <div class="tree-hint">1 нажатие — прочитать узел · 2 нажатия — изучить или сбросить · ПКМ — сбросить · тяни поле · колесо — масштаб</div>
       <div class="tree-rules panel" id="tRules" hidden><div class="tp-head"><div class="eyebrow">Как работает древо</div><button class="btn small ghost" id="tRulesX">Закрыть</button></div>${TREE_RULES.map(([k, v]) => `<div><b>${k}.</b> <span class="muted">${v}</span></div>`).join('')}</div>
     </div>`;
-    const world = q('#tWorld', el), box = q('#tBox', el), css = getComputedStyle(document.documentElement);
+    const world = q('#tWorld', el), box = q('#tBox', el), svgEl = q('#tSvg', el), css = getComputedStyle(document.documentElement);
     const countType = t => [...got].filter(id => byId[id].type === t).length;
     // Классы: свой — бесплатно, каждый следующий дороже (200, 400, 600…). Узлы класса — только после входа в класс.
     const STARTS = [];
@@ -492,10 +513,10 @@ const Tree = {
     }
     function reset() { got = new Set(['core', cid]); forks = { [cid]: 0 }; sel = cid; MH.store.set('tree3o:' + cid, []); save(); play('click'); draw(); }
     function take(id) { if (canTake(id)) { if (byId[id].opts && forks[id] == null) forks[id] = 0; got.add(id); remember(id); save(); play('card'); draw(); } }
-    function switchTo(id) { cid = id; load(); history.replaceState(null, '', '#tree-' + cid); play('card'); draw(); focus(cid); }
-    function applyView() { world.setAttribute('transform', `translate(${box.clientWidth / 2 + view.x} ${box.clientHeight / 2 + view.y}) scale(${view.k})`); }
-    function fit() { view = { x: 0, y: 0, k: Math.max(.25, Math.min(box.clientWidth, box.clientHeight) / 2120) }; applyView(); }
-    function focus(id, keepZoom) { const n = byId[id]; if (!keepZoom) view.k = Math.max(view.k, Math.min(1, box.clientWidth / 1100)); view.x = -n.x * view.k; view.y = -n.y * view.k; applyView(); }
+    function switchTo(id) { cid = id; { const old = q('.tree-hero', el); if (old) old.outerHTML = heroHTML(cid); } load(); history.replaceState(null, '', '#tree-' + cid); play('card'); draw(); focus(cid); }
+    function applyView() { world.setAttribute('transform', `translate(${svgEl.clientWidth / 2 + view.x} ${svgEl.clientHeight / 2 + view.y}) scale(${view.k})`); }
+    function fit() { view = { x: 0, y: 0, k: Math.max(.25, Math.min(svgEl.clientWidth, svgEl.clientHeight) / 2120) }; applyView(); }
+    function focus(id, keepZoom) { const n = byId[id]; if (!keepZoom) view.k = Math.max(view.k, Math.min(1, svgEl.clientWidth / 1100)); view.x = -n.x * view.k; view.y = -n.y * view.k; applyView(); }
 
     // 1-е нажатие — выбрать узел и прочитать его; 2-е по тому же узлу — изучить (если доступен) или сбросить (если уже изучен)
     world.addEventListener('click', e => {
@@ -528,11 +549,11 @@ const Tree = {
     box.addEventListener('dragstart', e => e.preventDefault());
     box.addEventListener('selectstart', e => { if (!e.target.closest || !e.target.closest('.tree-panel,.tree-rules')) e.preventDefault(); });
     const zoom = (f, cx, cy) => {
-      const k2 = Math.max(.2, Math.min(2.4, view.k * f)), w = box.clientWidth, h = box.clientHeight;
+      const k2 = Math.max(.2, Math.min(2.4, view.k * f)), w = svgEl.clientWidth, h = svgEl.clientHeight;
       if (cx == null) { cx = w / 2; cy = h / 2; }
       const ox = cx - w / 2 - view.x, oy = cy - h / 2 - view.y; view.x -= ox * (k2 / view.k - 1); view.y -= oy * (k2 / view.k - 1); view.k = k2; applyView();
     };
-    box.addEventListener('wheel', e => { if (e.target.closest('.tree-panel')) return; e.preventDefault(); const r = box.getBoundingClientRect(); zoom(e.deltaY < 0 ? 1.12 : 1 / 1.12, e.clientX - r.left, e.clientY - r.top); }, { passive: false });
+    box.addEventListener('wheel', e => { if (e.target.closest('.tree-panel')) return; e.preventDefault(); const r = svgEl.getBoundingClientRect(); zoom(e.deltaY < 0 ? 1.12 : 1 / 1.12, e.clientX - r.left, e.clientY - r.top); }, { passive: false });
     q('#tIn', el).onclick = () => zoom(1.2); q('#tOut', el).onclick = () => zoom(1 / 1.2);
     q('#tFit', el).onclick = fit; q('#tMe', el).onclick = () => focus(cid);
     q('#tReset', el).onclick = reset;
@@ -541,7 +562,7 @@ const Tree = {
     qa('[data-tc]', el).forEach(b => b.onclick = () => switchTo(b.dataset.tc));
     MH.onHouse(draw);
     addEventListener('resize', applyView);
-    view.k = Math.min(1, Math.max(.5, box.clientHeight / 1450)); { const n = byId[cid]; view.x = -n.x * .6 * view.k; view.y = -n.y * .6 * view.k; } draw();
+    view.k = Math.min(1, Math.max(.5, svgEl.clientHeight / 1450)); { const n = byId[cid]; view.x = -n.x * .6 * view.k; view.y = -n.y * .6 * view.k; } draw();
   }
 };
 

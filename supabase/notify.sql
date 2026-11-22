@@ -50,11 +50,11 @@ language plpgsql security definer set search_path = public, extensions as $$
 begin
   if new.verdict in ('submitted', 'comment', 'revision', 'approved', 'rejected') then
     perform net.http_post(
-      url := 'https://ioksfvdjcknokcgxnpop.supabase.co/functions/v1/notify',
+      url := 'https://wsciwjslwmfkwwywsyda.supabase.co/functions/v1/notify',
       body := jsonb_build_object('review_id', new.id),
       headers := jsonb_build_object(
         'Content-Type', 'application/json',
-        'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlva3NmdmRqY2tub2tjZ3hucG9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1MTI5ODEsImV4cCI6MjEwODA4ODk4MX0.Na9-UIlP4iXEjsA7yTQ_hl4wb2ewqnJHkcM8H9mImQE'
+        'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndzY2l3anNsd21ma3d3eXdzeWRhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUyOTgxNzIsImV4cCI6MjExMDg3NDE3Mn0.aGwy08zAQQNZGE49cTomcaoCG1omjBK4PjEUsrCrXBw'
       ),
       timeout_milliseconds := 30000
     );
