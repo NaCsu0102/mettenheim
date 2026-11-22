@@ -101,18 +101,28 @@ setVars();
 
 /* ================= НАВИГАЦИЯ ================= */
 /* Книга: части и главы. Порядок здесь задаёт оглавление и кнопки «Назад / Дальше». */
+// Раздел → пункты меню. У пункта могут быть вкладки: [id, название, [[id, вкладка], …]] — первая вкладка открывается по пункту меню.
 const BOOK = [
-  ['Начало', [['start', 'Как начать играть'], ['faq', 'Частые вопросы'], ['rules', 'Правила сервера'], ['discord', 'Правила Discord'], ['modlist', 'Модлист'], ['glossary', 'Словарь терминов']]],
-  ['Меттенхейм', [['city', 'Город'], ['history', 'История города'], ['houses', 'Дома Талбот и Дорн'], ['factions', 'Фракции и счёт Домов'], ['lumerite', 'Люмерит'], ['chronicle', 'Хроника сессии']]],
-  ['Лимн', [['limn', 'Лимн и его боги'], ['world', 'История мира'], ['map', 'Карта мира'], ['faith', 'Вера'], ['cursed', 'Проклятые'], ['deck', 'Безделицы — проклятые вещицы']]],
-  ['Народы', [['races', 'Народы и отношения'], ...M.peoples.map(p => ['people-' + p.id, p.name]), ['inferno', 'Инферно и Короли']]],
-  ['Классы', [['classes', 'Классы'], ['tree', 'Древо талантов'], ['magic', 'Магия и заклинания'], ['curses', 'Развитие Проклятых'], ['inventions', 'Изобретения Инженера']]],
-  ['Механики', [['system', 'Ролевая система'], ['eloquence', 'Красноречие'], ['healing', 'Лекари и травмы']]],
-  ['Мастерская', [['forge', 'Оружейная'], ['armor', 'Бронник'], ['craft', 'Крафт-станция'], ['gathering', 'Инструменты добычи'], ['blueprints', 'Чертежи ремёсел'], ['recycle', 'Переработчик'], ['alchemy', 'Алхимия'], ['cooking', 'Кулинария'], ['body', 'Протезы и конструкты']]],
-  ['Сообщество', [['news', 'Новости и события'], ['gallery', 'Витрина артов'], ['residents', 'Жители города'], ['guilds', 'Гильдии и цеха']]]
+  ['Важное', [['rules', 'Правила сервера'], ['discord', 'Правила Discord'], ['start', 'Как начать играть'],
+    ['launcher', 'Лаунчер и моды', [['launcher', 'Лаунчер'], ['modlist', 'Модлист']]],
+    ['faq', 'Частые вопросы', [['faq', 'Частые вопросы'], ['glossary', 'Словарь терминов']]]]],
+  ['Меттенхейм', [['city', 'История города и Люмерит', [['city', 'Город'], ['history', 'История города'], ['lumerite', 'Люмерит']]],
+    ['houses', 'Дома и фракции', [['houses', 'Дома Талбот и Дорн'], ['factions', 'Фракции, счёт и ступени']]],
+    ['laws', 'Городская власть и законы']]],
+  ['Мировой кодекс', [['limn', 'Мифология Лимна', [['limn', 'Лимн и его боги'], ['world', 'История мира'], ['chronicle', 'Хроники'], ['faith', 'Вера'], ['map', 'Карта мира']]],
+    ['noctorn', 'Нокторн', [['noctorn', 'Нокторн'], ['cursed', 'Проклятые'], ['deck', 'Безделицы']]],
+    ['magic', 'Магия и иные миры', [['magic', 'Магия и заклинания'], ['inferno', 'Инферно и Короли']]],
+    ['races', 'Народы', [['races', 'Народы и отношения'], ...M.peoples.map(p => ['people-' + p.id, p.name])]]]],
+  ['Мануал системы', [['system', 'Ролевая система'], ['eloquence', 'Система Красноречия'], ['classes', 'Классы'], ['tree', 'Прокачка'], ['inventions', 'Система конструктов'], ['curses', 'Система Проклятых'], ['special', 'Особые механики']]],
+  ['Мануал ремесла', [['recycle', 'Переработчик'], ['craft', 'Крафт-станция'], ['cooking', 'Кулинария'], ['alchemy', 'Алхимия'], ['healing', 'Лекари и травмы'],
+    ['forge', 'Ремесленник', [['forge', 'Кузнечное дело'], ['armor', 'Бронник'], ['blueprints', 'Чертежи']]],
+    ['body', 'Протезирование и конструкты'], ['gathering', 'Карта ресурсов']]],
+  ['Сообщество', [['news', 'Новости и события'], ['residents', 'Жители города', [['residents', 'Жители города'], ['gallery', 'Витрина артов']]], ['guilds', 'Гильдии']]]
 ];
-const PART_NOTE = { 'Начало': 'Первые шаги и правила', 'Меттенхейм': 'Город, Дома и Люмерит', 'Лимн': 'Мир, боги и карта', 'Народы': 'Кем можно родиться', 'Классы': 'Пути развития и магия', 'Механики': 'Кубы, сцены и раны', 'Мастерская': 'Крафт, добыча и рецепты', 'Сообщество': 'Жизнь сервера' };
-const CHAPTERS = BOOK.flatMap(([part, ch]) => ch.map(([id, t]) => ({ id, t, part })));
+const PART_NOTE = { 'Важное': 'Правила и первые шаги', 'Меттенхейм': 'Город, Дома и власть', 'Мировой кодекс': 'Мифы, Нокторн, магия, народы', 'Мануал системы': 'Кубы, классы и развитие', 'Мануал ремесла': 'Крафт, лечение и ресурсы', 'Сообщество': 'Жизнь сервера' };
+const CHAPTERS = BOOK.flatMap(([part, items]) => items.flatMap(([gid, gt, subs]) => (subs || [[gid, gt]]).map(([id, t]) => ({ id, t, part, group: gid, gt }))));
+const groupOf = id => { const c = CHAPTERS.find(x => x.id === id); return c ? c.group : null; };
+const groupSubs = gid => { for (const [, items] of BOOK) for (const [id, , subs] of items) if (id === gid) return subs || null; return null; };
 const partOf = id => { const c = CHAPTERS.find(x => x.id === id); return c ? c.part : null; };
 const nav = $('#nav');
 nav.innerHTML = BOOK.map(([part, ch], i) => `<div class="nav-item${i >= BOOK.length - 3 ? ' r' : ''}"><a class="nav-btn" href="#${ch[0][0]}" data-part="${part}"${ch.length > 1 ? ' aria-haspopup="true"' : ''}>${part}${ch.length > 1 ? '<i class="nav-caret" aria-hidden="true"></i>' : ''}</a>${ch.length > 1 ? `<div class="mega${ch.length > 7 ? ' two' : ''}"><div class="mega-k">${PART_NOTE[part] || part}</div><div class="mega-l">${ch.map(([id, t]) => `<a href="#${id}">${t}</a>`).join('')}</div></div>` : ''}</div>`).join('') + `<div class="nav-item"><a class="nav-btn nav-cta" href="#anketa" data-part="anketa">Анкета</a></div>`;
@@ -121,7 +131,10 @@ $$('.nav-item', nav).forEach(it => {
   it.addEventListener('click', e => { if (e.target.closest('a')) { it.classList.add('shut'); document.activeElement?.blur?.(); } });
   it.addEventListener('mouseleave', () => it.classList.remove('shut'));
 });
-const tocPart = (part, ch, cur) => `<div class="rail-part${partOf(cur) === part ? ' on' : ''}"><h5>${part}</h5>${ch.map(([id, t]) => `<a href="#${id}"${id === cur ? ' aria-current="page"' : ''}>${t}</a>`).join('')}</div>`;
+const tocPart = (part, ch, cur) => `<div class="rail-part${partOf(cur) === part ? ' on' : ''}"><h5>${part}</h5>${ch.map(([id, t, subs]) => {
+  const inG = subs ? subs.some(x => x[0] === cur) : id === cur;
+  return `<a href="#${id}"${inG ? ' aria-current="page"' : ''}>${t}</a>` + (subs && inG ? `<div class="rail-sub">${subs.map(([sid, st]) => `<a href="#${sid}"${sid === cur ? ' class="on"' : ''}>${st}</a>`).join('')}</div>` : '');
+}).join('')}</div>`;
 function bookTOC(cur) {
   return BOOK.map(([part, ch]) => tocPart(part, ch, cur)).join('')
     + `<div class="rail-part"><h5>Игроку</h5><a href="#anketa">Анкета персонажа</a><a href="#cabinet">Личный кабинет</a><a href="#home">Главная</a></div>`;
@@ -140,7 +153,8 @@ let currentRoute = 'home';
 function markNav(route) {
   const part = route === 'anketa' ? 'anketa' : (route === 'cabinet' || route === 'admin') ? 'cabinet' : partOf(route.startsWith('class-') ? 'classes' : route.startsWith('tree-') ? 'tree' : route.startsWith('rules-') ? 'rules' : route.startsWith('gallery-') ? 'gallery' : route.startsWith('chat-') ? 'chat' : route);
   $$('.nav-btn', nav).forEach(b => b.classList.toggle('current', b.dataset.part === part));
-  $$('.mega a', nav).forEach(a => a.toggleAttribute('aria-current', a.getAttribute('href') === '#' + route));
+  const g = groupOf(route.startsWith('class-') ? 'classes' : route.startsWith('tree-') ? 'tree' : route) || route;
+  $$('.mega a', nav).forEach(a => a.toggleAttribute('aria-current', a.getAttribute('href') === '#' + g));
 }
 
 /* ---------- поиск по книге (Ctrl K) ---------- */
@@ -193,7 +207,7 @@ const head = ({ eyebrow, title, lead, bg, crumbs }) => (bg = CH_BG[currentRoute]
 <section class="page-head"><div class="bg" style="background-image:url('${bg || 'assets/city-bg.webp'}')"></div>
 <div class="wrap reveal">${crumbs ? `<div class="crumbs"><a href="#home">Главная</a> / ${crumbs}</div>` : ''}<div class="eyebrow">${eyebrow || 'Хроники Меттенхейма'}</div><h1>${title}</h1>${lead ? `<p>${lead}</p>` : ''}</div><div class="ph-pipe" aria-hidden="true"></div></section>`);
 const subnav = (items, cur) => `<nav class="subnav" aria-label="Подразделы"><div class="wrap">${items.map(([r, t]) => `<a href="#${r}" ${r === cur ? 'aria-current="page"' : ''}>${t}</a>`).join('')}</div></nav>`;
-const navOf = part => BOOK.find(([p]) => p === part)[1];
+const navOf = part => (BOOK.find(([p]) => p === part) || [part, []])[1];
 const CITY_NAV = navOf('Меттенхейм');
 const LIMN_NAV = navOf('Лимн');
 const LORE = LIMN_NAV;
@@ -1065,9 +1079,6 @@ ${statsHTML()}
 <div class="grid3">${M.turn.map(([t, d], i) => `<div class="panel">${icoImg(TURN_ICON[i], 'turn-ic')}<div class="eyebrow">${i + 1} из 3</div><h3 style="font-size:24px;margin:6px 0 8px">${t}</h3><p class="muted">${d}</p></div>`).join('')}</div>
 <div class="sec-head" style="margin-top:60px"><div class="eyebrow">Статусы</div><h2>Состояния персонажа</h2><p>На персонаже может находиться не более двух дебаффов одновременно.</p></div>
 ${M.statuses.map(g => `<h3 style="font-size:20px;color:var(--house-hi);margin:20px 0 10px">${g.group}</h3><div class="cards-list">${g.items.map(([n, d]) => `<div class="cardrow${ICO(STATUS_ICON[n]) ? ' has-ic' : ''}">${icoImg(STATUS_ICON[n], 'st-ic')}<b>${n}</b><p>${d}</p></div>`).join('')}</div>`).join('')}
-<div class="sec-head" style="margin-top:60px"><div class="eyebrow">Фракционная репутация</div><h2>Талбот и Дорн</h2><p>Город помнит, на чью сторону вы встали. Репутация у Домов открывает одни двери и закрывает другие.</p></div>
-<div class="grid2">${['talbot', 'dorn'].map(k => `<article class="panel"><img src="${M.houses[k].flag}" alt="" style="width:100%;height:120px;object-fit:cover;opacity:.6;margin-bottom:14px"><div class="eyebrow">${M.houses[k].side}</div><h3 style="font-size:26px;margin:6px 0 10px">Репутация: ${M.houses[k].name}</h3><div class="cards-list">${REP_STEPS.map(([n, s, t, d]) => `<div class="cardrow"><b>${n} · ${s}</b><p>${k === 'talbot' ? t : d}</p></div>`).join('')}</div></article>`).join('')}</div>
-<div class="cards-list" style="margin-top:18px">${REP_RULES.map(([n, d]) => `<div class="cardrow"><b>${n}</b><p>${d}</p></div>`).join('')}</div>
 <div class="sec-head" style="margin-top:60px"><div class="eyebrow">Механизм случая</div><h2>Кубики</h2></div>
 ${diceHTML()}
 </div></section>`;
@@ -1102,7 +1113,11 @@ function pageCursed() {
 }
 function pageCurses() { return head({ eyebrow: 'Системы · уникальность', title: 'Развитие Проклятых', lead: 'Проклятие растёт, когда им пользуются. Пять ступеней: каждая даёт силу и берёт свою цену. Сдержать рост можно, повернуть назад — нет.', bg: 'assets/codex/deck.webp', crumbs: 'Классы и системы' }) + subnav(CLS_NAV, 'curses') + `<section class="content"><div class="wrap" id="curseMount"></div></section>`; }
 function pageInventions() { return head({ eyebrow: 'Системы · инженер', title: 'Изобретения', lead: 'Помощник, боевая турель и автоматон в кейсе — три чертежа Инженера. Что они умеют и когда открываются.', bg: 'assets/codex/workshop-v2.webp', crumbs: 'Классы и системы' }) + subnav(CLS_NAV, 'inventions') + `<section class="content"><div class="wrap"><div class="sec-head"><div class="eyebrow">Чертежи инженера</div><h2>Три вида механизмов</h2><p>Чем дальше Инженер идёт по древу, тем больше слотов и сложнее чертежи. Ниже — что умеет каждый механизм.</p></div><div id="invMount"></div></div></section>`; }
-function pageFactions() { return head({ eyebrow: 'Системы · Дома', title: 'Фракции', lead: 'Игроки приносят Дому очки фракции, и всё идёт в общий пул. Уровни пула открывают то, чем Дом силён: у Талботов — протезы, у Дорна — материалы для оружия.', bg: 'assets/codex/housing.webp', crumbs: 'Классы и системы' }) + subnav(CITY_NAV, 'factions') + `<section class="content"><div class="wrap" id="factionMount"></div></section>`; }
+function pageFactions() { return head({ eyebrow: 'Системы · Дома', title: 'Фракции', lead: 'Игроки приносят Дому очки фракции, и всё идёт в общий пул. Уровни пула открывают то, чем Дом силён: у Талботов — протезы, у Дорна — материалы для оружия.', bg: 'assets/codex/housing.webp', crumbs: 'Меттенхейм' }) + `<section class="content"><div class="wrap"><div id="factionMount"></div>
+<div class="sec-head" style="margin-top:60px"><div class="eyebrow">Ступени развития</div><h2>Личная репутация у Домов</h2><p>Город помнит, на чью сторону вы встали. Репутация у Домов открывает одни двери и закрывает другие.</p></div>
+<div class="grid2">${['talbot', 'dorn'].map(k => `<article class="panel"><img src="${M.houses[k].flag}" alt="" style="width:100%;height:120px;object-fit:cover;opacity:.6;margin-bottom:14px"><div class="eyebrow">${M.houses[k].side}</div><h3 style="font-size:26px;margin:6px 0 10px">Репутация: ${M.houses[k].name}</h3><div class="cards-list">${REP_STEPS.map(([n, s, t, d]) => `<div class="cardrow"><b>${n} · ${s}</b><p>${k === 'talbot' ? t : d}</p></div>`).join('')}</div></article>`).join('')}</div>
+<div class="cards-list" style="margin-top:18px">${REP_RULES.map(([n, d]) => `<div class="cardrow"><b>${n}</b><p>${d}</p></div>`).join('')}</div>
+</div></section>`; }
 function pageCooking() { return head({ eyebrow: 'Мастерская · повар', title: 'Кулинария', lead: 'Кухня города пара: от заводского кренделя до стола Домов. Брось в котелок продукты и заготовки — еда снимает Голод и даёт бафы на несколько часов.', bg: 'assets/codex/housing.webp', crumbs: 'Мастерская' }) + subnav(WORK_NAV, 'cooking') + `<section class="content"><div class="wrap" id="cookMount"></div></section>`; }
 function pageAlchemy() { return head({ eyebrow: 'Мастерская · алхимик', title: 'Алхимия', lead: 'Ремесленник куёт металл, алхимик варит то, что меняет тело и разум. Положи в колбу два-три компонента и свари зелье.', bg: 'assets/codex/arcane-v2.webp', crumbs: 'Мастерская' }) + subnav(WORK_NAV, 'alchemy') + `<section class="content"><div class="wrap" id="alchMount"></div></section>`; }
 function pageGathering() { return head({ eyebrow: 'Мастерская · добыча', title: 'Инструменты добычи', lead: 'Чем рубить, копать, срезать и разделывать. Простой инструмент на каждое дело, улучшенный — вдвое больше и доступ к редкому, а паровой бур перерабатывает руду прямо в забое.', bg: 'assets/codex/workshop.webp', crumbs: 'Мастерская' }) + subnav(WORK_NAV, 'gathering') + `<section class="content"><div class="wrap" id="gatherMount"></div></section>`; }
@@ -1136,6 +1151,57 @@ function pagePrivacy() {
 function pageChat() { return head({ eyebrow: 'Город · на связи', title: 'Общий чат', lead: 'Один чат на сайт и Discord: пиши отсюда — сообщение увидят на сервере, ответы с сервера появятся здесь.', bg: 'assets/codex/city-v2.webp', crumbs: 'Начало' }) + `<section class="content"><div class="wrap" id="chatMount"></div></section>`; }
 function pageGallery() { return head({ eyebrow: 'Город · мастерская художников', title: 'Витрина артов', lead: 'Портреты персонажей, сцены с ивентов, скетчи города. Выкладывай свои арты, ставь сердечки и пиши авторам.', bg: 'assets/codex/housing.webp' }) + `<section class="content"><div class="wrap" id="galMount"></div></section>`; }
 function pageResidents() { return head({ eyebrow: 'Город · перепись', title: 'Жители Меттенхейма', lead: 'Все персонажи, чьи квенты приняли мастера. Ищи соседей, союзников и врагов для своей истории.', bg: 'assets/codex/city-v2.webp', crumbs: 'Начало' }) + `<section class="content"><div class="wrap" id="rsMount"></div></section>`; }
+/* ---------- Новые страницы разделов ---------- */
+function pageLauncher() {
+  return head({ eyebrow: 'Важное · подготовка к игре', title: 'Лаунчер', lead: 'Как попасть на сервер: игра, моды и подключение. Свой лаунчер проекта появится здесь — он сам скачает моды и подключит к серверу.', bg: 'assets/codex/workshop.webp', crumbs: 'Важное' }) + `
+<section class="content"><div class="wrap">
+<article class="panel cab-empty"><div class="eyebrow">Скоро</div><h3>Лаунчер Меттенхейма готовится</h3><p class="muted">Когда он выйдет, здесь будет кнопка скачивания и инструкция. Пока заходим по-старому — три шага ниже.</p></article>
+<div class="sec-head" style="margin-top:40px"><div class="eyebrow">Как зайти сейчас</div><h2>Три шага</h2></div>
+<div class="grid3">
+  <div class="panel"><div class="eyebrow">1</div><h3>Игра</h3><p class="muted">Conan Exiles Enhanced в Steam. Сервер работает на Unreal Engine 5.</p></div>
+  <div class="panel"><div class="eyebrow">2</div><h3>Моды</h3><p class="muted">Подпишись на коллекцию в Steam Workshop и дождись загрузки. Список и частые ошибки — во вкладке <a href="#modlist">Модлист</a>.</p></div>
+  <div class="panel"><div class="eyebrow">3</div><h3>Подключение</h3><p class="muted">Адрес сервера: <b>145.239.130.3:7790</b>. Вход — после того как мастера примут квенту.</p></div>
+</div></div></section>`;
+}
+function pageLaws() {
+  const I = M.inquisition || {};
+  const block = (h, rows) => `<h2>${h}</h2><div class="cards-list">${rows.map(([n, d]) => `<div class="cardrow"><b>${n}</b><p>${d}</p></div>`).join('')}</div>`;
+  return head({ eyebrow: 'Меттенхейм · власть', title: 'Городская власть и законы', lead: 'Кто правит городом, кому он платит и за что здесь наказывают. Хартия даёт Меттенхейму свой Совет, но Корона и её Коллегия всегда рядом.', bg: 'assets/codex/history.webp', crumbs: 'Меттенхейм' }) + `
+<section class="content"><div class="wrap"><div class="prose">
+${block('Кто правит', [
+  ['Западная Корона', 'Меттенхейм стоит на землях Запада. Корона получает металл, машины и оружие в первую очередь — это цена городских вольностей.'],
+  ['Промышленная хартия', 'После возвышения дома Гриммар город получил хартию: собственный Совет и широкие права в обмен на приоритет коронных заказов.'],
+  ['Совет Меттенхейма', 'Вырос из собрания владельцев плавилен. Решает дела города, распределяет заказы и следит за шахтами Люмерита.'],
+  ['Дома Талбот и Дорн', 'Два крупнейших завода и две силы в Совете. Каждый новый пласт Люмерита — повод для спора о том, кому он достанется.']
+])}
+${block('Законы города', [
+  ['Старая вера', 'Запрещена Советом после того, как староверы срывали работу шахт Люмерита. Публичные обряды, рощи-святилища и костяные талисманы на виду — штраф, конфискация, изгнание из города.'],
+  ['Магия и Люмерит', 'Плести Люмерит без разрешения Коллегии нельзя. Кражи и перепродажа кристаллов в обход Домов — тяжёлое преступление.'],
+  ['Проклятые', 'Для Кодекса проклятие — порча. Проявленное проклятие в городе привлекает стражу и Инквизицию.'],
+  ['Сделки с Инферно', 'Сделка с инферналом считается изменой человеческому роду.']
+])}
+<h2>Инквизиция в городе</h2>${(I.about || []).map(x => `<p>${x}</p>`).join('')}
+${I.ranks ? block('Чины Коллегии', I.ranks) : ''}
+<p class="note">Раздел собран из канона сайта. Наказания, суд Совета и городская стража будут дописаны отдельно.</p>
+</div></div></section>`;
+}
+function pageNoctorn() {
+  const N = M.limn || {};
+  return head({ eyebrow: 'Мировой кодекс · проклятые земли', title: 'Нокторн', lead: 'Бывший Великий Лес, ныне Вечное проклятие. После 702 года Нокторн расширяется, а пятна Гнили появляются далеко от старой границы.', bg: 'assets/codex/archive.webp', crumbs: 'Мировой кодекс' }) + `
+<section class="content"><div class="wrap"><div class="prose">
+<h2>Вечное проклятие</h2>${(N.noctorn || []).map(x => `<p>${x}</p>`).join('')}
+<h2>Что рождает Нокторн</h2>
+<div class="grid3">
+  <a class="panel link-card" href="#cursed"><div class="eyebrow">Вкладка</div><h3>Проклятые</h3><p>Доплеры, бисты, вракхиры и одержимые: кто они и как ими становятся.</p></a>
+  <a class="panel link-card" href="#curses"><div class="eyebrow">Механики</div><h3>Система Проклятых</h3><p>Пять ступеней проклятия, очки и цена каждой ступени.</p></a>
+  <a class="panel link-card" href="#deck"><div class="eyebrow">Вкладка</div><h3>Безделицы</h3><p>Тихие и гнилые вещицы, карты Аурица и Варна.</p></a>
+</div></div></div></section>`;
+}
+function pageSpecial() {
+  const cards = [['inferno', 'Голод и сделки инферналов', 'Эссенция, Голод, связь с Королём и дневник инфернала.'], ['deck', 'Безделицы и колоды', 'Одноразовые вещицы и карты: что дают и какую берут плату.'], ['curses', 'Ступени проклятия', 'Как растёт проклятие и как его сдерживать.'], ['system', 'Кубики и рулетка', 'Броски d4, d6, d20, d100 и рулетка удачи.'], ['factions', 'Счёт Домов и ступени', 'Общий пул фракции и личная репутация.'], ['start', 'Ограниченные места', 'Сколько инферналов, проклятых и гоблинов может быть на сервере.']];
+  return head({ eyebrow: 'Мануал системы', title: 'Особые механики', lead: 'Механики, которые нужны не всем: для особых народов, проклятых и редких предметов. Собраны здесь, чтобы не искать их по разделам.', bg: 'assets/codex/arcane-v2.webp', crumbs: 'Мануал системы' }) + `
+<section class="content"><div class="wrap"><div class="grid3">${cards.map(([r, t, d]) => `<a class="panel link-card" href="#${r}"><div class="eyebrow">Механика</div><h3>${t}</h3><p>${d}</p></a>`).join('')}</div></div></section>`;
+}
 function pageGuilds() { return head({ eyebrow: 'Город · цеха и общества', title: 'Гильдии и цеха', lead: 'Цеха, артели, ордена, службы и тайные общества Меттенхейма. Их ведут сами игроки: цели, устав, состав, объявления и летопись. Основать свою может любой, чей персонаж принят.', bg: 'assets/codex/city-v2.webp', crumbs: 'Сообщество' }) + `<section class="content"><div class="wrap" id="gdMount"></div></section>`; }
 function pageGuild() { return head({ eyebrow: 'Город · гильдия', title: 'Гильдия', lead: 'Цели, устав, состав и летопись — всё, что гильдия сделала в игре.', bg: 'assets/codex/city-v2.webp', crumbs: 'Сообщество' }) + `<section class="content"><div class="wrap" id="gdMount"></div></section>`; }
 function pageCabinet(mode) { const adm = mode === 'admin'; return head({ eyebrow: adm ? 'Для мастеров' : 'Для игроков', title: adm ? 'Кабинет мастера' : 'Личный кабинет', lead: adm ? 'Очередь отправленных квент. Прочитай, оставь комментарий и вынеси решение — игрок увидит его у себя в кабинете.' : 'Твои персонажи и квенты в одном месте. Пиши черновик, отправляй на проверку и получай ответ мастеров прямо здесь.', bg: 'assets/codex/history.webp', crumbs: adm ? 'Кабинет мастера' : 'Кабинет' }) + `<section class="content"><div class="wrap" id="cabMount"></div></section>`; }
@@ -1148,6 +1214,7 @@ const ROUTES = {
   gallery: [pageGallery, arg => window.Cabinet.gallery($('#galMount'), arg)],
   residents: [pageResidents, () => window.Cabinet.residentsPage($('#rsMount'))],
   guilds: [pageGuilds, () => window.Guilds.list($('#gdMount'))],
+  launcher: [pageLauncher], laws: [pageLaws], noctorn: [pageNoctorn], special: [pageSpecial],
   guild: [pageGuild, arg => window.Guilds.page($('#gdMount'), arg)],
   inferno: [pageInferno],
   cabinet: [() => pageCabinet('player'), () => window.Cabinet.mount($('#cabMount'), 'player')], admin: [() => pageCabinet('admin'), () => window.Cabinet.mount($('#cabMount'), 'admin')],
@@ -1198,7 +1265,7 @@ function bookify(view, chapter) {
 }
 let lastRoute = null;
 /* тяжёлые арты (предметы ~5 МБ, иконки ~2 МБ) грузятся только для страниц, где они нужны */
-const LIGHT = new Set(['home', 'anketa', 'cabinet', 'admin', 'residents', 'guilds', 'guild', 'chat', 'news', 'gallery', 'hero', 'glossary', 'chronicle', 'privacy', 'city', 'history', 'limn', 'map', 'houses', 'lumerite', 'faith', 'world', 'rules', 'discord', 'start', 'faq', 'modlist', 'inferno', 'races']);
+const LIGHT = new Set(['home', 'anketa', 'cabinet', 'admin', 'residents', 'guilds', 'guild', 'launcher', 'laws', 'noctorn', 'special', 'chat', 'news', 'gallery', 'hero', 'glossary', 'chronicle', 'privacy', 'city', 'history', 'limn', 'map', 'houses', 'lumerite', 'faith', 'world', 'rules', 'discord', 'start', 'faq', 'modlist', 'inferno', 'races']);
 const ART_V = ((document.querySelector('script[src*="app.js"]') || {}).src || '').split('?')[1] || '';
 let artP = null;
 const loadArt = () => artP || (artP = Promise.all(['items-art.js', 'icons-art.js'].map(f => new Promise((res, rej) => {
@@ -1235,6 +1302,8 @@ function route() {
   view.innerHTML = r[0](arg);
   if (CHAPTERS.some(c => c.id === chapter) && key !== 'tree' && key !== 'map') bookify(view, chapter);
   r[1] && r[1](arg);
+  { const subs = groupSubs(groupOf(chapter)); const at = $('.doc-main', view) || $('section.content .wrap', view);
+    if (subs && subs.length > 1 && at) at.insertAdjacentHTML('afterbegin', `<nav class="grp-tabs" aria-label="Вкладки раздела">${subs.map(([sid, st]) => `<a href="#${sid}"${sid === chapter ? ' aria-current="page"' : ''}>${st}</a>`).join('')}</nav>`); }
   if (chapter === 'people-infernals') { const m = $('.doc-main', view) || $('section.content .wrap', view); if (m) m.insertAdjacentHTML('afterbegin', `<div class="slot-box" data-slot="infernal"></div><p class="note" style="margin:0 0 22px">Короли, грехи и голод инферналов — в главе <a href="#inferno">Инферно и Короли</a>.</p>`); }
   if (chapter === 'people-goblins') { const m = $('.doc-main', view) || $('section.content .wrap', view); if (m) m.insertAdjacentHTML('afterbegin', '<div class="slot-box" data-slot="goblin"></div>'); }
   if (chapter === 'curses') { const m = $('.doc-main', view); if (m) m.insertAdjacentHTML('afterbegin', '<div class="slot-box" data-slot="curse"></div>'); }
