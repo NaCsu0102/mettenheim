@@ -83,12 +83,18 @@ const charSelect = (chars, name = 'char') => `<label>Персонаж<select nam
 const kindSelect = cur => `<label>Вид<select name="kind">${Object.entries(KIND).map(([k, v]) => `<option value="${k}"${k === cur ? ' selected' : ''}>${v} — ${KIND_HINT[k]}</option>`).join('')}</select></label>`;
 const houseSelect = cur => `<label>Дом<select name="house">${Object.entries(HOUSE).map(([k, v]) => `<option value="${k}"${k === cur ? ' selected' : ''}>${v}</option>`).join('')}</select></label>`;
 
-const card = g => `<a class="panel gd-card${g.official ? ' gd-official' : ''}" href="#guild-${g.id}">
-        <div class="gd-card-top">${emblem(g)}<div><div class="gd-badges">${g.official ? '<span class="cab-pill st-ok">✓ Признана городом</span>' : ''}${pill(g.status)}</div>
-          <h3>${esc(g.name)}</h3><div class="gd-meta">${KIND[g.kind] || 'Гильдия'}${g.house ? ' · ' + HOUSE[g.house] : ''}${g.district ? ' · ' + esc(g.district) : ''}</div></div></div>
-        ${g.short ? `<p>${esc(g.short)}</p>` : ''}
-        ${g.recruit_open && g.recruit ? `<p class="gd-recruit"><b>Ищем:</b> ${esc(g.recruit)}</p>` : ''}
-        <div class="gd-foot"><span>👥 ${g.members} ${g.members === 1 ? 'участник' : g.members < 5 ? 'участника' : 'участников'}</span>${g.leader_name ? `<span>Глава: ${esc(g.leader_name)}</span>` : ''}<span class="${g.recruit_open ? 'gd-on' : 'muted'}">${g.recruit_open ? 'Набор открыт' : 'Набор закрыт'}</span></div></a>`;
+// Вывеска гильдии: висит на цепях над улицей, лента — цвет покровителя
+const sway = id => ((Math.abs(+id || 7) * 37) % 9 - 4) * .6;
+const card = g => `<a class="gd-sign h-${g.house || 'none'}${g.official ? ' gd-official' : ''}${g.status === 'archived' ? ' gd-arch' : ''}" href="#guild-${g.id}" style="--sw:${sway(g.id)}deg">
+  <i class="gd-chain l" aria-hidden="true"></i><i class="gd-chain r" aria-hidden="true"></i>
+  <span class="gd-board">${emblem(g)}<b>${esc(g.name)}</b><small>${KIND[g.kind] || 'Гильдия'} · ${g.members} в книге учёта</small>${g.official ? '<span class="gd-crest">Признана городом</span>' : ''}</span>
+  <span class="gd-tag">${g.status === 'archived' ? 'Контора закрыта' : g.recruit_open ? (g.recruit ? 'Ищем: ' + esc(g.recruit) : 'Двери открыты') : 'Набор закрыт'}</span></a>`;
+// Улицы: гильдии развешаны по своим районам
+const street = list => {
+  const by = {}; list.forEach(g => { const d = g.district || 'Окраины и переулки'; (by[d] = by[d] || []).push(g); });
+  const order = [...DISTRICTS.filter(Boolean), 'Окраины и переулки'].filter(d => by[d]);
+  return order.map(d => `<section class="gd-street"><h3 class="gd-dist"><span>${esc(d)}</span></h3><div class="gd-beam" aria-hidden="true"></div><div class="gd-signs">${by[d].map(card).join('')}</div></section>`).join('');
+};
 
 /* =================== СПИСОК ГИЛЬДИЙ =================== */
 async function listPage(el) {
@@ -96,30 +102,29 @@ async function listPage(el) {
   const x = await ctx();
   let all = [], demo = !x.live;
   const f = { kind: '', house: '', status: 'live', open: false, text: '' };
-  el.innerHTML = `<article class="panel gd-rule"><b>Гильдия живёт в игре.</b> Вступление, повышения, награды и вся жизнь гильдии отыгрываются на сервере — сайт только записывает то, что было. Гильдию, которая существует лишь на сайте, мастера отправляют в архив. С ${MIN_ACTIVE} участников гильдия считается действующей.</article>
+  el.innerHTML = `<article class="panel gd-rule"><b>Улицы гильдий Меттенхейма.</b> Над каждой дверью — вывеска: цех, артель, орден или служба. <b>Гильдия живёт в игре.</b> Вступление, повышения, награды и вся жизнь гильдии отыгрываются на сервере — сайт только записывает то, что было. Гильдию, которая существует лишь на сайте, мастера отправляют в архив. С ${MIN_ACTIVE} участников гильдия считается действующей.</article>
     <div class="gl-bar panel">
       <input type="search" class="gd-search" placeholder="Поиск по названию" aria-label="Поиск гильдии">
-      <div class="gl-chips" role="group" aria-label="Вид">${[['', 'Все'], ...Object.entries(KIND)].map(([k, t]) => `<button type="button" data-fk="${k}" aria-pressed="${k === ''}">${t}</button>`).join('')}</div>
-      <div class="gl-chips" role="group" aria-label="Дом">${[['', 'Все Дома'], ['talbot', '🟡 Жёлтые'], ['dorn', '🔴 Красные'], ['none', 'Вне Домов']].map(([k, t]) => `<button type="button" data-fh="${k}" aria-pressed="${k === ''}">${t}</button>`).join('')}</div>
-      <div class="gl-chips" role="group" aria-label="Состояние">${[['live', 'Действующие и собираются'], ['archived', 'Архив']].map(([k, t]) => `<button type="button" data-fs="${k}" aria-pressed="${k === 'live'}">${t}</button>`).join('')}</div>
+      <div class="gl-chips" role="group" aria-label="Состояние">${[['live', 'Открытые конторы'], ['archived', 'Закрытые']].map(([k, t]) => `<button type="button" data-fs="${k}" aria-pressed="${k === 'live'}">${t}</button>`).join('')}</div>
       <label class="gd-open"><input type="checkbox" data-fo> Только с открытым набором</label>
       <span class="gl-count muted"></span><button type="button" class="btn small" id="gdAdd">＋ Основать гильдию</button></div>
-    <p class="gl-note" hidden></p><div class="gd-grid" id="gdGrid"><p class="muted">Загружаю гильдии…</p></div><p class="cab-toast" role="status" aria-live="polite"></p>`;
+    <p class="gl-note" hidden></p><div class="gd-city" id="gdGrid"><p class="muted">Загружаю гильдии…</p></div><p class="cab-toast" role="status" aria-live="polite"></p>`;
   const grid = q('#gdGrid', el), note = q('.gl-note', el);
   async function load() {
     if (!x.live) { all = DEMO; return; }
     const r = await x.c.rpc('guild_list');
     if (r.error) { demo = true; all = DEMO; return; }
     demo = false; all = r.data || [];
+    if (!all.length) { demo = true; all = DEMO; }
   }
   function draw() {
     const t = f.text.toLowerCase();
     const list = all.filter(g => (!f.kind || g.kind === f.kind) && (!f.house || (f.house === 'none' ? !g.house : g.house === f.house))
       && (f.status === 'archived' ? g.status === 'archived' : g.status !== 'archived') && (!f.open || g.recruit_open) && (!t || g.name.toLowerCase().includes(t)));
     note.hidden = !demo;
-    note.innerHTML = demo ? (x.live ? '🛠️ Гильдии откроются, когда мастера включат их в базе. Пока — образцы, чтобы было видно, как это будет.' : 'Это предпросмотр: здесь образцы. Основывать гильдии и вступать в них можно на основном сайте.') : '';
+    note.innerHTML = demo ? (x.live ? 'Пока на улицах ни одной вывески — это образцы. Основай первую гильдию, и её вывеска повиснет в твоём районе.' : 'Это предпросмотр: здесь образцы. Основывать гильдии и вступать в них можно на основном сайте.') : '';
     q('.gl-count', el).textContent = `Найдено: ${list.length}`;
-    grid.innerHTML = list.length ? list.map(card).join('')
+    grid.innerHTML = list.length ? street(list)
       : `<article class="panel cab-empty"><h3>${all.length ? 'Под фильтр ничего не подошло' : 'Гильдий пока нет'}</h3><p class="muted">Основай первую — цех, артель, орден или тайное общество.</p></article>`;
   }
   el.addEventListener('click', e => {
@@ -191,12 +196,10 @@ async function guildPage(el, arg) {
       : !x.me ? '<button type="button" class="btn" data-a="login">Войти и вступить</button>'
       : r === 'pending' ? '<span class="cab-pill st-sub">Заявка отправлена</span>'
       : g.recruit_open && freeChars.length ? `<button type="button" class="btn" data-a="join">${r === 'none' ? 'Вступить' : 'Вступить ещё персонажем'}</button>` : '';
-    const posts_ = k => posts.filter(p => p.kind === k);
-    const tabs = [['about', 'О гильдии'], ['news', `Объявления ${posts_('news').length || ''}`], ['roster', `Состав ${roster.length}`], ['chronicle', `Летопись ${posts_('chronicle').length || ''}`]];
-    el.innerHTML = `<p class="gl-note"${demo ? '' : ' hidden'}>${demo ? 'Это образец гильдии — так будет выглядеть страница настоящей.' : ''}</p>
+        el.innerHTML = `<p class="gl-note"${demo ? '' : ' hidden'}>${demo ? 'Это образец гильдии — так будет выглядеть страница настоящей.' : ''}</p>
       <article class="panel gd-head">
         ${emblem(g)}
-        <div class="gd-head-main"><div class="eyebrow">${KIND[g.kind] || 'Гильдия'}${g.house ? ' · ' + HOUSE[g.house] : ' · Вне Домов'}${g.district ? ' · ' + esc(g.district) : ''}</div>
+        <div class="gd-head-main"><div class="eyebrow">${KIND[g.kind] || 'Гильдия'}${g.house ? ' · под покровительством Дома ' + (g.house === 'dorn' ? 'Дорн' : 'Талбот') : ' · вольная'}${g.district ? ' · ' + esc(g.district) : ''}</div>
           <h2>${esc(g.name)}</h2>${g.short ? `<p class="gd-short">${esc(g.short)}</p>` : ''}
           <div class="gd-badges">${g.official ? '<span class="cab-pill st-ok">✓ Признана городом</span>' : ''}${pill(g.status)}<span class="cab-pill ${g.recruit_open ? 'st-ok' : 'st-draft'}">${g.recruit_open ? 'Набор открыт' : 'Набор закрыт'}</span></div>
           ${g.recruit_open && g.recruit ? `<p class="gd-recruit"><b>Ищем:</b> ${esc(g.recruit)}</p>` : ''}
@@ -207,12 +210,16 @@ async function guildPage(el, arg) {
             ${!demo && x.staff ? `<button type="button" class="btn small ghost" data-a="official">${g.official ? 'Снять признание' : '✓ Признать городом'}</button><button type="button" class="btn small ghost" data-a="archive">${g.status === 'archived' ? 'Вернуть из архива' : 'В архив'}</button>` : ''}
             <a class="btn small ghost" href="#guilds">Все гильдии</a></div>
         </div></article>
-      <nav class="gd-tabs" role="tablist">${tabs.map(([k, t]) => `<button type="button" role="tab" data-tab="${k}" aria-selected="${k === tab}">${t}</button>`).join('')}</nav>
-      <div class="panel gd-body">${tabBody()}</div><p class="cab-toast" role="status" aria-live="polite"></p>`;
+      <div class="gd-office">
+        <section class="gd-charter"><div class="gd-k">Хартия гильдии</div>${charterBody()}<div class="gd-seal h-${g.house || 'none'}" title="${g.house ? 'Покровитель: ' + HOUSE[g.house] : 'Вольная гильдия'}"><span>${g.house === 'talbot' ? 'Т' : g.house === 'dorn' ? 'Д' : '✦'}</span></div></section>
+        <section class="gd-ledger"><div class="gd-k">Книга учёта</div>${rosterBody()}</section>
+        <section class="gd-board-notes"><div class="gd-k">Доска поручений</div>${postList('news')}</section>
+        <section class="gd-chron"><div class="gd-k">Хроника</div>${postList('chronicle')}</section>
+      </div><p class="cab-toast" role="status" aria-live="polite"></p>`;
   }
   function postList(kind) {
     const ps = posts.filter(p => p.kind === kind);
-    if (!ps.length) return `<p class="muted">${kind === 'news' ? 'Объявлений пока нет.' : 'Летопись пока пуста. Сюда записывают, что гильдия сделала в игре.'}</p>`;
+    if (!ps.length) return `<p class="muted">${kind === 'news' ? 'Поручений пока нет.' : 'Хроника пуста. Сюда записывают, что гильдия сделала в игре.'}</p>`;
     return ps.map(p => `<article class="gd-post"><div class="gd-post-h"><b>${esc(p.title)}</b><small>${fmt(p.created_at)} · ${esc(p.author_name || 'Житель')}</small>${canManage() || (x.me && p.author === x.me) ? `<button type="button" class="gb-cdel" data-del="${p.id}" aria-label="Удалить запись">✕</button>` : ''}</div>${p.body ? `<p>${txt(p.body)}</p>` : ''}</article>`).join('');
   }
   function rosterBody() {
@@ -220,13 +227,10 @@ async function guildPage(el, arg) {
     const rows = roster.map(m => `<div class="gd-mem"><span class="gd-rank r-${m.rank}">${RANK[m.rank]}</span>
         <a href="${m.number ? '#hero-' + m.number : '#residents'}"><b>${m.number ? m.number + ' | ' : ''}${esc(m.name)}</b></a>${m.title ? `<small>${esc(m.title)}</small>` : ''}
         ${!demo && canManage() && m.rank !== 'leader' ? `<span class="gd-mem-acts">${lead ? `<button type="button" class="btn small ghost" data-rank="${m.character_id}">Звание</button>` : ''}<button type="button" class="btn small ghost" data-kick="${m.character_id}">Исключить</button></span>` : ''}</div>`).join('');
-    const reqs = canManage() && requests.length ? `<h2>Заявки · ${requests.length}</h2>${requests.map(rq => `<div class="gd-mem gd-req"><b>${esc(rq.name)}</b>${rq.message ? `<p>${esc(rq.message)}</p>` : ''}<span class="gd-mem-acts"><button type="button" class="btn small" data-accept="${rq.character_id}">Принять</button><button type="button" class="btn small ghost" data-decline="${rq.character_id}">Отклонить</button></span></div>`).join('')}` : '';
-    return reqs + `<h2>Состав</h2>${rows || '<p class="muted">Пока никого.</p>'}`;
+    const reqs = canManage() && requests.length ? `<h4 class="gd-sub">Просятся в книгу · ${requests.length}</h4>${requests.map(rq => `<div class="gd-mem gd-req"><b>${esc(rq.name)}</b>${rq.message ? `<p>${esc(rq.message)}</p>` : ''}<span class="gd-mem-acts"><button type="button" class="btn small" data-accept="${rq.character_id}">Принять</button><button type="button" class="btn small ghost" data-decline="${rq.character_id}">Отклонить</button></span></div>`).join('')}` : '';
+    return reqs + (rows || '<p class="muted">В книге пока пусто.</p>');
   }
-  function tabBody() {
-    if (tab === 'news') return postList('news');
-    if (tab === 'chronicle') return postList('chronicle');
-    if (tab === 'roster') return rosterBody();
+  function charterBody() {
     const body = section('О гильдии', g.about) + list('Цели', g.goals) + list('Устав', g.charter) + (g.recruit ? `<h2>Кого принимаем</h2><p>${esc(g.recruit)}</p>` : '') + section('Отношения', g.relations);
     return `<div class="prose">${body || '<p class="muted">Глава ещё не рассказал о гильдии.</p>'}</div>`;
   }
@@ -249,7 +253,7 @@ async function guildPage(el, arg) {
       if (k === 'dissolve') { if (!a.dataset.sure) { a.dataset.sure = 1; a.textContent = 'Точно распустить? Вернуть сможет только мастер'; return; } act(async () => { const r = await x.c.from('guilds').update({ status: 'archived' }).eq('id', id); if (r.error) throw r.error; }); }
       if (k === 'official') act(() => rpc('guild_moderate', { gid: id, p_official: !g.official, p_archived: g.status === 'archived' }));
       if (k === 'archive') act(() => rpc('guild_moderate', { gid: id, p_official: g.official, p_archived: g.status !== 'archived' }));
-      if (k === 'post') modal('Новая запись', `<label>Куда<select name="kind"><option value="news">Объявление</option><option value="chronicle">Летопись — что гильдия сделала в игре</option></select></label><label>Заголовок<input type="text" name="title" maxlength="120" required></label><label>Текст<textarea name="body" rows="6" maxlength="6000"></textarea></label>`,
+      if (k === 'post') modal('Новая запись', `<label>Куда<select name="kind"><option value="news">Поручение на доску</option><option value="chronicle">Хроника — что гильдия сделала в игре</option></select></label><label>Заголовок<input type="text" name="title" maxlength="120" required></label><label>Текст<textarea name="body" rows="6" maxlength="6000"></textarea></label>`,
         async form => { const r = await x.c.from('guild_posts').insert({ guild_id: id, kind: form.kind.value, title: form.title.value.trim(), body: form.body.value.trim() }); if (r.error) throw r.error; tab = form.kind.value; await load(); draw(); });
       if (k === 'edit') modal('Гильдия', `<label>Название<input type="text" name="name" minlength="3" maxlength="80" required value="${esc(g.name)}"></label>${kindSelect(g.kind)}${houseSelect(g.house)}
           <label>Район<select name="district">${DISTRICTS.map(d => `<option value="${esc(d)}"${d === g.district ? ' selected' : ''}>${d || 'Не указан'}</option>`).join('')}</select></label>

@@ -409,7 +409,7 @@ async function mountFaces() {
     const inner = `<div class="fc-pic">${fig ? `<img src="${esc(fig)}" alt="" loading="lazy">` : ''}${demo ? '<span class="fc-demo">образец</span>' : `<span class="fc-num">№${String(r.number || 0).padStart(3, '0')}</span>`}</div>
       <div class="fc-info"><b>${esc(r.name || 'Без имени')}</b><small>${esc([o.name || p.name, cl.name].filter(Boolean).join(' · '))}</small>${r.line ? `<p>${esc(r.line)}</p>` : ''}</div>`;
     const hk = (r.house || 'talbot') === 'dorn' ? 'dorn' : 'talbot';
-    const flag = `<span class="fc-flag h-${hk}" title="${esc(H[hk].name)}" aria-label="${esc(H[hk].name)}"></span>`;
+    const flag = `<span class="fc-gem h-${hk}" title="${esc(H[hk].name)}" aria-label="${esc(H[hk].name)}"></span><span class="fc-stamp">Принят Советом</span>`;
     return demo ? `<div class="fc-card demo h-${hk}">${flag}${inner}</div>` : `<a class="fc-card h-${hk}" href="#hero-${r.number}">${flag}${inner}</a>`;
   };
   const SHOW = 8;
@@ -421,10 +421,10 @@ async function mountFaces() {
     const mix = []; for (let i = 0; i < 4; i++) mix.push(['talbot', FACE_DEMO.talbot[i]], ['dorn', FACE_DEMO.dorn[i]]);
     const demo = mix.slice(0, Math.max(0, SHOW - real.length)).map(([house, [name, p, o, c, g, line]]) => ({ name, p, o, c, g, line, house }));
     const t = count(rs, 'talbot'), d = count(rs, 'dorn');
-    el.innerHTML = `<div class="sec-head"><div class="eyebrow">Жители города</div><h2>Лица Меттенхейма</h2><p>Принятые персонажи появляются здесь сами. Флажок на карточке — сторона из анкеты: <span class="fc-key h-talbot"></span> Жёлтые, <span class="fc-key h-dorn"></span> Красные.</p></div>
+    el.innerHTML = `<div class="sec-head"><div class="eyebrow">Картотека Коллегии</div><h2>Лица Меттенхейма</h2><p>Досье жителей, чьи квенты принял Совет. Новые карточки появляются здесь сами.</p></div>
     <div class="face-grid face-all">${real.map(r => card(r, false)).join('')}${demo.map(r => card(r, true)).join('')}</div>
-    <footer class="face-foot face-foot-all"><span class="muted">${t || d ? `🟡 ${t} ${word(t)} · 🔴 ${d} ${word(d)}` : 'Город ждёт первых жителей'}</span>
-      <a class="btn small" href="#anketa" data-face-pick="talbot">Встать за Жёлтых</a><a class="btn small red" href="#anketa" data-face-pick="dorn">Встать за Красных</a><a class="hlink" href="#residents">Все жители →</a></footer>`;
+    <footer class="face-foot face-foot-all"><span class="muted">${t + d ? `В картотеке ${t + d} ${word(t + d)}` : 'Картотека ждёт первых жителей'}</span>
+      <a class="btn small" href="#anketa">Завести досье</a><a class="hlink" href="#residents">Все жители →</a></footer>`;
     $$('[data-face-pick]', el).forEach(b => b.addEventListener('click', () => { if (b.dataset.facePick !== house) applyHouse(b.dataset.facePick, true); }));
   };
   paint(null);
