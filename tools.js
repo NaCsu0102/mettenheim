@@ -63,10 +63,12 @@ function constellation(cid) {
 }
 // Ночное небо древа: северное сияние, мерцающие звёзды и созвездия (раскладка постоянная)
 function skyHTML() {
+  // Полотно неба фиксированного размера в пикселях: звёзды не растягиваются и не меняются с шириной экрана
+  const W = 2600, H = 1500;
   let seed = 20261122; const rnd = () => (seed = (seed * 1103515245 + 12345) >>> 0) / 4294967296;
-  const stars = Array.from({ length: 170 }, () => { const x = rnd() * 100, y = rnd() * 100, r = rnd() < .9 ? .06 + rnd() * .1 : .16 + rnd() * .12; return `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${r.toFixed(3)}" style="animation-duration:${(2.6 + rnd() * 5).toFixed(1)}s;animation-delay:-${(rnd() * 6).toFixed(1)}s"/>`; }).join('');
-  const cons = Array.from({ length: 7 }, () => { const cx = 6 + rnd() * 88, cy = 6 + rnd() * 88, n = 4 + Math.floor(rnd() * 4); let x = cx, y = cy; const pts = []; for (let i = 0; i < n; i++) { pts.push([x, y]); x += (rnd() - .5) * 9; y += (rnd() - .5) * 9; } return `<polyline points="${pts.map(q => q.map(v => v.toFixed(1)).join(',')).join(' ')}"/>${pts.map(q => `<circle class="cs" cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r=".22"/>`).join('')}`; }).join('');
-  return `<div class="tree-sky" aria-hidden="true"><i class="aur a"></i><i class="aur b"></i><i class="aur c"></i><svg viewBox="0 0 100 100" preserveAspectRatio="none"><g class="sky-stars">${stars}</g><g class="sky-cons">${cons}</g></svg></div>`;
+  const stars = Array.from({ length: 420 }, () => { const x = rnd() * W, y = rnd() * H, r = rnd() < .88 ? .55 + rnd() * .6 : 1.2 + rnd() * .8; return `<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="${r.toFixed(2)}" style="animation-duration:${(2.6 + rnd() * 5).toFixed(1)}s;animation-delay:-${(rnd() * 6).toFixed(1)}s"/>`; }).join('');
+  const cons = Array.from({ length: 12 }, () => { let x = 80 + rnd() * (W - 160), y = 60 + rnd() * (H - 120); const n = 4 + Math.floor(rnd() * 4), pts = []; for (let i = 0; i < n; i++) { pts.push([x, y]); x += (rnd() - .5) * 200; y += (rnd() - .5) * 150; } return `<polyline points="${pts.map(q => q.map(v => v.toFixed(0)).join(',')).join(' ')}"/>${pts.map(q => `<circle class="cs" cx="${q[0].toFixed(0)}" cy="${q[1].toFixed(0)}" r="1.8"/>`).join('')}`; }).join('');
+  return `<div class="tree-sky" aria-hidden="true"><i class="aur a"></i><i class="aur b"></i><i class="aur c"></i><svg class="sky-canvas" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><g class="sky-stars">${stars}</g><g class="sky-cons">${cons}</g></svg></div>`;
 }
 function heroHTML(cid) {
   const h = CLS_HERO[cid]; if (!h) return '';
@@ -361,7 +363,7 @@ const Tree = {
 
     el.innerHTML = `<div class="tree-full night" id="tBox">${skyHTML()}
       <svg id="tSvg" role="img" aria-label="Древо талантов"><defs>
-        ${Object.entries(CLS_HERO).map(([k, h]) => `<radialGradient id="tgc-${k}" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="1100"><stop offset=".15" stop-color="${h[1]}" stop-opacity="0"/><stop offset=".4" stop-color="${h[1]}" stop-opacity=".6"/><stop offset=".72" stop-color="${h[1]}" stop-opacity=".22"/><stop offset="1" stop-color="${h[1]}" stop-opacity="0"/></radialGradient>`).join('')}<filter id="tsmoke" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence type="fractalNoise" baseFrequency=".0055" numOctaves="3" seed="7"/><feDisplacementMap in="SourceGraphic" scale="150" xChannelSelector="R" yChannelSelector="G"/><feGaussianBlur stdDeviation="16"/></filter><radialGradient id="tg1"><stop offset="0" stop-color="#3a2d22"/><stop offset="1" stop-color="#150f0b"/></radialGradient>
+        ${Object.entries(CLS_HERO).map(([k, h]) => `<radialGradient id="tgc-${k}" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="1100"><stop offset=".15" stop-color="${h[1]}" stop-opacity="0"/><stop offset=".4" stop-color="${h[1]}" stop-opacity=".6"/><stop offset=".72" stop-color="${h[1]}" stop-opacity=".22"/><stop offset="1" stop-color="${h[1]}" stop-opacity="0"/></radialGradient>`).join('')}${Object.entries(CLS_HERO).map(([k, h]) => `<radialGradient id="thalo-${k}"><stop offset="0" stop-color="${h[1]}" stop-opacity=".85"/><stop offset=".5" stop-color="${h[1]}" stop-opacity=".38"/><stop offset="1" stop-color="${h[1]}" stop-opacity="0"/></radialGradient>`).join('')}<filter id="tsmoke" x="-20%" y="-20%" width="140%" height="140%"><feTurbulence type="fractalNoise" baseFrequency=".0055" numOctaves="3" seed="7"/><feDisplacementMap in="SourceGraphic" scale="150" xChannelSelector="R" yChannelSelector="G"/><feGaussianBlur stdDeviation="16"/></filter><radialGradient id="tg1"><stop offset="0" stop-color="#3a2d22"/><stop offset="1" stop-color="#150f0b"/></radialGradient>
         ${Object.keys(window.ICON_ART_DATA || {}).filter(k => k.startsWith('skill-')).map(k => `<symbol id="sy-${k}" viewBox="0 0 144 144"><image href="${ICON(k)}" width="144" height="144"/></symbol>`).join('')}
         <filter id="tglow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="7"/></filter></defs><g id="tWorld"></g></svg>
       <div class="tree-top">
@@ -416,7 +418,7 @@ const Tree = {
       // в центре — герой выбранного класса в его цвете
       let coreHero = '';
       { const H = CLS_HERO[cid];
-        coreHero = H ? `<circle r="150" fill="#0b0a12" opacity=".96"/>${gearSvg}<circle r="128" fill="${H[1]}" opacity=".16" filter="url(#tglow)"/><circle r="104" fill="none" stroke="${H[2]}" stroke-width="1.2" opacity=".35" stroke-dasharray="2 7"/><image class="tcore-hero" href="${H[0]}" x="-128" y="-142" width="256" height="256" preserveAspectRatio="xMidYMid meet"/>`
+        coreHero = H ? `<circle r="150" fill="#0b0a12" opacity=".96"/>${gearSvg}<circle r="175" fill="url(#thalo-${cid})"/><image class="tcore-hero" href="${H[0]}" x="-172" y="-190" width="344" height="344" preserveAspectRatio="xMidYMid meet"/>`
           : gearSvg + `<text y="6" text-anchor="middle" fill="#a7967c" font-family="Montserrat, Arial, sans-serif" font-weight="700" font-size="28" letter-spacing="3" stroke="#120e0b" stroke-width="5" paint-order="stroke">МЕТТЕНХЕЙМ</text>`; }
       for (const [a, b] of links) {
         const A = byId[a], B = byId[b], on = got.has(a) && got.has(b), can = (got.has(a) && canTake(b)) || (got.has(b) && canTake(a));
@@ -433,7 +435,7 @@ const Tree = {
       s += coreHero; // герой в центре поверх линий связей
       for (const n of nodes) {
         const r = R[n.type], on = got.has(n.id), can = canTake(n.id), dim = n.cls && !got.has(n.cls) && !on && !can;
-        if (n.type === 'core') { s += `<g class="tnode" data-id="core" tabindex="0" role="button" aria-label="Центр древа" style="cursor:pointer"><circle r="${r}" fill="transparent" stroke="${hi}" stroke-width="2" opacity=".6"/>${sel === 'core' ? `<circle r="${r + 12}" fill="none" stroke="${hi}" stroke-width="1.5" stroke-dasharray="4 5"/>` : ''}</g>`; continue; }
+        if (n.type === 'core') { s += `<g class="tnode" data-id="core" tabindex="0" role="button" aria-label="Центр древа" style="cursor:pointer"><circle r="${r}" fill="transparent"/></g>`; continue; }
         if (n.type === 'gap') { s += `<g class="tnode" data-id="${n.id}" tabindex="0" role="button" aria-label="${esc(n.name)}" style="cursor:pointer">${on ? `<circle cx="${n.x}" cy="${n.y}" r="${r + 9}" fill="${house}" opacity=".35" filter="url(#tglow)"/>` : ''}<polygon points="${[0, 1, 2, 3, 4, 5].map(i => { const g = Math.PI / 3 * i; return (n.x + r * Math.cos(g)).toFixed(1) + ',' + (n.y + r * Math.sin(g)).toFixed(1); }).join(' ')}" fill="${on ? house : 'url(#tg1)'}" stroke="${on ? hi : can ? '#c9a15b' : '#4a3b2d'}" stroke-width="2.5"/>${sel === n.id ? `<circle cx="${n.x}" cy="${n.y}" r="${r + 12}" fill="none" stroke="${hi}" stroke-width="1.5" stroke-dasharray="4 5"/>` : ''}</g>`; continue; }
         const ring = on ? hi : can ? '#c9a15b' : '#4a3b2d';
         s += `<g class="tnode" data-id="${n.id}" tabindex="0" role="button" aria-label="${esc(nodeName(n))}" style="cursor:pointer" opacity="${dim ? .5 : 1}">`;

@@ -3135,3 +3135,5 @@ body.gl-lock { overflow: hidden; }
 .fc-gem.h-dorn { background: linear-gradient(135deg, #ff9d88, #c8372a 55%, #7a1610); box-shadow: 0 0 0 2px rgba(255,248,230,.85), 0 0 10px rgba(220,70,50,.7); }
 .rs-tile { display: block; }
 @media (min-width: 900px) { .face-all { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.tree-sky svg.sky-canvas { inset: auto; left: 50%; top: 50%; width: 2600px; height: 1500px; transform: translate(-50%, -50%); }
+.sky-cons polyline { stroke-width: .8; opacity: .3; }
