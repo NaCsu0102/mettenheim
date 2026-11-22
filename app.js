@@ -112,7 +112,7 @@ const BOOK = [
   ['Мировой кодекс', [['limn', 'Мифология Лимна', [['limn', 'Лимн и его боги'], ['world', 'История мира'], ['chronicle', 'Хроники'], ['faith', 'Вера'], ['map', 'Карта мира']]],
     ['noctorn', 'Нокторн', [['noctorn', 'Нокторн'], ['cursed', 'Проклятые'], ['deck', 'Безделицы']]],
     ['magic', 'Магия и иные миры', [['magic', 'Магия и заклинания'], ['inferno', 'Инферно и Короли']]],
-    ['races', 'Народы', [['races', 'Народы и отношения'], ...M.peoples.map(p => ['people-' + p.id, p.name])]]]],
+    ['races', 'Расы', [['races', 'Расы и отношения'], ...M.peoples.map(p => ['people-' + p.id, p.name])]]]],
   ['Мануал системы', [['system', 'Ролевая система'], ['eloquence', 'Система Красноречия'], ['classes', 'Классы'], ['inventions', 'Система конструктов'], ['curses', 'Система Проклятых'], ['special', 'Особые механики']]],
   ['Древо навыков', [['tree', 'Древо навыков']]],
   ['Мануал ремесла', [['recycle', 'Переработчик'], ['craft', 'Крафт-станция'], ['cooking', 'Кулинария'], ['alchemy', 'Алхимия'], ['healing', 'Лекари и травмы'],
@@ -120,7 +120,7 @@ const BOOK = [
     ['body', 'Протезирование и конструкты'], ['gathering', 'Карта ресурсов']]],
   ['Сообщество', [['news', 'Новости и события'], ['residents', 'Жители города', [['residents', 'Жители города'], ['gallery', 'Витрина артов']]], ['guilds', 'Гильдии']]]
 ];
-const PART_NOTE = { 'Важное': 'Правила и первые шаги', 'Меттенхейм': 'Город, Дома и власть', 'Мировой кодекс': 'Мифы, Нокторн, магия, народы', 'Мануал системы': 'Кубы, классы и развитие', 'Древо навыков': 'Развитие персонажа', 'Мануал ремесла': 'Крафт, лечение и ресурсы', 'Сообщество': 'Жизнь сервера' };
+const PART_NOTE = { 'Важное': 'Правила и первые шаги', 'Меттенхейм': 'Город, Дома и власть', 'Мировой кодекс': 'Мифы, Нокторн, магия, расы', 'Мануал системы': 'Кубы, классы и развитие', 'Древо навыков': 'Развитие персонажа', 'Мануал ремесла': 'Крафт, лечение и ресурсы', 'Сообщество': 'Жизнь сервера' };
 const CHAPTERS = BOOK.flatMap(([part, items]) => items.flatMap(([gid, gt, subs]) => (subs || [[gid, gt]]).map(([id, t]) => ({ id, t, part, group: gid, gt }))));
 const groupOf = id => { const c = CHAPTERS.find(x => x.id === id); return c ? c.group : null; };
 const groupSubs = gid => { for (const [, items] of BOOK) for (const [id, , subs] of items) if (id === gid) return subs || null; return null; };
@@ -249,26 +249,19 @@ function pageHomeRaw() {
 <div class="pipe-run hero-run" aria-hidden="false"><span class="pr-pipe"></span><i class="pr-joint a"></i><i class="pr-joint b"><img class="pr-valve" src="assets/pipes/valve.webp" alt=""></i><i class="pr-steam"></i>
   <div class="engine-plate"><span class="eng-dot"></span><b>Conan Exiles</b><span class="eng-ue">Unreal Engine 5</span></div></div>
 
-<section class="section tight welcome-sec"><div class="wrap"><div class="welcome panel">
-  <div class="eyebrow">Добро пожаловать</div><h2>Меттенхейм ждёт</h2>
+<section class="section tight hub-sec"><div class="wrap"><div class="hub panel">
+  <div class="hub-main"><div class="eyebrow">Добро пожаловать</div><h2>Меттенхейм ждёт</h2>
   <p>Ролевой сервер Conan Exiles о городе пара, стали и Люмерита. Два Дома спорят о будущем: Талбот хочет отдать машины всему Лимну, Дорн — удержать их силой. А за стенами расползается Гниль. Придумай персонажа, выбери сторону и напиши квенту — мастера прочитают её и впустят тебя в город.</p>
   <div class="welcome-btns"><a class="btn" href="#anketa">Создать персонажа</a><a class="btn ghost" href="#start">Как начать играть</a><a class="btn ghost" href="#city">О городе</a></div>
-  <p class="city-line" id="statsMount"></p>
-</div></div></section>
-
-<section class="section tight" ><div class="wrap">
-  <div class="comm-layout">
-    <div id="commMount"></div>
-    <div class="comm-right">
-      <div class="community">
+  <p class="city-line" id="statsMount"></p></div>
+  <div class="hub-side"><div id="commMount"></div><div class="community hub-links">
         <a href="https://wargm.ru/server/61449" target="_blank" rel="noopener"><img src="assets/community/wargm-3d.webp" alt=""><span><strong>WARGM</strong><small>Поддержать голосом</small></span></a>
         <a href="https://boosty.to/riverside" target="_blank" rel="noopener"><img src="assets/community/boosty-3d.webp" alt=""><span><strong>BOOSTY</strong><small>Поддержать проект</small></span></a>
         <a href="https://wargm.ru/server/61449/connect" target="_blank" rel="noopener"><img src="assets/community/connect-3d.webp" alt=""><span><strong>ПОДКЛЮЧИТЬСЯ</strong><small>145.239.130.3:7790</small></span></a>
-      </div>
-      <div id="rsMini"></div>
-    </div>
-  </div>
-</div></section>
+      </div></div>
+</div></div></section>
+
+
 
 
 <section class="section tight ev-sec"><div class="wrap" id="evMount"></div></section>
@@ -883,12 +876,77 @@ function mountDeck() {
 function pageRules() {
   const R = (window.RULES || []).filter(r => r.id !== 'discord');
   return head({ eyebrow: 'Свод города', title: 'Правила сервера', lead: 'Начиная игру, вы соглашаетесь со всеми правилами проекта. Незнание правил не освобождает от ответственности.', bg: 'assets/codex/rules.webp', crumbs: 'Правила' }) + `
-<section class="content"><div class="wrap">${R.map((r, i) => `<section class="rule-sec" id="r-${r.id}"><h2><span class="n">§ ${i + 1}</span>${r.title}</h2><div class="body">${r.html}</div></section>`).join('')}</div></section>`;
+<section class="content"><div class="wrap"><div class="rsrch panel"><input type="search" class="rsrch-in" placeholder="Найти в правилах: кража, смерть персонажа, драка, оскорбления…" aria-label="Поиск по правилам"><span class="rsrch-n muted"></span><div class="rsrch-hints">${["кража", "смерть персонажа", "бой", "оскорбления", "читы", "возраст"].map(h => `<button type="button" data-rq="${h}">${h}</button>`).join("")}</div></div>${R.map((r, i) => `<section class="rule-sec" id="r-${r.id}"><h2><span class="n">§ ${i + 1}</span>${r.title}</h2><div class="body">${r.html}</div></section>`).join('')}</div></section>`;
+}
+/* ---------- поиск по правилам: по словам и по смыслу ---------- */
+// Слова сравниваются по основе (без окончаний), а запрос расширяется близкими по смыслу словами.
+const RULE_SYN = [
+  ['бой', 'драк', 'сраж', 'битв', 'атак', 'напад', 'пвп', 'pvp', 'поедин', 'дуэл'],
+  ['смерт', 'убийств', 'убит', 'убива', 'ck', 'ск', 'перманент', 'гибел', 'умер'],
+  ['краж', 'вор', 'воров', 'ограб', 'граб', 'обокр', 'украс', 'укра', 'мародер', 'лут'],
+  ['оскорб', 'мат', 'токсич', 'руга', 'бран', 'униж', 'хамств', 'травл'],
+  ['чит', 'баг', 'эксплойт', 'абуз', 'дюп', 'уязвим'],
+  ['стро', 'постро', 'баз', 'здан', 'дом', 'жиль'],
+  ['метагейм', 'мг', 'мета'],
+  ['павергейм', 'пг', 'pg'],
+  ['рп', 'ролев', 'отыгр', 'roleplay'],
+  ['nrp', 'нрп', 'ooc', 'оос', 'вне рол'],
+  ['бан', 'наказ', 'варн', 'предупрежд', 'мут', 'кик', 'блокир'],
+  ['возраст', 'лет', 'взросл', 'несовершеннолет', '18', '21'],
+  ['квент', 'анкет', 'персонаж', 'биограф'],
+  ['похищ', 'плен', 'заложн', 'связ', 'пыт'],
+  ['маг', 'заклин', 'плетен', 'люмерит'],
+  ['торг', 'продаж', 'рын', 'деньг', 'монет', 'обмен'],
+  ['голос', 'войс', 'микрофон', 'войс-чат'],
+  ['реклам', 'спам', 'флуд'],
+  ['администрац', 'админ', 'мастер', 'модератор', 'жалоб', 'тикет', 'обращен']
+];
+const RU_END = ['иями', 'ями', 'ами', 'ого', 'его', 'ому', 'ему', 'ыми', 'ими', 'иях', 'ией', 'ию', 'ия', 'ие', 'ий', 'ах', 'ях', 'ов', 'ев', 'ей', 'ой', 'ый', 'ая', 'яя', 'ое', 'ее', 'ые', 'ую', 'юю', 'ом', 'ем', 'ам', 'ям', 'ться', 'тся', 'ть', 'ти', 'ет', 'ит', 'ут', 'ют', 'ат', 'ят', 'ал', 'ил', 'ла', 'ло', 'ли', 'ся', 'сь', 'а', 'я', 'о', 'е', 'ы', 'и', 'у', 'ю', 'ь'];
+const ruStem = w => { w = w.toLowerCase().replace(/ё/g, 'е'); if (w.length <= 3) return w; for (const e of RU_END) if (w.endsWith(e) && w.length - e.length >= 3) return w.slice(0, -e.length); return w; };
+const ruWords = t => (t.toLowerCase().replace(/ё/g, 'е').match(/[a-zа-я0-9]+/g) || []);
+function ruleTerms(q) {
+  const stems = ruWords(q).filter(w => w.length > 1).map(ruStem);
+  const groups = stems.map(st => { const g = RULE_SYN.find(gr => gr.some(x => st.startsWith(x) || x.startsWith(st) && st.length >= 3)); return g ? [...new Set([st, ...g])] : [st]; });
+  return groups;
+}
+function mountRuleSearch() {
+  const box = $('.rsrch'); if (!box) return;
+  const inp = $('.rsrch-in', box), cnt = $('.rsrch-n', box);
+  const secs = $$('.rule-sec');
+  const items = secs.map(sec => ({ sec, els: $$('.body p, .body li, .body h3, .body h4, .body tr, .body dd, .body dt', sec).filter(e => !e.querySelector('p, li')) }));
+  items.forEach(it => it.els.forEach(e => { e.dataset.raw = e.innerHTML; e.dataset.words = ruWords(e.textContent).map(ruStem).join(' '); }));
+  const reset = () => { items.forEach(it => { it.sec.hidden = false; it.els.forEach(e => { e.classList.remove('rs-hit', 'rs-dim'); e.innerHTML = e.dataset.raw; }); }); cnt.textContent = ''; };
+  const mark = (e, groups) => {
+    const all = groups.flat().filter(x => x.length >= 2).sort((a, b) => b.length - a.length).map(x => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    if (!all.length) return;
+    const re = new RegExp('(^|[^a-zа-яё0-9])((?:' + all.join('|') + ')[a-zа-яё0-9]*)', 'gi');
+    const walk = document.createTreeWalker(e, NodeFilter.SHOW_TEXT); const nodes = []; while (walk.nextNode()) nodes.push(walk.currentNode);
+    nodes.forEach(n => { const t = n.nodeValue; if (!re.test(t)) return; re.lastIndex = 0; const span = document.createElement('span'); span.innerHTML = esc(t).replace(re, '$1<mark>$2</mark>'); n.replaceWith(...span.childNodes); });
+  };
+  let tm = null;
+  const run = () => {
+    const q = inp.value.trim(); reset(); if (q.length < 2) return;
+    const groups = ruleTerms(q); let hits = 0, first = null;
+    items.forEach(it => {
+      let any = false;
+      it.els.forEach(e => {
+        const ws = e.dataset.words.split(' ');
+        const ok = groups.every(g => g.some(x => ws.some(w => w.startsWith(x) || (x.length >= 4 && x.startsWith(w) && w.length >= 3))));
+        e.classList.toggle('rs-hit', ok); e.classList.toggle('rs-dim', !ok);
+        if (ok) { any = true; hits++; mark(e, groups); first = first || e; }
+      });
+      it.sec.hidden = !any;
+    });
+    cnt.textContent = hits ? `Найдено пунктов: ${hits}` : 'Ничего не нашлось — попробуй другое слово';
+  };
+  inp.addEventListener('input', () => { clearTimeout(tm); tm = setTimeout(run, 180); });
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') { const h = $('.rs-hit'); if (h) h.scrollIntoView({ behavior: 'smooth', block: 'center' }); } });
+  $$('[data-rq]', box).forEach(b => b.addEventListener('click', () => { inp.value = b.dataset.rq; run(); inp.focus(); }));
 }
 function pageDiscord() {
   const r = (window.RULES || []).find(x => x.id === 'discord') || { html: '' };
   return head({ eyebrow: 'Сообщество', title: 'Правила Discord', lead: 'Как общаться на сервере проекта, какие каналы для чего и куда писать администрации.', bg: 'assets/codex/rules.webp', crumbs: 'Правила' }) + `
-<section class="content"><div class="wrap"><section class="rule-sec"><h2><span class="n">§</span>Правила сообщества</h2><div class="body">${r.html}</div></section></div></section>`;
+<section class="content"><div class="wrap"><div class="rsrch panel"><input type="search" class="rsrch-in" placeholder="Найти в правилах: кража, смерть персонажа, драка, оскорбления…" aria-label="Поиск по правилам"><span class="rsrch-n muted"></span><div class="rsrch-hints">${["кража", "смерть персонажа", "бой", "оскорбления", "читы", "возраст"].map(h => `<button type="button" data-rq="${h}">${h}</button>`).join("")}</div></div><section class="rule-sec"><h2><span class="n">§</span>Правила сообщества</h2><div class="body">${r.html}</div></section></div></section>`;
 }
 function pageStart() {
   const steps = [
@@ -921,7 +979,7 @@ function pageModlist() {
 /* ================= НАРОДЫ ================= */
 function pageRaces() {
   const R = M.relations;
-  return head({ eyebrow: 'Народы Лимна', title: 'Народы нового города', lead: 'Выбери народ и узнай его историю — а потом реши, какую историю начнёшь ты.', bg: 'assets/codex/peoples.webp', crumbs: 'Народы' }) + subnav(PEOPLE_NAV, 'races') + `
+  return head({ eyebrow: 'Расы Лимна', title: 'Расы нового города', lead: 'Выбери расу и узнай его историю — а потом реши, какую историю начнёшь ты.', bg: 'assets/codex/peoples.webp', crumbs: 'Народы' }) + subnav(PEOPLE_NAV, 'races') + `
 <section class="content"><div class="wrap">
 <div class="grid2">${M.peoples.map(p => { const o = p.origins[0]; return `<a class="link-card" href="#people-${p.id}" style="min-height:300px"><div class="bg" style="background-image:url('assets/codex/peoples.webp');opacity:.18"></div><img src="${charImg(o.folder, 'male', 'fighter')}" alt="" style="position:absolute;right:0;bottom:0;height:100%;width:auto;max-width:55%;object-fit:contain;z-index:1;filter:drop-shadow(0 0 20px var(--house-glow))"><div style="max-width:55%"><div class="eyebrow">${p.origins.length > 1 ? p.origins.map(x => x.name).join(' · ') : 'Один народ'}</div><h3 style="font-size:34px">${p.name}</h3><p>${p.short}</p></div></a>`; }).join('')}</div>
 <div class="sec-head" style="margin-top:70px"><div class="eyebrow">Кто кого терпит</div><h2>Отношения народов</h2><p>Как народы относятся друг к другу в Меттенхейме. Нажми на ячейку, чтобы прочитать подробности. Строка — кто относится, столбец — к кому.</p></div>
@@ -940,7 +998,7 @@ function mountRaces() {
 function pagePeople(id) {
   const p = M.peoples.find(x => x.id === id) || M.peoples[0];
   const idx = M.peoples.indexOf(p), next = M.peoples[(idx + 1) % M.peoples.length];
-  return head({ eyebrow: 'Народы Лимна', title: p.name, lead: p.short, bg: 'assets/codex/peoples.webp', crumbs: '<a href="#races">Народы</a>' }) + subnav(PEOPLE_NAV, 'people-' + p.id) + `
+  return head({ eyebrow: 'Расы Лимна', title: p.name, lead: p.short, bg: 'assets/codex/peoples.webp', crumbs: '<a href="#races">Расы</a>' }) + subnav(PEOPLE_NAV, 'people-' + p.id) + `
 <section class="content"><div class="wrap">
 ${p.id === 'goblins' ? '<img class="wide-art" src="assets/art/head-goblins.webp" alt="">' : ''}<div class="prose" style="margin-bottom:30px">${p.about.map(t => `<p class="lead" style="font-size:18px">${t}</p>`).join('')}</div>
 ${p.origins.length > 1 ? `<div class="origin-tabs" id="oTabs" role="tablist">${p.origins.map((o, i) => `<button class="chip" role="tab" data-ot="${o.id}" aria-pressed="${i === 0}"><img src="${o.emblem}" alt="">${o.name}</button>`).join('')}</div>` : ''}
@@ -1154,7 +1212,7 @@ function pageCraft() { return head({ eyebrow: 'Мастерская · ката�
 function pageArmor() { return head({ eyebrow: 'Мастерская · заготовка', title: 'Бронник', lead: 'Выбери корпус — лёгкий, средний или тяжёлый — и навесь на него детали: наручи, наплечники, нагрудную пластину, поножи и накладки. У каждого корпуса своя особенность и своя уникальная деталь.', bg: 'assets/codex/workshop.webp', crumbs: 'Мастерская' }) + subnav(WORK_NAV, 'armor') + `<section class="content"><div class="wrap" id="armorMount"></div></section>`; }
 
 /* ================= РОУТЕР ================= */
-function pageInferno() { return head({ eyebrow: 'Народы · инферналы', title: 'Инферно и Короли', lead: 'Мир под миром. Десять великих Домов, десять грехов — и голод, который инфернал приносит с собой в Меттенхейм.', bg: 'assets/codex/peoples.webp', crumbs: 'Народы' }) + subnav(PEOPLE_NAV, 'inferno') + `<section class="content"><div class="wrap">${window.Inferno.pageHTML()}</div></section>`; }
+function pageInferno() { return head({ eyebrow: 'Расы · инферналы', title: 'Инферно и Короли', lead: 'Мир под миром. Десять великих Домов, десять грехов — и голод, который инфернал приносит с собой в Меттенхейм.', bg: 'assets/codex/peoples.webp', crumbs: 'Народы' }) + subnav(PEOPLE_NAV, 'inferno') + `<section class="content"><div class="wrap">${window.Inferno.pageHTML()}</div></section>`; }
 function pageNews() { return head({ eyebrow: 'Город · на связи', title: 'Новости и события', lead: 'Анонсы из нашего Discord и календарь событий сервера. Записаться на событие можно одним нажатием.', bg: 'assets/codex/city-v2.webp', crumbs: 'Начало' }) + `<section class="content"><div class="wrap" id="newsMount"></div></section>`; }
 function pageHero() { return head({ eyebrow: 'Перепись Меттенхейма', title: 'Личное дело', lead: 'Открытая карточка жителя города. Квента и данные игрока остаются у мастеров.', bg: 'assets/codex/city-v2.webp', crumbs: 'Жители' }) + `<section class="content"><div class="wrap" id="heroMount"></div></section>`; }
 function pageGlossary() {
@@ -1247,7 +1305,7 @@ const ROUTES = {
   cabinet: [() => pageCabinet('player'), () => window.Cabinet.mount($('#cabMount'), 'player')], admin: [() => pageCabinet('admin'), () => window.Cabinet.mount($('#cabMount'), 'admin')],
   city: [pageCity], history: [pageHistory, mountChrono], houses: [pageHouses, () => { $$('[data-pick]').forEach(b => b.addEventListener('click', () => { if (b.dataset.pick !== house) applyHouse(b.dataset.pick, true); })); setVars(); MH.onHouse(hcards); }],
   lumerite: [pageLumerite], faith: [pageFaith], magic: [pageMagic], limn: [pageLimn], map: [pageMap, mountMap], world: [pageWorld], deck: [pageDeck, mountDeck],
-  rules: [pageRules], discord: [pageDiscord], start: [pageStart], faq: [pageFaq], modlist: [pageModlist],
+  rules: [pageRules, mountRuleSearch], discord: [pageDiscord, mountRuleSearch], start: [pageStart], faq: [pageFaq], modlist: [pageModlist],
   races: [pageRaces, mountRaces], classes: [pageClasses, mountClasses], system: [pageSystem, () => mountDice($('[data-dice]').parentElement)], eloquence: [pageEloquence, () => window.Eloquence.mount($('#eloqMount'))], healing: [pageHealing, () => window.Healing.mount($('#healMount'))],
   tree: [pageTree], forge: [pageForge, () => window.Forge.mount($('#forgeMount'))], armor: [pageArmor, () => window.Armor.mount($('#armorMount'))], craft: [pageCraft, () => window.Craft.mount($('#craftMount'))], gathering: [pageGathering, () => window.Gathering.mount($('#gatherMount'))], blueprints: [pageBlueprints, () => window.Blueprints.mount($('#bpMount'))], recycle: [pageRecycle, () => window.Recycler.mount($('#recycleMount'))], alchemy: [pageAlchemy, () => window.Alchemy.mount($('#alchMount'))], cooking: [pageCooking, () => window.Cooking.mount($('#cookMount'))], body: [pageBody, () => window.BodyLab.mount($('#bodyMount'))], curses: [pageCurses, () => window.CurseLab.mount($('#curseMount'))], cursed: [pageCursed], factions: [pageFactions, () => window.Factions.mount($('#factionMount'))], inventions: [pageInventions, () => window.Inventor.mount($('#invMount'))]
 };

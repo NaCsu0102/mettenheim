@@ -3177,3 +3177,34 @@ body.intro .hero-core .ring { animation: none !important; }
 .city-line { margin: 18px 0 0; font: 600 12px var(--f-mono); letter-spacing: .18em; text-transform: uppercase; color: var(--smoke); }
 .city-line b { color: var(--house-hi); font-weight: 700; } .city-line i { font-style: normal; color: #6b5132; margin: 0 6px; }
 .city-line a { color: var(--house-hi); }
+
+/* ---------- Главная: приветствие и сообщество в одном блоке ---------- */
+.hub { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: clamp(20px, 3vw, 40px); padding: clamp(22px, 3.5vw, 40px); align-items: center; }
+.hub-main .eyebrow { margin: 0; }
+.hub-main h2 { margin: 6px 0 12px; font-size: clamp(28px, 3.6vw, 40px); }
+.hub-main > p { margin: 0; font-size: 17px; line-height: 1.6; color: var(--smoke); max-width: 60ch; }
+.hub-main .welcome-btns { justify-content: flex-start; margin-top: 20px; }
+.hub-main .city-line { margin-top: 16px; }
+.hub-links { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 22px; }
+.hub-links a { padding: 12px 8px !important; }
+.hub-links a img { width: 34px !important; height: 34px !important; }
+.hub-side .dc-card { margin: 0; box-shadow: none; border-top-width: 2px; }
+.hub-side .dc-inside, .hub-side .dc-btns .btn.ghost { display: none; }
+@media (max-width: 900px) { .hub { grid-template-columns: 1fr; } }
+.hub-side { display: grid; gap: 12px; }
+.hub-side .hub-links { grid-template-columns: 1fr; margin: 0; gap: 8px; }
+.hub-side .hub-links a { display: flex !important; align-items: center; gap: 14px; text-align: left; padding: 10px 16px !important; }
+.hub-side .hub-links a span { display: grid; gap: 2px; }
+.hub-main .city-line { letter-spacing: .1em; font-size: 12px; }
+
+/* ---------- Поиск по правилам ---------- */
+.rsrch { position: sticky; top: 72px; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 12px 14px; margin-bottom: 22px; background: rgba(23,18,14,.97); }
+.rsrch-in { flex: 1 1 320px; min-width: 0; background: #0f0b08; border: 1px solid var(--rivet); color: var(--parch); font: 16px var(--f-body); padding: 10px 14px; }
+.rsrch-in:focus { outline: none; border-color: var(--house); box-shadow: 0 0 0 3px var(--house-glow); }
+.rsrch-n { font-size: 13px; }
+.rsrch-hints { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 6px; }
+.rsrch-hints button { background: none; border: 1px solid var(--rivet); color: var(--smoke); font-size: 13px; padding: 4px 10px; border-radius: 14px; cursor: pointer; }
+.rsrch-hints button:hover { color: var(--parch); border-color: var(--brass); }
+.rule-sec .rs-dim { display: none; }
+.rule-sec .rs-hit { background: rgba(201,161,91,.07); box-shadow: inset 2px 0 0 var(--house); padding-left: 10px; }
+.rule-sec mark { background: color-mix(in srgb, var(--house) 45%, transparent); color: #fff6e2; padding: 0 2px; border-radius: 2px; }
