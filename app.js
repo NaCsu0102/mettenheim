@@ -1045,7 +1045,7 @@ const icoImg = (id, cls) => ICO(id) ? `<img class="${cls}" src="${ICO(id)}" alt=
 const RACE_KEY = { 'humans-west': 'human-west', 'humans-east': 'human-east', 'humans-south': 'human-south', 'humans-mett': 'human-mettenheimer', 'elves-high': 'elf-high', 'elves-wood': 'elf-wood', 'elves-dark': 'elf-drow', 'dwarves-dwarf': 'dwarf', 'goblins-urban': 'goblin-urban', 'goblins-tribal': 'goblin-tribal', 'infernals-fire': 'infernal-fire', 'infernals-ice': 'infernal-ice' };
 const KIND_ICON = { 'ОСН': 'act-main', 'ДОП': 'act-bonus', 'РЕАКЦИЯ': 'act-reaction', 'ПАС': 'act-passive' };
 const RES_ICON = { fighter: 'res-temper', rogue: 'res-cunning', mage: 'res-charge', shooter: 'res-focus', engineer: 'res-parts' };
-const STATUS_ICON = { 'Отравление': 'st-poison', 'Кровотечение': 'st-bleed', 'Горение': 'st-burn', 'Обморожение': 'st-frost', 'Без сознания': 'st-unconscious', 'Связан': 'st-bound', 'Оглушение': 'st-stun', 'Очарование': 'st-charm', 'Истощение': 'st-exhaust', 'Сильное истощение': 'st-exhaust', 'Усталость': 'st-exhaust', 'Страх': 'st-fear' };
+const STATUS_ICON = { 'Отравление': 'st-poison', 'Кровотечение': 'st-bleed', 'Горение': 'st-burn', 'Обморожение': 'st-frost', 'Без сознания': 'st-unconscious', 'Связан': 'st-bound', 'Оглушение': 'st-stun', 'Очарование': 'st-charm', 'Истощение': 'st-exhaust', 'Сильное истощение': 'st-exhaust', 'Усталость': 'st-fatigue', 'Страх': 'st-fear', 'Паралич': 'st-paralysis', 'Обездвижен': 'st-immobile', 'Сбит с ног': 'st-prone' };
 const TURN_ICON = ['act-main', 'act-bonus', 'act-move'];
 
 /* ================= КЛАССЫ / СИСТЕМЫ ================= */
